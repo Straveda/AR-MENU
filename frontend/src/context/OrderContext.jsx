@@ -1,0 +1,152 @@
+import { createContext, useContext, useReducer, useEffect } from "react";
+import axiosClient from "../api/axiosClient";
+import { useTenant } from "./TenantProvider";
+
+const OrderContext = createContext();
+
+const initialState = {
+    tableNumber: "",
+    items: [],
+};
+
+function orderReducer(state, action) {
+    switch (action.type) {
+        case "SET_TABLE_NUMBER":
+            return { ...state, tableNumber: action.payload };
+
+        case "ADD_ITEM": {
+            const { dish, quantity } = action.payload;
+            const existingItemIndex = state.items.findIndex(item => item.dishId === dish._id);
+
+            if (existingItemIndex > -1) {
+                const newItems = [...state.items];
+                newItems[existingItemIndex].quantity += quantity;
+                return { ...state, items: newItems };
+            }
+
+            return {
+                ...state,
+                items: [
+                    ...state.items,
+                    {
+                        dishId: dish._id,
+                        name: dish.name,
+                        price: dish.price,
+                        image: dish.imageUrl,
+                        quantity: quantity
+                    }
+                ]
+            };
+        }
+
+        case "REMOVE_ITEM":
+            return {
+                ...state,
+                items: state.items.filter(item => item.dishId !== action.payload)
+            };
+
+        case "UPDATE_QUANTITY": {
+            const { dishId, quantity } = action.payload;
+            if (quantity <= 0) {
+                return {
+                    ...state,
+                    items: state.items.filter(item => item.dishId !== dishId)
+                };
+            }
+            return {
+                ...state,
+                items: state.items.map(item =>
+                    item.dishId === dishId ? { ...item, quantity } : item
+                )
+            };
+        }
+
+        case "CLEAR_ORDER":
+            return initialState;
+
+        default:
+            return state;
+    }
+}
+
+export function OrderProvider({ children }) {
+    const [state, dispatch] = useReducer(orderReducer, initialState);
+    const { slug } = useTenant();
+
+    const addItem = (dish, quantity) => {
+        dispatch({ type: "ADD_ITEM", payload: { dish, quantity } });
+    };
+
+    const removeItem = (dishId) => {
+        dispatch({ type: "REMOVE_ITEM", payload: dishId });
+    };
+
+    const updateQuantity = (dishId, quantity) => {
+        dispatch({ type: "UPDATE_QUANTITY", payload: { dishId, quantity } });
+    };
+
+    const setTableNumber = (num) => {
+        dispatch({ type: "SET_TABLE_NUMBER", payload: num });
+    }
+
+    const clearOrder = () => {
+        dispatch({ type: "CLEAR_ORDER" });
+    };
+
+    const placeOrder = async (finalTableNumber) => {
+        const tableNum = finalTableNumber || state.tableNumber;
+
+        if (!slug) {
+            throw new Error("Invalid restaurant context. Please reload via a valid link.");
+        }
+
+        if (!tableNum) {
+            throw new Error("Table number is required");
+        }
+
+        if (state.items.length === 0) {
+            throw new Error("Cart is empty");
+        }
+
+        const payload = {
+            tableNumber: parseInt(tableNum),
+            orderItems: state.items.map(item => ({
+                dishId: item.dishId,
+                quantity: item.quantity,
+                name: item.name,
+                price: item.price
+            }))
+        };
+
+        try {
+            const response = await axiosClient.post(`/orders/r/${slug}/create`, payload);
+            if (response.data.success || response.data.data?.orderCode) {
+                clearOrder();
+                // Return data object safely
+                return response.data.data || response.data;
+            } else {
+                throw new Error(response.data.message || "Failed to place order");
+            }
+        } catch (error) {
+            console.error("Place Order Error:", error);
+            // Re-throw so UI can handle (SaaS errors etc)
+            throw error;
+        }
+    };
+
+    return (
+        <OrderContext.Provider value={{
+            ...state,
+            addItem,
+            removeItem,
+            updateQuantity,
+            clearOrder,
+            placeOrder,
+            setTableNumber
+        }}>
+            {children}
+        </OrderContext.Provider>
+    );
+}
+
+export const useOrder = () => useContext(OrderContext);
