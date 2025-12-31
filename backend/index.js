@@ -13,11 +13,29 @@ dotenv.config();
 const app = express();
 const server = http.createServer(app);
 
+/* ======================
+   CORS CONFIG
+====================== */
+const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:5173";
+
+app.use(
+  cors({
+  origin: true,
+		credentials: true,
+		methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+		allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
+
+/* ======================
+   SOCKET.IO
+====================== */
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:5173",
+    origin: true,
     credentials: true,
   },
+  transports: ["websocket", "polling"], // important for production
 });
 
 io.on("connection", (socket) => {
@@ -26,31 +44,28 @@ io.on("connection", (socket) => {
   socket.on("join_kds", (restaurantId) => {
     if (restaurantId) {
       socket.join(`KDS_ROOM_${restaurantId}`);
-      console.log(`Socket ${socket.id} joined KDS_ROOM for restaurant: ${restaurantId}`);
     }
   });
 
   socket.on("join_order", (data) => {
-    const { restaurantId, orderCode } = typeof data === 'string' ? { orderCode: data } : data;
+    const { restaurantId, orderCode } =
+      typeof data === "string" ? { orderCode: data } : data;
+
     if (orderCode) {
-      const room = restaurantId ? `ORDER_ROOM_${restaurantId}_${orderCode}` : orderCode;
+      const room = restaurantId
+        ? `ORDER_ROOM_${restaurantId}_${orderCode}`
+        : orderCode;
+
       socket.join(room);
-      console.log(`Socket ${socket.id} joined order room: ${room}`);
     }
   });
 
   socket.on("join_room", (room) => {
-    if (room) {
-      socket.join(room);
-      console.log(`Socket ${socket.id} joined room: ${room}`);
-    }
+    if (room) socket.join(room);
   });
 
   socket.on("leave_room", (room) => {
-    if (room) {
-      socket.leave(room);
-      console.log(`Socket ${socket.id} left room: ${room}`);
-    }
+    if (room) socket.leave(room);
   });
 
   socket.on("disconnect", () => {
@@ -58,27 +73,30 @@ io.on("connection", (socket) => {
   });
 });
 
-app.use(cors({
-  origin: "http://localhost:5173",
-  credentials: true,
-}));
-
+/* ======================
+   MIDDLEWARES
+====================== */
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
 app.use(cookieParser());
 
+/* ======================
+   DB INIT
+====================== */
 connectDB()
   .then(async () => {
     console.log('Database connected successfully');
-
     validateMeshyConfig();
     await resumePendingPolls();
   })
   .catch((error) => {
-    console.log('Database connection failed:', error);
+    console.error('Database connection failed:', error);
   });
 
+/* ======================
+   ROUTES
+====================== */
 import dishRoute from './src/routes/dish.route.js';
 import orderRoute from './src/routes/order.route.js';
 import kdsOrderRoute from './src/routes/kdsorder.route.js';
@@ -87,8 +105,6 @@ import platformRouter from './src/routes/platform.route.js';
 import planRouter from './src/routes/plan.route.js';
 import adminRouter from './src/routes/admin.route.js';
 import configRoute from './src/routes/config.route.js';
-
-import { errorHandler } from './src/middlewares/errorHandler.middleware.js';
 
 app.use('/api/v1/dishes', dishRoute);
 app.use('/api/v1/orders', orderRoute);
@@ -99,18 +115,26 @@ app.use("/api/v1/platform/plans", planRouter);
 app.use("/api/v1/admin", adminRouter);
 app.use("/api/v1/config", configRoute);
 
-app.get("/", (req,res)=>{
-  res.send("Hello World!")
-})
+app.get("/", (req, res) => {
+  res.send("Hello World!");
+});
 
+/* ======================
+   ERROR HANDLER
+====================== */
+import { errorHandler } from './src/middlewares/errorHandler.middleware.js';
 app.use(errorHandler);
 
-import { fileURLToPath } from 'url';
+/* ======================
+   SERVER START (RENDER)
+====================== */
+const PORT = process.env.PORT || 8000;
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  server.listen(process.env.PORT || 8000, () => {
-    console.log(`Server running on port ${process.env.PORT || 8000}`);
-  });
-}
+server.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
 
+/* ======================
+   EXPORTS
+====================== */
 export { io, app };
