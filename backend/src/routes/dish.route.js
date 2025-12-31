@@ -22,9 +22,6 @@ import {
 
 const dishRoute = express.Router();
 
-import { PERMISSIONS } from "../constants/permissions.js";
-import { requirePermission } from "../middlewares/requirePermission.middleware.js";
-
 dishRoute.get(
   "/r/:restaurantSlug/dishes",
   resolveRestaurant,
@@ -35,8 +32,16 @@ dishRoute.get(
   "/getdishes",
   requireAuth,
   resolveRestaurantFromUser,
-  requirePermission(PERMISSIONS.VIEW_DISHES),
+  requireRole("RESTAURANT_ADMIN", "KDS", "SUPER_ADMIN", "PLATFORM_ADMIN"),
   getDishes
+);
+
+dishRoute.get(
+  "/getdish/:id",
+  requireAuth,
+  resolveRestaurantFromUser,
+  requireRole("RESTAURANT_ADMIN", "SUPER_ADMIN", "PLATFORM_ADMIN"),
+  getDishById
 );
 
 dishRoute.get(
@@ -67,7 +72,7 @@ dishRoute.post(
   "/add",
   requireAuth,
   resolveRestaurantFromUser,
-  requirePermission(PERMISSIONS.CREATE_DISH),
+  requireRole("RESTAURANT_ADMIN", "SUPER_ADMIN", "PLATFORM_ADMIN"),
   checkSubscription,
   enforcePlanFeature("maxDishes"),
   upload.single("image"),
@@ -78,7 +83,7 @@ dishRoute.put(
   "/updatedish/:id",
   requireAuth,
   resolveRestaurantFromUser,
-  requirePermission(PERMISSIONS.EDIT_DISH),
+  requireRole("RESTAURANT_ADMIN", "SUPER_ADMIN", "PLATFORM_ADMIN"),
   checkSubscription,
   updateDish
 );
@@ -87,7 +92,7 @@ dishRoute.delete(
   "/deletedish/:id",
   requireAuth,
   resolveRestaurantFromUser,
-  requirePermission(PERMISSIONS.DELETE_DISH),
+  requireRole("RESTAURANT_ADMIN", "SUPER_ADMIN", "PLATFORM_ADMIN"),
   checkSubscription,
   deleteDish
 );
@@ -96,7 +101,7 @@ dishRoute.post(
   "/:id/generate-model",
   requireAuth,
   resolveRestaurantFromUser,
-  requirePermission(PERMISSIONS.EDIT_DISH),
+  requireRole("RESTAURANT_ADMIN", "SUPER_ADMIN", "PLATFORM_ADMIN"),
   checkSubscription,
   enforcePlanFeature("aiModels"),
   generateModel
@@ -106,7 +111,7 @@ dishRoute.post(
   "/:id/retry-model",
   requireAuth,
   resolveRestaurantFromUser,
-  requirePermission(PERMISSIONS.EDIT_DISH),
+  requireRole("RESTAURANT_ADMIN", "SUPER_ADMIN", "PLATFORM_ADMIN"),
   checkSubscription,
   enforcePlanFeature("aiModels"),
   retryModelGeneration

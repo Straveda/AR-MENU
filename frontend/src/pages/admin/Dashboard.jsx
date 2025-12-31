@@ -18,10 +18,8 @@ export default function Dashboard() {
   const [toggleLoading, setToggleLoading] = useState(null);
   const [imageErrors, setImageErrors] = useState({});
 
-  // QR Code States
   const [showQRModal, setShowQRModal] = useState(false);
   const [homepageUrl, setHomepageUrl] = useState("");
-
 
   const fetchDishes = async () => {
     try {
@@ -37,7 +35,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     fetchDishes();
-    // Set the homepage URL - you can change this to your actual website URL
+    
     setHomepageUrl(`${window.location.origin}`);
   }, []);
 
@@ -64,7 +62,6 @@ export default function Dashboard() {
     setImageErrors(prev => ({ ...prev, [dishId]: true }));
   };
 
-  // QR Code Functions
   const generateQRCode = () => {
     setShowQRModal(true);
   };
@@ -102,7 +99,7 @@ export default function Dashboard() {
     setRetryLoading(id);
     try {
       await retryModelGeneration(id);
-      // Refresh dishes to show updated status
+      
       await fetchDishes();
       alert(`Model generation started for "${dishName}". This may take 2-5 minutes.`);
     } catch (error) {
@@ -119,10 +116,8 @@ export default function Dashboard() {
     }
   };
 
-  // Get unique categories
   const categories = ["all", ...new Set(dishes.map(dish => dish.category).filter(Boolean))];
 
-  // Filter dishes based on search and category
   const filteredDishes = dishes.filter(dish => {
     const matchesSearch = dish.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       dish.description?.toLowerCase().includes(searchTerm.toLowerCase());
@@ -130,7 +125,6 @@ export default function Dashboard() {
     return matchesSearch && matchesCategory;
   });
 
-  // Statistics
   const stats = {
     total: dishes.length,
     completed: dishes.filter(d => d.modelStatus === "completed").length,
@@ -143,7 +137,6 @@ export default function Dashboard() {
     setSelectedCategory('all');
   };
 
-  // Tag color helper
   const getTagColor = (tag) => {
     const tagLower = tag.toLowerCase();
     if (tagLower.includes('spicy')) return 'bg-red-100 text-red-700';
@@ -154,7 +147,6 @@ export default function Dashboard() {
     return 'bg-gray-100 text-gray-700';
   };
 
-  // Toggle availability
   const handleToggleAvailability = async (id, available) => {
     setToggleLoading(id);
     try {
@@ -178,7 +170,7 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-amber-50 px-4 py-6">
-      {/* Header */}
+      {}
       <div className="max-w-7xl mx-auto mb-8">
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
           <div>
@@ -189,7 +181,7 @@ export default function Dashboard() {
           </div>
 
           <div className="flex flex-col sm:flex-row gap-3">
-            {/* Manage Staff Button */}
+            {}
             <button
                onClick={() => navigate("/admin/staff")}
                className="bg-indigo-500 hover:bg-indigo-600 text-white px-6 py-3 rounded-lg font-semibold transition-colors duration-200 flex items-center gap-2 shadow-lg hover:shadow-xl"
@@ -200,18 +192,7 @@ export default function Dashboard() {
                Manage Staff
             </button>
 
-            {/* Manage Roles Button */}
-            <button
-               onClick={() => navigate("/admin/roles")}
-               className="bg-purple-500 hover:bg-purple-600 text-white px-6 py-3 rounded-lg font-semibold transition-colors duration-200 flex items-center gap-2 shadow-lg hover:shadow-xl"
-            >
-               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-               </svg>
-               Manage Roles
-            </button>
-
-            {/* QR Code Button */}
+            {}
             <button
               onClick={generateQRCode}
               className="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-lg font-semibold transition-colors duration-200 flex items-center gap-2 shadow-lg hover:shadow-xl"
@@ -246,7 +227,7 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Statistics Cards */}
+        {}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           {[
             { label: "Total Dishes", value: stats.total, color: "blue", icon: "📋" },
@@ -268,10 +249,10 @@ export default function Dashboard() {
           ))}
         </div>
 
-        {/* Search and Filter */}
+        {}
         <div className="bg-white rounded-xl shadow-sm p-6 border border-amber-100 mb-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Search */}
+            {}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Search Dishes</label>
               <div className="relative">
@@ -290,7 +271,7 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* Category Filter */}
+            {}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Filter by Category</label>
               <select
@@ -307,7 +288,7 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Active Filters Indicator */}
+          {}
           {(searchTerm || selectedCategory !== 'all') && (
             <div className="mt-4 flex items-center gap-2">
               <span className="text-sm text-gray-600">Active filters:</span>
@@ -332,17 +313,17 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Dish List */}
+      {}
       <div className="max-w-7xl mx-auto">
         <div className="bg-white rounded-xl shadow-lg border border-amber-100 overflow-hidden">
-          {/* Table Header */}
+          {}
           <div className="px-6 py-4 border-b border-amber-100">
             <h2 className="text-xl font-semibold text-gray-800">
               Menu Items ({filteredDishes.length})
             </h2>
           </div>
 
-          {/* Content */}
+          {}
           <div className="p-6">
             {loading ? (
               <Loading message="Loading dishes..." />
@@ -371,7 +352,7 @@ export default function Dashboard() {
                     key={dish._id}
                     className="border border-amber-100 rounded-lg bg-white hover:shadow-lg transition-all duration-300 overflow-hidden group flex flex-col h-full"
                   >
-                    {/* Dish Image */}
+                    {}
                     <div className="relative h-48 bg-amber-50 overflow-hidden shrink-0">
                       {!imageErrors[dish._id] && dish.imageUrl ? (
                         <img
@@ -391,7 +372,7 @@ export default function Dashboard() {
                         </div>
                       )}
 
-                      {/* Status Badge */}
+                      {}
                       <div className="absolute top-3 left-3">
                         <span className={`px-2 py-1 rounded-full text-xs font-semibold ${dish.modelStatus === "completed"
                           ? "bg-green-100 text-green-800"
@@ -403,20 +384,20 @@ export default function Dashboard() {
                         </span>
                       </div>
 
-                      {/* Price */}
+                      {}
                       <div className="absolute top-3 right-3 bg-amber-600 text-white px-2 py-1 rounded-lg text-sm font-bold">
                         ₹{dish.price}
                       </div>
                     </div>
 
-                    {/* Dish Info */}
+                    {}
                     <div className="p-4 flex flex-col grow">
-                      {/* Title & Category Line */}
+                      {}
                       <div className="flex justify-between items-start mb-2">
                         <h3 className="font-bold text-gray-800 text-lg leading-tight line-clamp-1">{dish.name}</h3>
                       </div>
 
-                      {/* Category Badge */}
+                      {}
                       <div className="mb-3">
                         <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
                           🍽️ {dish.category.charAt(0).toUpperCase() + dish.category.slice(1)}
@@ -430,7 +411,7 @@ export default function Dashboard() {
                       )}
 
                       <div className="space-y-3 mb-4 mt-auto">
-                        {/* Ingredients Entity */}
+                        {}
                         {dish.ingredients?.length > 0 && (
                           <div className="bg-gray-50 rounded-lg p-2.5 border border-gray-100">
                             <div className="flex items-center gap-1.5 mb-1.5 text-xs font-semibold text-gray-700 uppercase tracking-wide">
@@ -442,7 +423,7 @@ export default function Dashboard() {
                           </div>
                         )}
 
-                        {/* Tags Entity */}
+                        {}
                         {dish.tags?.length > 0 && (
                           <div className="bg-gray-50 rounded-lg p-2.5 border border-gray-100">
                             <div className="flex items-center gap-1.5 mb-1.5 text-xs font-semibold text-gray-700 uppercase tracking-wide">
@@ -462,7 +443,7 @@ export default function Dashboard() {
                         )}
                       </div>
 
-                      {/* Availability Toggle */}
+                      {}
                       <div className="flex items-center justify-between mb-4 py-2 border-t border-gray-100">
                         <span className="text-sm text-gray-700 font-medium flex items-center gap-2">
                           <span className={`w-2 h-2 rounded-full ${dish.available ? 'bg-green-500' : 'bg-gray-300'}`}></span>
@@ -481,9 +462,9 @@ export default function Dashboard() {
                         </button>
                       </div>
 
-                      {/* Action Buttons - Fixed at bottom */}
+                      {}
                       <div className="flex flex-col gap-2 mt-auto">
-                        {/* Model Status Info */}
+                        {}
                         {dish.modelStatus === 'failed' && (
                           <div className="bg-red-50 border border-red-200 rounded-lg p-2">
                             <p className="text-xs text-red-700 text-center">❌ Model generation failed</p>
@@ -553,7 +534,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* QR Code Modal */}
+      {}
       {showQRModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6">

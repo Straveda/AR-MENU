@@ -17,14 +17,14 @@ export default function AuthProvider({ children }) {
     if (token) {
       try {
         const decoded = jwtDecode(token);
-        // Check expiry
+        
         const currentTime = Date.now() / 1000;
         if (decoded.exp < currentTime) {
           logout();
         } else {
           setRole(decoded.role);
           setRestaurantId(decoded.restaurantId);
-          // Hydrate user details from API if needed, or just use decoded token data for basic checks
+          
           fetchCurrentUser();
         }
       } catch (error) {
@@ -40,16 +40,16 @@ export default function AuthProvider({ children }) {
     try {
       setLoading(true);
       const { data } = await axiosClient.get("/users/auth/me");
-      // Backend /me endpoint returns user object directly
+      
       if (data && data._id) {
         setUser(data);
-        // Ensure state matches API source of truth
+        
         setRole(data.role);
         setRestaurantId(data.restaurantId);
       }
     } catch (error) {
       console.error("Failed to fetch user:", error);
-      // If 401, interceptor might handle it, but we should clear state
+      
       if (error.response?.status === 401) {
         logout();
       }
@@ -79,8 +79,9 @@ export default function AuthProvider({ children }) {
     loading,
     isAuthenticated: !!token,
     isSuperAdmin: role === "SUPER_ADMIN",
+    isPlatformAdmin: role === "PLATFORM_ADMIN",
     isRestaurantAdmin: role === "RESTAURANT_ADMIN",
-    isStaff: ["KDS", "WAITER", "CASHIER"].includes(role),
+    isStaff: role === "KDS",
     isKDS: role === "KDS",
     login,
     logout,

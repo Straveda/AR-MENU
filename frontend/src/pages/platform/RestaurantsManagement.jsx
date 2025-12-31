@@ -12,7 +12,6 @@ export default function RestaurantsManagement() {
   const [actionLoading, setActionLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // Pagination hook
   const { 
     page, 
     limit, 
@@ -23,10 +22,8 @@ export default function RestaurantsManagement() {
     paginationParams 
   } = usePagination(10);
 
-  // Modal state
   const [modal, setModal] = useState({ type: null, restaurant: null });
 
-  // Form states
   const [createName, setCreateName] = useState("");
   const [adminForm, setAdminForm] = useState({ username: "", email: "", password: "", phone: "" });
   const [assignForm, setAssignForm] = useState({ planId: "", durationInDays: 30 });
@@ -35,10 +32,7 @@ export default function RestaurantsManagement() {
   const [statusUpdate, setStatusUpdate] = useState("");
 
   const fetchData = async () => {
-    // Only set full page loading on initial load or if we want to block interaction
-    // For pagination, we might want a table-level loading state, but for now we'll stick to logic
-    // We can optimize UX later by keeping table data stale while loading new data
-    // For now let's keep it simple: loading state for fetch
+
     if(restaurants.length === 0) setLoading(true); 
     
     try {
@@ -64,8 +58,8 @@ export default function RestaurantsManagement() {
 
   useEffect(() => {
     fetchData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, limit]); // Re-fetch when pagination params change
+    
+  }, [page, limit]); 
 
   const closeModal = () => {
     setModal({ type: null, restaurant: null });
@@ -82,7 +76,6 @@ export default function RestaurantsManagement() {
     setError(err.response?.data?.message || "Operation failed");
   };
 
-  // Create Restaurant
   const handleCreateRestaurant = async (e) => {
     e.preventDefault();
     setActionLoading(true);
@@ -98,7 +91,6 @@ export default function RestaurantsManagement() {
     }
   };
 
-  // Create Admin
   const handleCreateAdmin = async (e) => {
     e.preventDefault();
     setActionLoading(true);
@@ -117,7 +109,6 @@ export default function RestaurantsManagement() {
     }
   };
 
-  // Assign Plan
   const handleAssignPlan = async (e) => {
     e.preventDefault();
     setActionLoading(true);
@@ -137,7 +128,6 @@ export default function RestaurantsManagement() {
     }
   };
 
-  // Extend Subscription
   const handleExtend = async (e) => {
     e.preventDefault();
     setActionLoading(true);
@@ -155,7 +145,6 @@ export default function RestaurantsManagement() {
     }
   };
 
-  // Change Plan
   const handleChangePlan = async (e) => {
     e.preventDefault();
     setActionLoading(true);
@@ -173,7 +162,6 @@ export default function RestaurantsManagement() {
     }
   };
 
-  // Update Restaurant Status
   const handleUpdateStatus = async (e) => {
     e.preventDefault();
     setActionLoading(true);
@@ -191,7 +179,6 @@ export default function RestaurantsManagement() {
     }
   };
 
-  // Suspend
   const handleSuspend = async (r) => {
     if (!confirm(`Suspend "${r.name}"? This will block access for the restaurant.`)) return;
     try {
@@ -202,7 +189,6 @@ export default function RestaurantsManagement() {
     }
   };
 
-  // Resume
   const handleResume = async (r) => {
     try {
       await axiosClient.patch(`/platform/resume-restaurant/${r._id}`);
@@ -212,7 +198,6 @@ export default function RestaurantsManagement() {
     }
   };
 
-  // Delete Restaurant
   const handleDeleteRestaurant = async (r) => {
     const confirm1 = confirm(`Are you sure you want to delete "${r.name}"? This action CANNOT be undone.`);
     if (!confirm1) return;
@@ -233,8 +218,7 @@ export default function RestaurantsManagement() {
   };
 
   const formatDate = (d) => (d ? new Date(d).toLocaleDateString() : "-");
-  
-  // Helper to get plan name
+
   const getPlanName = (r) => {
     const planId = typeof r.planId === 'object' ? r.planId?._id : r.planId;
     const plan = plans.find(p => p._id === planId);
@@ -269,7 +253,7 @@ export default function RestaurantsManagement() {
         </div>
       </div>
 
-      {/* Restaurants Table */}
+      {}
       <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="min-w-full text-sm">
@@ -352,7 +336,7 @@ export default function RestaurantsManagement() {
         </div>
       </div>
 
-      {/* Pagination Footer */}
+      {}
       {!loading && paginationMeta && (
         <Pagination
           currentPage={page}
@@ -363,9 +347,9 @@ export default function RestaurantsManagement() {
         />
       )}
       
-      {/* ===== MODALS ===== */}
+      {}
       
-      {/* Create Restaurant */}
+      {}
       {modal.type === "create" && (
         <Modal title="Create New Restaurant" onClose={closeModal}>
           <form onSubmit={handleCreateRestaurant}>
@@ -387,7 +371,7 @@ export default function RestaurantsManagement() {
         </Modal>
       )}
 
-      {/* Create Admin */}
+      {}
       {modal.type === "admin" && (
         <Modal title={`Create Admin for ${modal.restaurant.name}`} onClose={closeModal}>
           <form onSubmit={handleCreateAdmin}>
@@ -406,7 +390,7 @@ export default function RestaurantsManagement() {
         </Modal>
       )}
 
-      {/* Assign Plan */}
+      {}
       {modal.type === "assign" && (
         <Modal title={`Assign Plan to ${modal.restaurant.name}`} onClose={closeModal}>
           <form onSubmit={handleAssignPlan}>
@@ -441,7 +425,7 @@ export default function RestaurantsManagement() {
         </Modal>
       )}
 
-      {/* Extend Subscription */}
+      {}
       {modal.type === "extend" && (
         <Modal title={`Extend Subscription for ${modal.restaurant.name}`} onClose={closeModal}>
           <form onSubmit={handleExtend}>
@@ -465,7 +449,7 @@ export default function RestaurantsManagement() {
         </Modal>
       )}
 
-      {/* Change Plan */}
+      {}
       {modal.type === "change" && (
         <Modal title={`Change Plan for ${modal.restaurant.name}`} onClose={closeModal}>
           <form onSubmit={handleChangePlan}>
@@ -492,7 +476,7 @@ export default function RestaurantsManagement() {
         </Modal>
       )}
 
-      {/* Update Status */}
+      {}
       {modal.type === "status" && (
         <Modal title={`Update Status for ${modal.restaurant.name}`} onClose={closeModal}>
           <form onSubmit={handleUpdateStatus}>
@@ -518,8 +502,6 @@ export default function RestaurantsManagement() {
   );
 }
 
-// ===== COMPONENTS =====
-
 function StatusBadge({ status }) {
   const styles = {
     ACTIVE: "bg-emerald-100 text-emerald-700",
@@ -543,7 +525,7 @@ function ActionDropdown({ restaurant, hasPlan, onCreateAdmin, onAssignPlan, onEx
     if (open && buttonRef.current) {
       const rect = buttonRef.current.getBoundingClientRect();
       const screenHeight = window.innerHeight;
-      const menuHeightEstimate = 350; // Conservative height estimate for the full menu
+      const menuHeightEstimate = 350; 
       
       const spaceBelow = screenHeight - rect.bottom;
       const shouldOpenUpwards = spaceBelow < menuHeightEstimate;

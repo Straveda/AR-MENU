@@ -23,7 +23,7 @@ export const logAudit = async ({ req, action, targetId, targetModel, changes = {
     });
 
   } catch (error) {
-    // Fail-safe: Logging should not crash the main application flow
+    
     console.error("Failed to write audit log:", error);
   }
 };

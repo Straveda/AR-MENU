@@ -3,7 +3,7 @@ import { Restaurant } from "../models/restaurant.models.js";
 export const resolveRestaurantFromUser = async (req, res, next) => {
   try {
 
-    if (req.user.role === "SUPER_ADMIN") {
+    if (["SUPER_ADMIN", "PLATFORM_ADMIN"].includes(req.user.role)) {
       req.restaurant = null;
       return next();
     }

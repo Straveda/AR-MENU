@@ -122,14 +122,14 @@ export function OrderProvider({ children }) {
             const response = await axiosClient.post(`/orders/r/${slug}/create`, payload);
             if (response.data.success || response.data.data?.orderCode) {
                 clearOrder();
-                // Return data object safely
+                
                 return response.data.data || response.data;
             } else {
                 throw new Error(response.data.message || "Failed to place order");
             }
         } catch (error) {
             console.error("Place Order Error:", error);
-            // Re-throw so UI can handle (SaaS errors etc)
+            
             throw error;
         }
     };

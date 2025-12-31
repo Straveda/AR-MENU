@@ -7,13 +7,10 @@ const SocketContext = createContext();
 export const useSocket = () => useContext(SocketContext);
 
 export default function SocketProvider({ children }) {
-  const { isAuthenticated } = useAuth(); // We just need to know if we are capable of connecting if Auth required.
-  // Actually, public users also use sockets.
-  // Strict rule: No Auto Join.
-  
+  const { isAuthenticated } = useAuth(); 
+
   const socketRef = useRef(null);
 
-  // Initialize socket on mount (but don't connect automatically unless configured)
   if (!socketRef.current) {
       socketRef.current = io("http://localhost:8000", {
           autoConnect: false,
@@ -50,7 +47,6 @@ export default function SocketProvider({ children }) {
     }
   }, [socket]);
 
-  // Clean up on unmount or Logout
   useEffect(() => {
     return () => {
         disconnect();

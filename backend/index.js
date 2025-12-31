@@ -39,11 +39,24 @@ io.on("connection", (socket) => {
     }
   });
 
+  socket.on("join_room", (room) => {
+    if (room) {
+      socket.join(room);
+      console.log(`Socket ${socket.id} joined room: ${room}`);
+    }
+  });
+
+  socket.on("leave_room", (room) => {
+    if (room) {
+      socket.leave(room);
+      console.log(`Socket ${socket.id} left room: ${room}`);
+    }
+  });
+
   socket.on("disconnect", () => {
     console.log("Socket disconnected:", socket.id);
   });
 });
-
 
 app.use(cors({
   origin: "http://localhost:5173",
@@ -55,7 +68,6 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
 app.use(cookieParser());
 
-//DB Connection
 connectDB()
   .then(async () => {
     console.log('Database connected successfully');
@@ -67,7 +79,6 @@ connectDB()
     console.log('Database connection failed:', error);
   });
 
-//Importing Routes
 import dishRoute from './src/routes/dish.route.js';
 import orderRoute from './src/routes/order.route.js';
 import kdsOrderRoute from './src/routes/kdsorder.route.js';
@@ -75,7 +86,7 @@ import userAuthRoutes from './src/routes/userAuth.routes.js';
 import platformRouter from './src/routes/platform.route.js';
 import planRouter from './src/routes/plan.route.js';
 import adminRouter from './src/routes/admin.route.js';
-import roleRouter from './src/routes/role.route.js';
+import configRoute from './src/routes/config.route.js';
 
 import { errorHandler } from './src/middlewares/errorHandler.middleware.js';
 
@@ -86,19 +97,16 @@ app.use("/api/v1/users/auth", userAuthRoutes);
 app.use("/api/v1/platform", platformRouter);
 app.use("/api/v1/platform/plans", planRouter);
 app.use("/api/v1/admin", adminRouter);
-app.use("/api/v1/roles", roleRouter);
-
+app.use("/api/v1/config", configRoute);
 
 app.get("/", (req,res)=>{
   res.send("Hello World!")
 })
 
-// Global Error Handler (Must be last)
 app.use(errorHandler);
 
 import { fileURLToPath } from 'url';
 
-// Only listen if run directly (not imported as a module)
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   server.listen(process.env.PORT || 8000, () => {
     console.log(`Server running on port ${process.env.PORT || 8000}`);

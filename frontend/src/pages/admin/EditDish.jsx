@@ -25,7 +25,6 @@ export default function EditDish() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
-  // Fetch dish by id
   useEffect(() => {
     const fetchDish = async () => {
       try {
@@ -114,7 +113,7 @@ export default function EditDish() {
   return (
     <div className="min-h-screen bg-amber-50 px-4 py-6">
       <div className="max-w-2xl mx-auto">
-        {/* Header */}
+        {}
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">
             <button
@@ -131,11 +130,11 @@ export default function EditDish() {
           <p className="text-gray-600 mt-2">Update the dish information below</p>
         </div>
 
-        {/* Form Card */}
+        {}
         <div className="bg-white rounded-xl shadow-lg border border-amber-100 overflow-hidden">
           <div className="p-6">
             <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Dish Image Preview */}
+              {}
               {form.imageUrl && (
                 <div className="flex justify-center">
                   <div className="relative w-32 h-32 rounded-lg overflow-hidden border border-amber-200">
@@ -161,7 +160,7 @@ export default function EditDish() {
               )}
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Name */}
+                {}
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Dish Name *
@@ -177,7 +176,7 @@ export default function EditDish() {
                   />
                 </div>
 
-                {/* Category */}
+                {}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Category *
@@ -201,7 +200,7 @@ export default function EditDish() {
                   </select>
                 </div>
 
-                {/* Price */}
+                {}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Price (₹) *
@@ -222,7 +221,7 @@ export default function EditDish() {
                   </div>
                 </div>
 
-                {/* Description */}
+                {}
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Description
@@ -238,7 +237,7 @@ export default function EditDish() {
                 </div>
 
                 <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* Ingredients */}
+                  {}
                   <div className="md:col-span-2">
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Ingredients (comma separated)
@@ -253,7 +252,7 @@ export default function EditDish() {
                     />
                   </div>
 
-                  {/* Tags */}
+                  {}
                   <div className="md:col-span-2">
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Tags (comma separated)
@@ -300,7 +299,7 @@ export default function EditDish() {
                   </div>
                 </div>
 
-                {/* Nutritional Info */}
+                {}
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Nutritional Info (per serving)
@@ -353,7 +352,7 @@ export default function EditDish() {
                   </div>
                 </div>
 
-                {/* Image URL */}
+                {}
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Image URL
@@ -372,7 +371,7 @@ export default function EditDish() {
                 </div>
               </div>
 
-              {/* Action Buttons */}
+              {}
               <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-amber-100">
                 <button
                   type="button"
@@ -406,7 +405,7 @@ export default function EditDish() {
           </div>
         </div>
 
-        {/* Quick Tips */}
+        {}
         <div className="mt-6 bg-amber-100 border border-amber-200 rounded-lg p-4">
           <h3 className="font-semibold text-amber-800 mb-2 flex items-center gap-2">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

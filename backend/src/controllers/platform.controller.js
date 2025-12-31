@@ -10,7 +10,6 @@ import bcrypt from "bcryptjs"
 import { validateMeshyConfig } from "../config/meshy.config.js";
 import { Order } from "../models/order.models.js";
 import { AuditLog } from "../models/auditLog.model.js";
-import { Role } from "../models/role.models.js";
 
 const getSubscriptionLogs = async (req, res) => {
   try {
@@ -172,7 +171,6 @@ const getAllUsers = async (req, res) => {
     }
 };
 
-// Create any type of user from platform
 const createPlatformUser = async (req, res) => {
     try {
         const { email, password, username, phone, role, restaurantId } = req.body;
@@ -184,8 +182,7 @@ const createPlatformUser = async (req, res) => {
             });
         }
 
-        // Validate role
-        const validRoles = ['RESTAURANT_ADMIN', 'KDS', 'WAITER', 'CASHIER'];
+        const validRoles = ["SUPER_ADMIN", "PLATFORM_ADMIN", "RESTAURANT_ADMIN", "KDS", "CUSTOMER"];
         if (!validRoles.includes(role)) {
             return res.status(400).json({
                 success: false,
@@ -193,7 +190,6 @@ const createPlatformUser = async (req, res) => {
             });
         }
 
-        // Check if user exists
         const existingUser = await User.findOne({ email });
         if (existingUser) {
             return res.status(400).json({
@@ -202,15 +198,14 @@ const createPlatformUser = async (req, res) => {
             });
         }
 
-        // For non-SUPER_ADMIN roles, restaurantId is required
-        if (role !== 'SUPER_ADMIN' && !restaurantId) {
+        const isPlatformRole = ["SUPER_ADMIN", "PLATFORM_ADMIN"].includes(role);
+        if (!isPlatformRole && !restaurantId) {
             return res.status(400).json({
                 success: false,
                 message: "Restaurant ID is required for this role"
             });
         }
 
-        // Verify restaurant exists if provided
         if (restaurantId) {
             const restaurant = await Restaurant.findById(restaurantId);
             if (!restaurant) {
@@ -229,7 +224,7 @@ const createPlatformUser = async (req, res) => {
             username,
             phone,
             role,
-            restaurantId: restaurantId || null,
+            restaurantId: isPlatformRole ? null : restaurantId,
             isActive: true
         });
 
@@ -250,7 +245,6 @@ const createPlatformUser = async (req, res) => {
     }
 };
 
-// Update user details
 const updateUser = async (req, res) => {
     try {
         const { userId } = req.params;
@@ -264,7 +258,6 @@ const updateUser = async (req, res) => {
             });
         }
 
-        // Prevent modifying SUPER_ADMIN users
         if (user.role === 'SUPER_ADMIN') {
             return res.status(403).json({
                 success: false,
@@ -275,7 +268,7 @@ const updateUser = async (req, res) => {
         if (username) user.username = username;
         if (phone) user.phone = phone;
         if (role) {
-            const validRoles = ['RESTAURANT_ADMIN', 'KDS', 'WAITER', 'CASHIER'];
+            const validRoles = ["SUPER_ADMIN", "PLATFORM_ADMIN", "RESTAURANT_ADMIN", "KDS", "CUSTOMER"];
             if (!validRoles.includes(role)) {
                 return res.status(400).json({
                     success: false,
@@ -284,8 +277,11 @@ const updateUser = async (req, res) => {
             }
             user.role = role;
         }
+
+        const isPlatformRole = ["SUPER_ADMIN", "PLATFORM_ADMIN"].includes(user.role);
+        
         if (restaurantId !== undefined) {
-            if (restaurantId) {
+            if (restaurantId && !isPlatformRole) {
                 const restaurant = await Restaurant.findById(restaurantId);
                 if (!restaurant) {
                     return res.status(404).json({
@@ -293,8 +289,10 @@ const updateUser = async (req, res) => {
                         message: "Restaurant not found"
                     });
                 }
+                user.restaurantId = restaurantId;
+            } else if (isPlatformRole) {
+                user.restaurantId = null;
             }
-            user.restaurantId = restaurantId || null;
         }
 
         await user.save();
@@ -317,7 +315,6 @@ const updateUser = async (req, res) => {
     }
 };
 
-// Toggle user active status
 const toggleUserStatus = async (req, res) => {
     try {
         const { userId } = req.params;
@@ -330,7 +327,6 @@ const toggleUserStatus = async (req, res) => {
             });
         }
 
-        // Prevent modifying SUPER_ADMIN users
         if (user.role === 'SUPER_ADMIN') {
             return res.status(403).json({
                 success: false,
@@ -471,7 +467,6 @@ const createRestaurantAdmin = async (req, res) => {
       });
     }
 
-    // Plan-based staff limit check
     if (!restaurant.planId) {
       return res.status(403).json({
         success: false,
@@ -581,7 +576,6 @@ const assignPlanToRestaurant = async (req, res) => {
 
     await restaurant.save();
 
-    // Create log
     await SubscriptionLog.create({
       restaurantId: restaurant._id,
       planId: plan._id,
@@ -654,7 +648,6 @@ const extendSubscription = async (req, res) => {
 
     await restaurant.save();
 
-    // Create log
     await SubscriptionLog.create({
       restaurantId: restaurant._id,
       planId: restaurant.planId,
@@ -739,7 +732,6 @@ const changeRestaurantPlan = async (req, res) => {
     restaurant.planId = newPlan._id;
     await restaurant.save();
 
-    // Create log
     await SubscriptionLog.create({
       restaurantId: restaurant._id,
       planId: newPlan._id,
@@ -859,7 +851,7 @@ const getStaff = async (req, res) => {
 
     const staff = await User.find({
       restaurantId: restaurant._id,
-      role: { $in: ["KDS", "WAITER", "CASHIER"] },
+      role: { $in: ["KDS"] }, 
     }).select("-password");
 
     return res.status(200).json({
@@ -878,7 +870,7 @@ const getStaff = async (req, res) => {
 
 const createStaffUser = async (req, res) => {
   try {
-    const { email, password, username, phone, role } = req.body;
+    const { email, password, username, phone, department, roleTitle } = req.body;
     const restaurant = req.restaurant;
 
     const plan = await Plan.findById(restaurant.planId);
@@ -900,34 +892,26 @@ const createStaffUser = async (req, res) => {
       });
     }
 
-    // Phone is optional
-    if (!email || !password || !username) {
+    if (!email || !password || !username || !department || !roleTitle) {
       return res.status(400).json({
         success: false,
-        message: "Email, password, and username are required",
+        message: "Email, password, username, department, and role title are required",
       });
     }
 
-    let roleName = role;
-    let roleIdParsed = null;
+    const validDepartments = ["KDS", "Finance", "Operations"];
+    if (!validDepartments.includes(department)) {
+        return res.status(400).json({
+            success: false,
+            message: "Invalid department. Must be one of: KDS, Finance, Operations",
+        });
+    }
 
-    // Handle RBAC Role ID
-    if (req.body.roleId) {
-      const roleDoc = await mongoose.model("Role").findOne({ _id: req.body.roleId, restaurantId: restaurant._id });
-      if (!roleDoc) {
-          return res.status(400).json({ success: false, message: "Invalid Role ID for this restaurant" });
-      }
-      roleIdParsed = roleDoc._id;
-      roleName = roleDoc.name; // Fallback for legacy 'role' field
-    } else {
-        // Legacy string role validation
-        const allowedRoles = ["KDS", "WAITER", "CASHIER"];
-        if (!allowedRoles.includes(role)) {
-            return res.status(403).json({
-                success: false,
-                message: "Invalid role assignment. Please select a valid role.",
-            });
-        }
+    if (roleTitle.length > 100) {
+        return res.status(400).json({
+            success: false,
+            message: "Role title must be 100 characters or less",
+        });
     }
 
     const existingUser = await User.findOne({ email });
@@ -938,13 +922,16 @@ const createStaffUser = async (req, res) => {
       });
     }
 
+    const hashedPassword = await bcrypt.hash(password, 10);
+
     const user = await User.create({
       email,
-      password,
+      password: hashedPassword,
       username,
       phone,
-      role: roleName, // Legacy field
-      roleId: roleIdParsed, // New RBAC field
+      role: "KDS", 
+      department,
+      roleTitle,
       restaurantId: restaurant._id,
       isActive: true,
     });
@@ -954,7 +941,7 @@ const createStaffUser = async (req, res) => {
         action: 'STAFF_CREATED',
         targetId: user._id,
         targetModel: 'User',
-        changes: { email, role: roleName, roleId: roleIdParsed }
+        changes: { email, department, roleTitle }
     });
 
     return res.status(201).json({
@@ -971,13 +958,10 @@ const createStaffUser = async (req, res) => {
   }
 };
 
-
-
-
 const updateStaffUser = async (req, res) => {
     try {
         const { userId } = req.params;
-        const { username, phone, roleId } = req.body;
+        const { username, phone, role } = req.body;
         const restaurant = req.restaurant;
 
         const user = await User.findOne({ _id: userId, restaurantId: restaurant._id });
@@ -988,20 +972,20 @@ const updateStaffUser = async (req, res) => {
         if (username) user.username = username;
         if (phone) user.phone = phone;
 
-        if (roleId) {
-             const roleDoc = await mongoose.model("Role").findOne({ _id: roleId, restaurantId: restaurant._id });
-             if (!roleDoc) {
-                 return res.status(400).json({ success: false, message: "Invalid Role ID" });
+        if (role) {
+             const allowedRoles = ["KDS"];
+             if (!allowedRoles.includes(role)) {
+                 return res.status(400).json({ success: false, message: "Invalid Role" });
              }
-             user.roleId = roleDoc._id;
-             user.role = roleDoc.name; // Keep legacy field in sync
-             // Log explicit role change
+             const oldRole = user.role;
+             user.role = role;
+             
              await logAudit({
                 req,
                 action: 'STAFF_UPDATED',
                 targetId: user._id,
                 targetModel: 'User',
-                changes: { roleChange: { from: user.roleId, to: roleDoc._id } }
+                changes: { roleChange: { from: oldRole, to: role } }
              });
         }
 
@@ -1017,7 +1001,6 @@ const updateStaffUser = async (req, res) => {
         return res.status(500).json({ success: false, message: error.message });
     }
 };
-
 
 const toggleStaffStatus = async (req, res) => {
   try {
@@ -1113,17 +1096,15 @@ const deleteRestaurant = async (req, res) => {
       });
     }
 
-    // Delete all associated data
     await Promise.all([
       User.deleteMany({ restaurantId }).session(session),
       Dish.deleteMany({ restaurantId }).session(session),
       Order.deleteMany({ restaurantId }).session(session),
       SubscriptionLog.deleteMany({ restaurantId }).session(session),
       AuditLog.deleteMany({ restaurantId }).session(session),
-      Role.deleteMany({ restaurantId }).session(session),
+      
     ]);
 
-    // Finally delete the restaurant
     await Restaurant.findByIdAndDelete(restaurantId).session(session);
 
     await session.commitTransaction();
@@ -1185,7 +1166,6 @@ const deleteUser = async (req, res) => {
       });
     }
 
-    // Prevent Super Admin from deleting themselves (optional but safe)
     if (user._id.toString() === req.user?._id.toString()) {
       return res.status(400).json({
         success: false,

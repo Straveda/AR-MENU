@@ -1,11 +1,14 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import axiosClient from "../../api/axiosClient";
 import { useNavigate } from "react-router-dom";
 import { useSocket } from "../../context/SocketProvider";
+import { useAuth } from "../../context/AuthProvider";
 import notificationSound from "../../assets/notification.mp3";
 
 export default function KDS() {
     const navigate = useNavigate();
+    const { isAuthenticated, user, logout, loading: authLoading } = useAuth();
+    
     const [orders, setOrders] = useState({
         pending: [],
         preparing: [],
@@ -14,139 +17,25 @@ export default function KDS() {
     const [loading, setLoading] = useState(true);
     const [processing, setProcessing] = useState(null);
 
-    // Auth State
-    const [isAuthenticated, setIsAuthenticated] = useState(false);
-    const [kdsToken, setKdsToken] = useState(localStorage.getItem('kdsToken'));
-    const [restaurantName, setRestaurantName] = useState(localStorage.getItem('kdsRestaurantName') || '');
+    const restaurant = useMemo(() => user?.restaurantId, [user]);
+    const restaurantName = restaurant?.name || "";
+    const restaurantId = restaurant?._id || null;
 
-    // Login Form State
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [loginError, setLoginError] = useState("");
-    const [loginLoading, setLoginLoading] = useState(false);
-
-    // Check auth on mount
-    useEffect(() => {
-        if (kdsToken) {
-            setIsAuthenticated(true);
-            fetchOrders();
-        } else {
-            setLoading(false);
-        }
-    }, [kdsToken]);
-
-    // Socket Integration
     const { socket, connect, disconnect, joinRoom, leaveRoom } = useSocket();
 
     const playNotificationSound = () => {
         try {
             const audio = new Audio(notificationSound);
             audio.play().catch(err => {
-                // Autoplay policy might block this without interaction
+                
             });
         } catch (error) {
-            // Ignore audio errors
-        }
-    };
-
-    useEffect(() => {
-        if (!isAuthenticated || !restaurantName) return; 
-        // Note: restaurantName is nice, but we need ID for room.
-        // Currently KDS login returns token + name. But TenantProvider logic for /staff/kds should give us ID via Auth.
-        // However, KDS has a specific separate login flow in this file which sets local state.
-        // Ideally KDS should rely on global AuthProvider? 
-        // Audit finding: KDS.jsx implements its OWN login and auth state which is a violation of Single Auth Source.
-        // BUT, backend docs say KDS has dedicated login /kds/login.
-        // So we might not have `authRestaurantId` from AuthProvider if we bypass it.
-        // Wait, current AuthProvider checks `role`. If KDS logs in via /kds/login, does it return a JWT that AuthProvider can use?
-        // Code check: handleLogin sets 'kdsToken'. AuthProvider uses 'token'.
-        // KDS page uses 'kdsToken'. This is split brain.
-        // FOR NOW: Stick to existing logic but fix Sockets.
-        // We need restaurantId to join room. Backend login response usually has user info.
-        // If we don't have ID, we can't join room.
-        // Let's assume KDS user JWT decoding has restaurantId.
-        
-        // Decoding token locally to get ID for room joining, since we are in a 'custom' auth flow here.
-        // Ideally we should unify, but for this task I fix sockets.
-        let kdsRestaurantId = null;
-        try {
-             const base64Url = kdsToken.split('.')[1];
-             const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-             const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
-                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-            }).join(''));
-            const decoded = JSON.parse(jsonPayload);
-            kdsRestaurantId = decoded.restaurantId;
-        } catch (e) {
-            console.error("Failed to decode KDS token for room ID");
-        }
-
-        if (kdsRestaurantId) {
-            connect();
-            joinRoom(`KDS_ROOM_${kdsRestaurantId}`);
             
-            const handleNewOrder = (newOrder) => {
-                const formattedOrder = {
-                    ...newOrder,
-                    orderId: newOrder._id,
-                    items: newOrder.orderItems || [], 
-                };
-                
-                setOrders(prev => ({
-                    ...prev,
-                    pending: [...prev.pending, formattedOrder]
-                }));
-                
-                playNotificationSound();
-            };
-
-            const handleOrderUpdate = () => {
-                 fetchOrders();
-            }
-
-            socket.on("order_created", handleNewOrder);
-            socket.on("kds_order_updated", handleOrderUpdate); // Listen for updates from other screens
-
-            return () => {
-                socket.off("order_created", handleNewOrder);
-                socket.off("kds_order_updated", handleOrderUpdate);
-                leaveRoom(`KDS_ROOM_${kdsRestaurantId}`);
-                disconnect(); // Clean up connection
-            };
         }
-    }, [isAuthenticated, kdsToken]);
-
-    const handleLogin = async (e) => {
-        e.preventDefault();
-        setLoginLoading(true);
-        setLoginError("");
-
-        try {
-            const res = await axiosClient.post("/kds/login", { email, password });
-            if (res.data.success) {
-                const { token, restaurantName } = res.data;
-                localStorage.setItem("kdsToken", token);
-                localStorage.setItem("kdsRestaurantName", restaurantName);
-                setKdsToken(token);
-                setRestaurantName(restaurantName);
-            }
-        } catch (error) {
-            console.error("Login failed:", error);
-            setLoginError(error.response?.data?.message || "Login failed");
-        } finally {
-            setLoginLoading(false);
-        }
-    };
-
-    const handleLogout = () => {
-        localStorage.removeItem("kdsToken");
-        localStorage.removeItem("kdsRestaurantName");
-        setKdsToken(null);
-        setIsAuthenticated(false);
-        setOrders({ pending: [], preparing: [], ready: [] });
     };
 
     const fetchOrders = async () => {
+        if (!isAuthenticated) return;
         try {
             setLoading(true);
             const res = await axiosClient.get("/kds/getkdsorders");
@@ -156,7 +45,7 @@ export default function KDS() {
         } catch (error) {
             console.error("Error fetching KDS orders:", error);
             if (error.response?.status === 401) {
-                handleLogout();
+                logout();
             }
         } finally {
             setLoading(false);
@@ -164,11 +53,54 @@ export default function KDS() {
     };
 
     useEffect(() => {
-        if (!isAuthenticated) return;
+        if (isAuthenticated && !authLoading) {
+            fetchOrders();
+        }
+    }, [isAuthenticated, authLoading]);
+
+    useEffect(() => {
+        if (!isAuthenticated || !restaurantId) return; 
+
+        connect();
+        joinRoom(`KDS_ROOM_${restaurantId}`);
+        
+        const handleNewOrder = (newOrder) => {
+            const formattedOrder = {
+                ...newOrder,
+                orderId: newOrder._id,
+                items: newOrder.orderItems || [], 
+            };
+            
+            setOrders(prev => ({
+                ...prev,
+                pending: [...prev.pending, formattedOrder]
+            }));
+            
+            playNotificationSound();
+        };
+
+        const handleOrderUpdate = () => {
+                fetchOrders();
+        }
+
+        socket.on("order_created", handleNewOrder);
+        socket.on("kds_order_updated", handleOrderUpdate); 
 
         const interval = setInterval(fetchOrders, 30000);
-        return () => clearInterval(interval);
-    }, [isAuthenticated]);
+
+        return () => {
+            socket.off("order_created", handleNewOrder);
+            socket.off("kds_order_updated", handleOrderUpdate);
+            leaveRoom(`KDS_ROOM_${restaurantId}`);
+            disconnect();
+            clearInterval(interval);
+        };
+    }, [isAuthenticated, restaurantId]);
+
+    const handleLogout = () => {
+        logout();
+        navigate("/login");
+    };
 
     const updateStatus = async (orderCode, newStatus) => {
         setProcessing(orderCode);
@@ -188,7 +120,6 @@ export default function KDS() {
         }
     };
 
-    // Helper to render an order card
     const OrderCard = ({ order, status, buttonText, nextStatus, accentColor, btnColor }) => (
         <div className={`bg-white rounded-lg shadow-sm p-4 mb-4 border-l-4 ${accentColor} border-t border-r border-b border-gray-100 animate-fade-in`}>
             <div className="flex justify-between items-start mb-3">
@@ -235,118 +166,7 @@ export default function KDS() {
         </div>
     );
 
-    // --- LOGIN VIEW (Matches Login.jsx) ---
-    if (!isAuthenticated) {
-        return (
-            <div className="min-h-screen bg-amber-50 flex items-center justify-center px-4 py-8">
-                <div className="max-w-md w-full">
-                    {/* Header */}
-                    <div className="text-center mb-8">
-                        <h1 className="text-3xl font-bold text-gray-800 mb-2">
-                            Kitchen Display System
-                        </h1>
-                        <div className="w-16 h-1 bg-amber-600 mx-auto mb-3"></div>
-                        <p className="text-gray-600">
-                            Sign in to manage kitchen orders
-                        </p>
-                    </div>
-
-                    {/* Login Form */}
-                    <div className="bg-white rounded-xl shadow-lg border border-amber-100 p-6">
-                        <form onSubmit={handleLogin} className="space-y-5">
-                            {/* Error Message */}
-                            {loginError && (
-                                <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-                                    <div className="flex items-center gap-2 text-red-700">
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
-                                        </svg>
-                                        <span className="text-sm font-medium">{loginError}</span>
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* Email Field */}
-                            <div>
-                                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                                    Email Address
-                                </label>
-                                <div className="relative">
-                                    <input
-                                        type="email"
-                                        id="email"
-                                        value={email}
-                                        onChange={(e) => setEmail(e.target.value)}
-                                        className="w-full pl-10 pr-4 py-3 border border-amber-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent bg-amber-50 transition-colors"
-                                        placeholder="kds@restaurant.com"
-                                        required
-                                    />
-                                    <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
-                                        <svg className="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
-                                        </svg>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Password Field */}
-                            <div>
-                                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-                                    Password
-                                </label>
-                                <div className="relative">
-                                    <input
-                                        type="password"
-                                        id="password"
-                                        value={password}
-                                        onChange={(e) => setPassword(e.target.value)}
-                                        className="w-full pl-10 pr-4 py-3 border border-amber-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent bg-amber-50 transition-colors"
-                                        placeholder="••••••••"
-                                        required
-                                    />
-                                    <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
-                                        <svg className="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                                        </svg>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Login Button */}
-                            <button
-                                type="submit"
-                                disabled={loginLoading}
-                                className="w-full bg-amber-500 hover:bg-amber-600 disabled:bg-amber-400 text-white py-3 px-4 rounded-lg font-semibold transition-colors duration-200 flex items-center justify-center gap-2"
-                            >
-                                {loginLoading ? (
-                                    <>
-                                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                                        Authenticating...
-                                    </>
-                                ) : (
-                                    <>
-                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
-                                        </svg>
-                                        Login to Kitchen
-                                    </>
-                                )}
-                            </button>
-                        </form>
-                    </div>
-
-                    <div className="mt-6 text-center">
-                        <p className="text-xs text-gray-500">
-                            Authenticated Kitchen Access Only
-                        </p>
-                    </div>
-                </div>
-            </div>
-        )
-    }
-
-    // --- LOADING VIEW ---
-    if (loading && !orders.pending.length && !orders.preparing.length && !orders.ready.length) {
+    if (authLoading || (loading && !orders.pending.length && !orders.preparing.length && !orders.ready.length)) {
         return (
             <div className="min-h-screen bg-amber-50 flex items-center justify-center">
                 <div className="text-center">
@@ -357,10 +177,31 @@ export default function KDS() {
         );
     }
 
-    // --- KDS BOARD VIEW (Matches Dashboard.jsx) ---
+    if (!isAuthenticated) {
+        return (
+            <div className="min-h-screen bg-amber-50 flex items-center justify-center">
+                <div className="text-center bg-white p-8 rounded-xl shadow-lg border border-amber-100 max-w-sm">
+                    <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                         <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                         </svg>
+                    </div>
+                    <h2 className="text-xl font-bold text-gray-800 mb-2">Access Restricted</h2>
+                    <p className="text-gray-600 mb-6 text-sm">Please log in to your kitchen account to access the display system.</p>
+                    <button 
+                        onClick={() => navigate("/login")}
+                        className="w-full bg-amber-500 hover:bg-amber-600 text-white py-2.5 rounded-lg font-semibold transition-colors shadow-md"
+                    >
+                        Go to Login
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="min-h-screen bg-amber-50 flex flex-col">
-            {/* Header */}
+            {}
             <div className="bg-white border-b border-amber-100 px-6 py-4 shadow-sm flex justify-between items-center z-10">
                 <div className="flex items-center gap-4">
                     <h1 className="text-2xl font-bold text-gray-800 tracking-wide">👨‍🍳 Kitchen Display</h1>
@@ -389,11 +230,11 @@ export default function KDS() {
                 </div>
             </div>
 
-            {/* Columns Container */}
+            {}
             <div className="flex-1 overflow-hidden p-4">
                 <div className="flex gap-4 h-full overflow-x-auto pb-2">
 
-                    {/* COLUMN 1: PENDING (Yellow) */}
+                    {}
                     <div className="flex-1 min-w-[320px] flex flex-col bg-gray-50 rounded-xl overflow-hidden shadow-sm border border-amber-200/50">
                         <div className="bg-white p-3 border-b border-yellow-100 sticky top-0 z-10 flex justify-between items-center px-4 shadow-sm">
                             <h2 className="font-bold text-gray-800 uppercase tracking-wide flex items-center gap-2">
@@ -426,7 +267,7 @@ export default function KDS() {
                         </div>
                     </div>
 
-                    {/* COLUMN 2: PREPARING (Orange) */}
+                    {}
                     <div className="flex-1 min-w-[320px] flex flex-col bg-gray-50 rounded-xl overflow-hidden shadow-sm border border-amber-200/50">
                         <div className="bg-white p-3 border-b border-orange-100 sticky top-0 z-10 flex justify-between items-center px-4 shadow-sm">
                             <h2 className="font-bold text-gray-800 uppercase tracking-wide flex items-center gap-2">
@@ -459,7 +300,7 @@ export default function KDS() {
                         </div>
                     </div>
 
-                    {/* COLUMN 3: READY (Green) */}
+                    {}
                     <div className="flex-1 min-w-[320px] flex flex-col bg-gray-50 rounded-xl overflow-hidden shadow-sm border border-amber-200/50">
                         <div className="bg-white p-3 border-b border-green-100 sticky top-0 z-10 flex justify-between items-center px-4 shadow-sm">
                             <h2 className="font-bold text-gray-800 uppercase tracking-wide flex items-center gap-2">

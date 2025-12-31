@@ -48,7 +48,6 @@ export default function PlatformDashboard() {
     fetchData();
   }, []);
 
-  // Overall Health
   const isHealthy = Object.values(health).every(s => s === "operational");
 
   if (loading) {
@@ -66,7 +65,7 @@ export default function PlatformDashboard() {
         <p className="text-sm text-gray-500 mt-1">Welcome to your Super Admin dashboard</p>
       </div>
 
-      {/* Summary Cards with Colors */}
+      {}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
         <StatCard label="Total Restaurants" value={stats.total} color="indigo" icon="building" />
         <StatCard label="Active" value={stats.active} color="green" icon="check" />
@@ -75,7 +74,7 @@ export default function PlatformDashboard() {
         <StatCard label="Expired" value={stats.expired} color="gray" icon="archive" />
       </div>
 
-      {/* Quick Actions */}
+      {}
       <div className="mb-8">
         <h2 className="text-sm font-semibold text-gray-900 mb-4">Quick Actions</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -101,7 +100,7 @@ export default function PlatformDashboard() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Recent Restaurants */}
+        {}
         <div className="bg-white border border-gray-200 rounded-xl p-5">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-sm font-semibold text-gray-900">Recent Restaurants</h2>
@@ -126,7 +125,7 @@ export default function PlatformDashboard() {
           )}
         </div>
 
-        {/* System Health */}
+        {}
         <div className="bg-white border border-gray-200 rounded-xl p-5">
           <h2 className="text-sm font-semibold text-gray-900 mb-4">System Health</h2>
           <div className="space-y-3">
@@ -150,7 +149,7 @@ export default function PlatformDashboard() {
         </div>
       </div>
 
-      {/* Needs Attention - Prominent Section */}
+      {}
       {(stats.suspended > 0 || stats.expiringSoon > 0 || stats.noPlan > 0) && (
         <div className="mt-8">
           <h2 className="text-sm font-semibold text-gray-900 mb-4">Needs Attention</h2>

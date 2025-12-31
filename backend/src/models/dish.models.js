@@ -30,8 +30,8 @@ const dishSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    modelStatus: { type: String, default: 'pending' }, // pending, processing, completed, failed
-    meshyTaskId: { type: String }, // to track Meshy job
+    modelStatus: { type: String, default: 'pending' }, 
+    meshyTaskId: { type: String }, 
     modelUrls: {
       glb: { type: String },
       usdz: { type: String },

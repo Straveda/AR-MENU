@@ -5,8 +5,9 @@ import { requireAuth } from "../middlewares/requireAuth.middleware.js";
 const userAuthRouter = express.Router();
 
 userAuthRouter.post("/login", loginUser);
-userAuthRouter.get("/me", requireAuth, (req, res) => {
-    res.json(req.user);
+userAuthRouter.get("/me", requireAuth, async (req, res) => {
+    const user = await req.user.populate("restaurantId", "name slug");
+    res.json(user);
 });
 
 export default userAuthRouter;

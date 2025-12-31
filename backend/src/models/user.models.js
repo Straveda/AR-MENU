@@ -25,23 +25,29 @@ const userSchema = new mongoose.Schema(
       required: true,
     },
 
-    roleId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Role",
-      required: false, // Optional temporarily for migration
-    },
-
-    // Legacy role field - kept for backward compatibility during migration
     role: {
       type: String,
       enum: [
         "SUPER_ADMIN",
+        "PLATFORM_ADMIN",
         "RESTAURANT_ADMIN",
         "KDS",
-        "WAITER",
-        "CASHIER",
+        "CUSTOMER",
       ],
-      required: false, 
+      required: true,
+    },
+
+    department: {
+      type: String,
+      enum: ["KDS", "Finance", "Operations"],
+      default: null,
+    },
+
+    roleTitle: {
+      type: String,
+      trim: true,
+      maxlength: 100,
+      default: null,
     },
 
     restaurantId: {
@@ -59,15 +65,18 @@ const userSchema = new mongoose.Schema(
 );
 
 userSchema.pre("save", function (next) {
-  if (this.role === "SUPER_ADMIN" && this.restaurantId !== null) {
+  
+  const platformRoles = ["SUPER_ADMIN", "PLATFORM_ADMIN"];
+  
+  if (platformRoles.includes(this.role) && this.restaurantId !== null) {
     return next(
-      new Error("SUPER_ADMIN must not be associated with a restaurant")
+      new Error(`${this.role} must not be associated with a restaurant`)
     );
   }
 
-  if (this.role !== "SUPER_ADMIN" && !this.restaurantId) {
+  if (!platformRoles.includes(this.role) && !this.restaurantId) {
     return next(
-      new Error("Non-super-admin users must belong to a restaurant")
+      new Error("Non-platform users must belong to a restaurant")
     );
   }
 

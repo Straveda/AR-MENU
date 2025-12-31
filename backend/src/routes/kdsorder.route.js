@@ -9,7 +9,7 @@ import { enforcePlanFeature } from "../middlewares/enforcePlanFeature.middleware
 const kdsOrderRoute = express.Router();
 
 kdsOrderRoute.post("/login", loginKds);
-kdsOrderRoute.get( "/getkdsorders", requireAuth, resolveRestaurantFromUser, requireRole("KDS"), getKdsOrders );
-kdsOrderRoute.patch( "/:orderCode/status", requireAuth, resolveRestaurantFromUser, checkSubscription, requireRole("KDS"), enforcePlanFeature("kdsAccess"), updateKdsOrderStatus );
+kdsOrderRoute.get( "/getkdsorders", requireAuth, resolveRestaurantFromUser, requireRole("KDS", "RESTAURANT_ADMIN"), getKdsOrders );
+kdsOrderRoute.patch( "/:orderCode/status", requireAuth, resolveRestaurantFromUser, checkSubscription, requireRole("KDS", "RESTAURANT_ADMIN"), enforcePlanFeature("kdsAccess"), updateKdsOrderStatus );
 
 export default kdsOrderRoute;

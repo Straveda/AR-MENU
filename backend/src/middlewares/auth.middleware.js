@@ -2,9 +2,8 @@ import jwt from 'jsonwebtoken'
 
 export const isLoggedIn = async (req, res, next) => {
     try {
-        // console.log(req.cookies)
+        
         const token = req.cookies?.token;
-        // console.log(token)
 
         if(!token){
             return res.status(400).json({
@@ -14,7 +13,7 @@ export const isLoggedIn = async (req, res, next) => {
         }
 
         const decode = await jwt.verify(token, process.env.JWT_SECRET)
-        // console.log(decode)
+        
         req.user = decode;
         next();
     } catch (error) {

@@ -36,7 +36,6 @@ export default function SubscriptionsManagement() {
     );
   }
 
-  // Calculate some insights for timeline
   const now = new Date();
   const sortedExpiring = [...restaurants]
     .filter(r => r.subscriptionEndsAt && r.subscriptionStatus !== "SUSPENDED")
@@ -49,7 +48,7 @@ export default function SubscriptionsManagement() {
         <p className="text-sm text-gray-500">Monitor platform revenue and expiration timelines</p>
       </div>
 
-      {/* Revenue Stats */}
+      {}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <RevenueCard 
           label="Estimated MRR" 
@@ -76,7 +75,7 @@ export default function SubscriptionsManagement() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Expiration Timeline */}
+        {}
         <div className="lg:col-span-2 space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold text-gray-900">Expiration Timeline</h2>
@@ -128,7 +127,7 @@ export default function SubscriptionsManagement() {
           </div>
         </div>
 
-        {/* Recent Activity Logs */}
+        {}
         <div className="space-y-4">
           <h2 className="text-lg font-semibold text-gray-900">Recent Activity</h2>
           <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm space-y-6">

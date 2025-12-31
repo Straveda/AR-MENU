@@ -28,7 +28,6 @@ export default function ARViewer() {
         fetchDish();
     }, [id]);
 
-
     useEffect(() => {
         if (dish && dish.modelStatus === "completed") {
             const timer = setTimeout(() => {
@@ -50,7 +49,6 @@ export default function ARViewer() {
         setModelLoaded(false);
     };
 
-    // Loading State
     if (loading) {
         return (
             <div className="min-h-screen bg-amber-50 flex items-center justify-center">
@@ -62,7 +60,6 @@ export default function ARViewer() {
         );
     }
 
-    // Error State
     if (!dish || arError) {
         return (
             <div className="min-h-screen bg-amber-50 flex items-center justify-center">
@@ -85,7 +82,6 @@ export default function ARViewer() {
         );
     }
 
-    // Model Not Ready State
     if (dish.modelStatus !== "completed") {
         return (
             <div className="min-h-screen bg-amber-50 flex items-center justify-center">
@@ -111,7 +107,7 @@ export default function ARViewer() {
 
     return (
         <div className="min-h-screen bg-amber-50">
-            {/* Header */}
+            {}
             <div className="border-b border-amber-200 bg-white">
                 <div className="max-w-6xl mx-auto px-4 py-4">
                     <button
@@ -126,10 +122,10 @@ export default function ARViewer() {
                 </div>
             </div>
 
-            {/* Main Content */}
+            {}
             <div className="max-w-6xl mx-auto p-4">
                 <div className="bg-white rounded-xl shadow-lg border border-amber-100 overflow-hidden">
-                    {/* AR Viewer Header */}
+                    {}
                     <div className="p-6 border-b border-amber-100">
                         <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-2">
                             {dish.name}
@@ -150,10 +146,10 @@ export default function ARViewer() {
                         </p>
                     </div>
 
-                    {/* AR Model Viewer */}
+                    {}
                     <div className="p-6">
                         <div className="bg-gray-50 rounded-lg border border-gray-200 overflow-hidden relative">
-                            {/* Loading Overlay - Only show if model not loaded */}
+                            {}
                             {!modelLoaded && (
                                 <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-90 z-10">
                                     <div className="text-center">
@@ -163,7 +159,7 @@ export default function ARViewer() {
                                 </div>
                             )}
 
-                            {/* Model Viewer with Dynamic Meshy Models */}
+                            {}
                             <model-viewer
                                 ref={modelViewerRef}
                                 src={dish.modelUrls?.glb ? `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1'}/dishes/proxy-model/${dish._id}/glb` : undefined}
@@ -178,7 +174,7 @@ export default function ARViewer() {
                                 onError={handleModelError}
                                 style={{ display: modelLoaded ? 'block' : 'none' }}
                             >
-                                {/* AR Button */}
+                                {}
                                 <button
                                     slot="ar-button"
                                     className="absolute bottom-4 right-4 bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-lg font-medium transition-colors shadow-lg"
@@ -188,7 +184,7 @@ export default function ARViewer() {
                             </model-viewer>
                         </div>
 
-                        {/* Instructions */}
+                        {}
                         <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="bg-amber-50 rounded-lg p-4 border border-amber-100">
                                 <h3 className="font-semibold text-gray-800 mb-2 flex items-center gap-2">
@@ -223,7 +219,7 @@ export default function ARViewer() {
                     </div>
                 </div>
 
-                {/* Footer Note */}
+                {}
                 <div className="mt-4 text-center">
                     <p className="text-xs text-gray-500">
                         💫 AR experience powered by Google Model Viewer. Requires compatible device.

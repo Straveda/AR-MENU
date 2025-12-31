@@ -21,8 +21,6 @@ export default function Menu() {
 
   const cartItemCount = items.reduce((sum, item) => sum + item.quantity, 0);
 
-  // ... tag helpers, categories, etc ...
-
   const getTagColor = (tag) => {
     const tagLower = tag.toLowerCase();
     if (tagLower.includes('spicy')) return 'bg-red-100 text-red-700';
@@ -72,7 +70,6 @@ export default function Menu() {
     fetchDishes();
   }, [sortOption, slug]);
 
-  // View Filtering
   const filteredDishes = dishes.filter(dish => {
     const matchesCategory = activeCategory === "all" ||
       dish.category?.toLowerCase() === activeCategory.toLowerCase();
@@ -112,10 +109,10 @@ export default function Menu() {
           </div>
       )}
       
-      {/* Top Navigation Bar - Sticky & Modern */}
+      {}
       <div className={`bg-white/80 backdrop-blur-md border-b border-amber-100 sticky ${suspended ? 'top-16' : 'top-0'} z-30 shadow-sm transition-all duration-300`}>
         <div className="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
-          {/* Logo / Brand */}
+          {}
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 bg-amber-600 rounded-lg flex items-center justify-center text-white font-bold text-lg shadow-sm">
               {restaurant?.name?.charAt(0) || "R"}
@@ -130,7 +127,7 @@ export default function Menu() {
           </div>
 
           <div className="flex items-center gap-4">
-            {/* Track Order Button - Pill Shape */}
+            {}
             <button
               onClick={() => navigate(`/r/${slug}/track-order`)}
               className="px-5 py-2 text-sm font-semibold text-amber-700 bg-orange-50 hover:bg-orange-100 rounded-full border border-orange-100 transition-all shadow-sm hidden sm:flex items-center gap-2"
@@ -141,7 +138,7 @@ export default function Menu() {
               Track Order
             </button>
 
-            {/* Mobile Track Icon */}
+            {}
             <button
               onClick={() => navigate(`/r/${slug}/track-order`)}
               className="p-2 text-amber-700 bg-orange-50 hover:bg-orange-100 rounded-full border border-orange-100 sm:hidden transition-colors"
@@ -151,7 +148,7 @@ export default function Menu() {
               </svg>
             </button>
 
-            {/* Cart Button with Modern Badge */}
+            {}
             <button
               onClick={() => navigate(`/r/${slug}/cart`)}
               className="group relative p-2 text-gray-600 hover:text-amber-600 transition-colors bg-gray-50 hover:bg-amber-50 rounded-full border border-transparent hover:border-amber-100"
@@ -170,7 +167,7 @@ export default function Menu() {
       </div>
 
       <div className="px-4">
-        {/* Header Section */}
+        {}
         <div className="max-w-6xl mx-auto mb-6 text-center">
           <h2 className="text-2xl md:text-3xl font-semibold text-amber-700 mb-2">
             Our Menu
@@ -181,11 +178,11 @@ export default function Menu() {
           </p>
         </div>
 
-        {/* Compact Search and Filter Section */}
+        {}
         <div className="max-w-4xl mx-auto mb-6 bg-white rounded-xl shadow-sm p-4 border border-amber-100">
-          {/* Search and Sort Row */}
+          {}
           <div className="flex flex-col md:flex-row gap-4 mb-4">
-            {/* Search Bar */}
+            {}
             <div className="relative flex-grow">
               <input
                 type="text"
@@ -201,7 +198,7 @@ export default function Menu() {
               </div>
             </div>
 
-            {/* Sort Controls */}
+            {}
             <div className="flex-shrink-0">
               <div className="relative">
                 <select
@@ -224,7 +221,7 @@ export default function Menu() {
             </div>
           </div>
 
-          {/* Category Filters - Responsive Grid */}
+          {}
           <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-8 gap-2">
             {categories.map(category => (
               <button
@@ -241,7 +238,7 @@ export default function Menu() {
           </div>
         </div>
 
-        {/* Loading State */}
+        {}
         {loading ? (
           <Loading message="Loading our delicious menu..." />
         ) : filteredDishes.length === 0 ? (
@@ -253,11 +250,11 @@ export default function Menu() {
             onAction={() => { setSearchTerm(""); setActiveCategory("all"); }}
           />
         ) : (
-          /* Menu Items - Organized by Categories */
+          
           <div className="max-w-6xl mx-auto">
             {Object.entries(dishesByCategory).map(([category, categoryDishes]) => (
               <div key={category} className="mb-8">
-                {/* Category Header */}
+                {}
                 <div className="flex items-center justify-between mb-4 pb-2 border-b-2 border-amber-200">
                   <h2 className="text-2xl font-bold text-gray-800">
                     {category.charAt(0).toUpperCase() + category.slice(1)}
@@ -267,7 +264,7 @@ export default function Menu() {
                   </span>
                 </div>
 
-                {/* Dishes Grid - Responsive columns */}
+                {}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {categoryDishes.map((dish) => (
                     <div
@@ -275,14 +272,14 @@ export default function Menu() {
                       onClick={() => navigate(`/r/${slug}/dish/${dish._id}`)}
                       className="bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 cursor-pointer overflow-hidden group border border-amber-100 flex flex-col h-full"
                     >
-                      {/* Dish Image - Fixed background issue */}
+                      {}
                       <div className="relative overflow-hidden bg-white h-40 flex-shrink-0">
                         <img
                           src={dish.imageUrl}
                           alt={dish.name}
                           className={`w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 bg-white ${!dish.available ? 'grayscale opacity-75' : ''}`}
                           onError={(e) => {
-                            // If image fails to load, show placeholder
+                            
                             e.target.style.display = 'none';
                             const placeholder = e.target.parentElement.querySelector('.image-placeholder');
                             if (placeholder) {
@@ -290,7 +287,7 @@ export default function Menu() {
                             }
                           }}
                         />
-                        {/* Sold Out Overlay */}
+                        {}
                         {!dish.available && (
                           <div className="absolute inset-0 flex items-center justify-center bg-black/30 backdrop-blur-[1px] z-10">
                             <span className="bg-red-600 text-white px-3 py-1 rounded-full text-sm font-bold shadow-lg transform -rotate-6 border-2 border-white">
@@ -298,7 +295,7 @@ export default function Menu() {
                             </span>
                           </div>
                         )}
-                        {/* Fallback placeholder - hidden by default */}
+                        {}
                         <div className="image-placeholder hidden w-full h-full flex items-center justify-center bg-amber-100">
                           <div className="text-center">
                             <svg className="w-10 h-10 text-amber-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -307,10 +304,10 @@ export default function Menu() {
                             <p className="text-amber-600 text-xs font-medium">No Image</p>
                           </div>
                         </div>
-                        {/* Price Badge Removed - Cleaner Look per Premium Request */}
+                        {}
                       </div>
 
-                      {/* Dish Details */}
+                      {}
                       <div className="p-4 flex flex-col flex-1">
                         <div className="flex justify-between items-start mb-2">
                           <h3 className="text-lg font-bold text-gray-900 group-hover:text-amber-700 transition-colors flex-1 mr-2 leading-tight">
@@ -318,14 +315,14 @@ export default function Menu() {
                           </h3>
                         </div>
 
-                        {/* Category Badge */}
+                        {}
                         <div className="mb-2">
                           <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
                             🍽️ {dish.category.charAt(0).toUpperCase() + dish.category.slice(1)}
                           </span>
                         </div>
 
-                        {/* Tags */}
+                        {}
                         {dish.tags?.length > 0 && (
                           <div className="flex flex-wrap gap-1 mb-2">
                             {dish.tags.map((tag, idx) => (
@@ -373,7 +370,7 @@ export default function Menu() {
           </div>
         )}
 
-        {/* Compact Footer Note */}
+        {}
         <div className="max-w-6xl mx-auto mt-8 mb-4 text-center bg-white rounded-lg p-4 border border-amber-100">
           <p className="text-sm text-gray-500">
             💫 All prices include taxes. Please inform us of any dietary restrictions.
@@ -384,8 +381,8 @@ export default function Menu() {
         </div>
       </div>
 
-      {/* Floating Action Button for Cart (Mobile only if we didn't have sticky header) */}
-      {/* Using Sticky Header instead for better UX */}
+      {}
+      {}
     </div>
   );
 }

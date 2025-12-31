@@ -149,11 +149,9 @@ const updateKdsOrderStatus = async (req, res) => {
         });
 
         await order.save();
-        
-        // Notify the specific order room (customer)
+
         io.to(`ORDER_ROOM_${restaurant._id}_${order.orderCode}`).emit("order_status_updated", order);
-        
-        // Notify the KDS room (other KDS screens for this restaurant)
+
         io.to(`KDS_ROOM_${restaurant._id}`).emit("kds_order_updated", order);
 
         return res.status(200).json({

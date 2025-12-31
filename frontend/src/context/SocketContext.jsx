@@ -11,12 +11,9 @@ export const SocketProvider = ({ children }) => {
     const [socket, setSocket] = useState(null);
 
     useEffect(() => {
-        // Connect to the backend URL
-        // Using window.location.hostname for robustness, or import.meta.env for config
-        // Assuming backend is on localhost:8000 based on project analysis
-        // In production, this should likely be driven by an ENV var
+
         const backendUrl = import.meta.env.VITE_API_BASE_URL 
-            ? import.meta.env.VITE_API_BASE_URL.replace('/api/v1', '') // Strip API path if present to get base root
+            ? import.meta.env.VITE_API_BASE_URL.replace('/api/v1', '') 
             : 'http://localhost:8000';
 
         const newSocket = io(backendUrl, {

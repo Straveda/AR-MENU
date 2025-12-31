@@ -8,7 +8,6 @@ export const deleteDish = (id) => {
   return axiosClient.delete(`/dishes/deletedish/${id}`);
 };
 
-// Meshy model operations
 export const getModelStatus = (id) => {
   return axiosClient.get(`/dishes/${id}/model-status`);
 };

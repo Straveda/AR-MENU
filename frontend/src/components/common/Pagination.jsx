@@ -4,21 +4,11 @@ export default function Pagination({ currentPage, totalPages, onPageChange, tota
   if (totalPages <= 1) return null;
 
   const getPageNumbers = () => {
-    // Use a simple logic for now: show all if <= 7, otherwise condensed view could be implemented later
-    // but per requirements: "Previous / Next buttons, Page numbers (only if total pages <= 7), Otherwise: Prev, Current page, Next"
-    
+
     if (totalPages <= 7) {
       return Array.from({ length: totalPages }, (_, i) => i + 1);
     }
-    
-    // For large page counts, we just show strict minimal set or a sliding window
-    // Requirement says: "Prev, Current page, Next" for > 7 pages
-    // We can just return [currentPage] or maybe [currentPage - 1, currentPage, currentPage + 1] clamped.
-    // Let's stick to the strict "Prev, Current page, Next" interpretation if meaningful, 
-    // or maybe a small window for better UX. 
-    // "Prev, Current page, Next" usually implies just the buttons + current page indicator?
-    // Let's implemented a standard sliding window for better UX while keeping it "boring".
-    
+
     const pages = [];
     if (currentPage > 1) pages.push(currentPage - 1);
     pages.push(currentPage);
@@ -84,15 +74,8 @@ export default function Pagination({ currentPage, totalPages, onPageChange, tota
                ))
             ) : (
               <>
-                 {/* Logic for > 7 pages: "Prev, Current page, Next" (simplified per req) */}
-                 {/* Actually, user said: "Prev, Current page, Next" if > 7. 
-                     Let's interpret this as showing just the current page number in the middle? 
-                     Or maybe the sliding window logic I wrote above is safe enough. 
-                     Let's enable a condensed view: 1 ... current ... last? 
-                     Or strictly just current. 
-                     Let's try to be helpful but minimal. 
-                     If I strictly follow "Prev, Current, Next" buttons, that might mean NO page numbers except current? 
-                     Let's stick to the sliding window 3 pages around current. */}
+                 {}
+                 {}
                  
                  {currentPage > 2 && (
                     <span className="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-700 ring-1 ring-inset ring-gray-300 focus:outline-offset-0">

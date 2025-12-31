@@ -79,13 +79,12 @@ export default function AddDish() {
     try {
       const data = new FormData();
       data.append("name", form.name);
-      // ... same data appending
+      
       data.append("description", form.description);
       data.append("price", form.price);
       data.append("category", form.category);
       data.append("image", imageFile);
 
-      // Process and append new fields
       const tagsArray = form.tags.split(',').map(t => t.trim()).filter(Boolean);
       const ingredientsArray = form.ingredients.split(',').map(i => i.trim()).filter(Boolean);
 
@@ -180,7 +179,7 @@ export default function AddDish() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Ingredients */}
+            {}
             <div className="md:col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Ingredients (comma separated) *
@@ -195,7 +194,7 @@ export default function AddDish() {
               ></textarea>
             </div>
 
-            {/* Tags */}
+            {}
             <div className="md:col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Tags (comma separated)
@@ -283,7 +282,7 @@ export default function AddDish() {
             </div>
           </div>
 
-          {/* Nutritional Info */}
+          {}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Nutritional Info (per serving)

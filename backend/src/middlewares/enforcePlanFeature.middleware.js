@@ -22,7 +22,6 @@ export const enforcePlanFeature = (feature) => {
         });
       }
 
-      // 1. LIMIT CHECKS (Numeric)
       if (feature === "maxDishes") {
         const dishCount = await Dish.countDocuments({
           restaurantId: restaurant._id,
@@ -50,9 +49,6 @@ export const enforcePlanFeature = (feature) => {
         return next();
       }
 
-      // 2. FEATURE TOGGLES (Boolean)
-      
-      // Mapping requested names to Plan model fields
       const featureMap = {
         aiModels: "arModels",
         kdsAccess: "kds",

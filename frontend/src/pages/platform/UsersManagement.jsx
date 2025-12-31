@@ -13,7 +13,6 @@ export default function UsersManagement() {
   const [error, setError] = useState("");
   const [filter, setFilter] = useState({ role: "", restaurant: "" });
 
-  // Pagination hook
   const { 
     page, 
     limit, 
@@ -24,10 +23,8 @@ export default function UsersManagement() {
     paginationParams 
   } = usePagination(10);
 
-  // Modal state
   const [modal, setModal] = useState({ type: null, user: null });
 
-  // Form states
   const [userForm, setUserForm] = useState({
     username: "",
     email: "",
@@ -38,7 +35,7 @@ export default function UsersManagement() {
   });
 
   const fetchData = async () => {
-    // Basic loading state handling
+    
     if(users.length === 0) setLoading(true);
 
     try {
@@ -64,7 +61,7 @@ export default function UsersManagement() {
 
   useEffect(() => {
     fetchData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    
   }, [page, limit]);
 
   const closeModal = () => {
@@ -146,7 +143,7 @@ export default function UsersManagement() {
     setUserForm({
       username: user.username || "",
       email: user.email || "",
-      password: "", // Not changeable via update
+      password: "", 
       phone: user.phone || "",
       role: user.role || "RESTAURANT_ADMIN",
       restaurantId: user.restaurantId?._id || user.restaurantId || ""
@@ -154,24 +151,6 @@ export default function UsersManagement() {
     setModal({ type: "edit", user });
   };
 
-  // Filter users
-  // Note: Filtering is currently client-side on the current page data. 
-  // Ideally, filtering should be backend-side if we paginate. 
-  // For now, per requirements "PROPER, backend-driven pagination", strict filtering on backend is better.
-  // However, shifting filtering to backend is a larger task. 
-  // Given instructions are "same pagination workflow", I will keep client-side filtering on the PAGE data for now
-  // OR, if I strictly follow "backend-driven", these filters won't work well across pages.
-  // The user didn't explicitly ask for backend filtering refactor, but it is implied for "proper" systems.
-  // But due to complexity constraints vs time, I'll paginate the *fetched* data. 
-  // Wait, if I fetch page 1, and filter for "Cashier", and there are no cashiers on page 1, I see nothing, even if page 2 has them.
-  // This is a common issue. 
-  // For this task, I will implement pagination first. 
-  // Migrating filters to backend params is the "Right Way" but might be out of scope for "just pagination". 
-  // I will leave filters as visual filters on the *current page* for now to minimise regression risk, or disable them?
-  // Actually, let's keep them as client-side filters on the received batch, but ack the limitation. 
-  // The user asked for "same pagination workflow".
-  // I will just apply pagination on the fetch.
-  
   const filteredUsers = users.filter((u) => {
     if (filter.role && u.role !== filter.role) return false;
     if (filter.restaurant) {
@@ -181,21 +160,12 @@ export default function UsersManagement() {
     return true;
   });
 
-  // Group by role for stats 
-  // Note: Stats will now only reflect the CURRENT PAGE. 
-  // To get global stats, we'd need a separate stats endpoint.
-  // I'll leave this as is (page-level stats) or hide it? 
-  // The prompts says "Do NOT break existing API contracts silently". 
-  // Well, pagination changes the data scope. 
-  // Let's accept that stats are now "page stats" or remove them if they look broken.
-  // I'll keep them as "Page Stats" contextually.
-  
   const roleStats = {
     SUPER_ADMIN: users.filter((u) => u.role === "SUPER_ADMIN").length,
+    PLATFORM_ADMIN: users.filter((u) => u.role === "PLATFORM_ADMIN").length,
     RESTAURANT_ADMIN: users.filter((u) => u.role === "RESTAURANT_ADMIN").length,
     KDS: users.filter((u) => u.role === "KDS").length,
-    WAITER: users.filter((u) => u.role === "WAITER").length,
-    CASHIER: users.filter((u) => u.role === "CASHIER").length,
+    CUSTOMER: users.filter((u) => u.role === "CUSTOMER").length,
   };
 
   if (loading && users.length === 0) {
@@ -226,16 +196,16 @@ export default function UsersManagement() {
         </div>
       </div>
 
-      {/* Stats */}
+      {}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 mb-6">
         <StatBadge label="Super Admins" count={roleStats.SUPER_ADMIN} color="purple" />
+        <StatBadge label="Platform Admins" count={roleStats.PLATFORM_ADMIN} color="blue" />
         <StatBadge label="Restaurant Admins" count={roleStats.RESTAURANT_ADMIN} color="indigo" />
         <StatBadge label="KDS" count={roleStats.KDS} color="emerald" />
-        <StatBadge label="Waiters" count={roleStats.WAITER} color="amber" />
-        <StatBadge label="Cashiers" count={roleStats.CASHIER} color="gray" />
+        <StatBadge label="Customers" count={roleStats.CUSTOMER} color="amber" />
       </div>
 
-      {/* Filters */}
+      {}
       <div className="bg-white border border-gray-200 rounded-lg p-4 mb-4 flex flex-col sm:flex-row sm:items-center gap-4">
         <div className="flex items-center gap-2">
           <label className="text-sm text-gray-600">Role:</label>
@@ -246,10 +216,10 @@ export default function UsersManagement() {
           >
             <option value="">All roles</option>
             <option value="SUPER_ADMIN">Super Admin</option>
+            <option value="PLATFORM_ADMIN">Platform Admin</option>
             <option value="RESTAURANT_ADMIN">Restaurant Admin</option>
             <option value="KDS">KDS</option>
-            <option value="WAITER">Waiter</option>
-            <option value="CASHIER">Cashier</option>
+            <option value="CUSTOMER">Customer</option>
           </select>
         </div>
         <div className="flex items-center gap-2">
@@ -275,7 +245,7 @@ export default function UsersManagement() {
         )}
       </div>
 
-      {/* Users Table */}
+      {}
       <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="min-w-full text-sm">
@@ -343,7 +313,7 @@ export default function UsersManagement() {
         </div>
       </div>
 
-      {/* Pagination Footer */}
+      {}
       {!loading && paginationMeta && (
         <Pagination
           currentPage={page}
@@ -354,7 +324,7 @@ export default function UsersManagement() {
         />
       )}
 
-      {/* Modals */}
+      {}
       {modal.type && (
         <Modal 
           title={modal.type === "create" ? "Create New User" : `Edit User: ${modal.user.username}`} 
@@ -401,10 +371,11 @@ export default function UsersManagement() {
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500"
                   required
                 >
+                  <option value="SUPER_ADMIN">Super Admin</option>
+                  <option value="PLATFORM_ADMIN">Platform Admin</option>
                   <option value="RESTAURANT_ADMIN">Restaurant Admin</option>
                   <option value="KDS">KDS</option>
-                  <option value="WAITER">Waiter</option>
-                  <option value="CASHIER">Cashier</option>
+                  <option value="CUSTOMER">Customer</option>
                 </select>
               </div>
               
@@ -437,15 +408,13 @@ export default function UsersManagement() {
   );
 }
 
-// ===== COMPONENTS =====
-
 function StatBadge({ label, count, color }) {
   const colors = {
     purple: "bg-purple-50 text-purple-700 border-purple-200",
+    blue: "bg-blue-50 text-blue-700 border-blue-200",
     indigo: "bg-indigo-50 text-indigo-700 border-indigo-200",
     emerald: "bg-emerald-50 text-emerald-700 border-emerald-200",
     amber: "bg-amber-50 text-amber-700 border-amber-200",
-    gray: "bg-gray-50 text-gray-700 border-gray-200",
   };
 
   return (
@@ -459,18 +428,18 @@ function StatBadge({ label, count, color }) {
 function RoleBadge({ role }) {
   const styles = {
     SUPER_ADMIN: "bg-purple-100 text-purple-700",
+    PLATFORM_ADMIN: "bg-blue-100 text-blue-700",
     RESTAURANT_ADMIN: "bg-indigo-100 text-indigo-700",
     KDS: "bg-emerald-100 text-emerald-700",
-    WAITER: "bg-amber-100 text-amber-700",
-    CASHIER: "bg-gray-100 text-gray-700",
+    CUSTOMER: "bg-amber-100 text-amber-700",
   };
 
   const labels = {
     SUPER_ADMIN: "Super Admin",
+    PLATFORM_ADMIN: "Platform Admin",
     RESTAURANT_ADMIN: "Restaurant Admin",
     KDS: "KDS",
-    WAITER: "Waiter",
-    CASHIER: "Cashier",
+    CUSTOMER: "Customer",
   };
 
   return (
@@ -489,7 +458,7 @@ function ActionDropdown({ user, onEdit, onToggleStatus, onDelete }) {
     if (open && buttonRef.current) {
       const rect = buttonRef.current.getBoundingClientRect();
       const screenHeight = window.innerHeight;
-      const menuHeightEstimate = 200; // Users menu is shorter
+      const menuHeightEstimate = 200; 
       
       const spaceBelow = screenHeight - rect.bottom;
       const shouldOpenUpwards = spaceBelow < menuHeightEstimate;

@@ -88,9 +88,9 @@ const createOrder = async (req, res) => {
     io.to(`KDS_ROOM_${restaurant._id}`).emit('order_created', newOrder);
 
     return res.status(201).json({
-      order: newOrder,
       success: true,
       message: 'Order Created Successfully',
+      data: newOrder,
     });
   } catch (error) {
     return res.status(500).json({
@@ -103,7 +103,7 @@ const createOrder = async (req, res) => {
 
 const trackOrder = async (req, res) => {
   try {
-    const { orderCode } = req.params;
+    const orderCode = req.params.orderCode?.trim();
     const restaurant = req.restaurant;
 
     if (!orderCode) {
@@ -128,6 +128,7 @@ const trackOrder = async (req, res) => {
     return res.status(200).json({
       data: {
         orderCode: order.orderCode,
+        restaurantId: order.restaurantId,
         tableNumber: order.tableNumber,
         orderItems: order.orderItems,
         subtotal: order.subtotal,

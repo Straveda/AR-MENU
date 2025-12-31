@@ -3,7 +3,7 @@ import axiosClient from "../../api/axiosClient";
 import { useSocket } from "../../context/SocketProvider";
 import { useTenant } from "../../context/TenantProvider";
 
-export default function TrackOrder() {
+export default function TrackOrderV2() {
     const { socket, connect, disconnect, joinRoom, leaveRoom } = useSocket();
     const { slug } = useTenant();
     
@@ -14,7 +14,6 @@ export default function TrackOrder() {
     const [hasSearched, setHasSearched] = useState(false);
     const [isLive, setIsLive] = useState(false);
 
-    // Status badge colors
     const getStatusColor = (status) => {
         switch (status?.toLowerCase()) {
             case "pending":
@@ -30,7 +29,6 @@ export default function TrackOrder() {
         }
     };
 
-    // Check for "code" URL param on mount
     useEffect(() => {
         const params = new URLSearchParams(window.location.search);
         const code = params.get("code");
@@ -44,13 +42,16 @@ export default function TrackOrder() {
         if (!code) return;
         setLoading(true);
         setError("");
-        
-        // Don't reset orderData immediately to avoid flicker if re-tracking same code
-        // setOrderData(null); 
-        
+
+        if (!slug) {
+            setError("Restaurant context missing. Please try again from the menu.");
+            setLoading(false);
+            return;
+        }
+
         setHasSearched(true);
         try {
-            const res = await axiosClient.get(`/orders/track/${code}`);
+            const res = await axiosClient.get(`/orders/r/${slug}/track/${code}`);
             if (res.data.success) {
                 setOrderData(res.data.data);
             }
@@ -63,69 +64,54 @@ export default function TrackOrder() {
         }
     };
 
-    // --- REALTIME LOGIC ---
     useEffect(() => {
         if (!orderData || !orderData.restaurantId || !orderData.orderCode) return;
 
-        // 1. Ensure connection
         connect();
 
-        // 2. Room Name
         const roomName = `ORDER_ROOM_${orderData.restaurantId}_${orderData.orderCode}`;
-        
-        // 3. Join
+
         joinRoom(roomName);
         setIsLive(true);
 
-        // 4. Listener
         const handleUpdate = (updatedOrder) => {
             console.log("Realtime Update Received:", updatedOrder);
-            // Verify it matches our order (redundant if room is specific, but safe)
+            
             if (updatedOrder.orderCode === orderData.orderCode) {
-                // Merge or replace
+                
                 setOrderData(prev => ({ ...prev, ...updatedOrder }));
             }
         };
 
         socket.on("order_status_updated", handleUpdate);
-        
-        // Handle disconnects
+
         socket.on("disconnect", () => setIsLive(false));
         socket.on("connect", () => {
              joinRoom(roomName); 
              setIsLive(true);
         });
 
-        // 5. Cleanup
         return () => {
             socket.off("order_status_updated", handleUpdate);
             socket.off("disconnect");
             socket.off("connect");
             leaveRoom(roomName);
-            // Optionally disconnect if no other components use it, but Provider handles global disconnect on unmount
-            // Ideally we leave connection open for navigation speed, but stricter saas calls for disconnect?
-            // "Leave on unmount" -> Provider handles socket ref, but we should probably not disconnect fully if user might navigate back.
-            // But per "Clean socket state", we can disconnect if we are the only consumer.
-            // For now, leaveRoom is sufficient.
+
         };
     }, [orderData?.restaurantId, orderData?.orderCode, connect, joinRoom, leaveRoom, socket]);
 
-
-    // Fallback Polling (if socket disconnects or just as backup)
     useEffect(() => {
         if (!orderData) return;
         
         const interval = setInterval(() => {
-            // Only poll if socket disconnected? Or always for safety?
-            // "Fall back to polling if socket drops"
+
             if (!socket.connected) {
                 trackOrderInternal(orderData.orderCode);
             }
-        }, 15000); // 15s polling if socket down
+        }, 15000); 
 
         return () => clearInterval(interval);
     }, [orderData?.orderCode, socket]);
-
 
     const handleTrackOrder = (e) => {
         e.preventDefault();
@@ -134,7 +120,7 @@ export default function TrackOrder() {
 
     return (
         <div className="min-h-screen bg-amber-50 px-4 py-8 flex flex-col items-center">
-            {/* Header */}
+            {}
             <div className="text-center mb-10 w-full max-w-2xl">
                 <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-2 tracking-wide">
                     Track Your Order
@@ -145,7 +131,7 @@ export default function TrackOrder() {
                 </p>
             </div>
 
-            {/* Input Section */}
+            {}
             <div className="w-full max-w-md bg-white rounded-xl shadow-lg p-6 border border-amber-100 mb-8">
                 <form onSubmit={handleTrackOrder} className="flex flex-col gap-4">
                     <div>
@@ -181,7 +167,7 @@ export default function TrackOrder() {
                 </form>
             </div>
 
-            {/* Results Section */}
+            {}
             <div className="w-full max-w-2xl transition-all duration-500 ease-in-out">
                 {error && (
                     <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-md shadow-sm animate-fade-in">
@@ -202,7 +188,7 @@ export default function TrackOrder() {
 
                 {orderData && (
                     <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-amber-100 animate-slide-up relative">
-                        {/* Live Indicator */}
+                        {}
                         {isLive && (
                            <div className="absolute top-4 right-1/2 translate-x-1/2 sm:translate-x-0 sm:right-6 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold text-green-600 border border-green-100 shadow-sm flex items-center gap-2 z-10 animate-pulse">
                                <span className="w-2 h-2 bg-green-500 rounded-full"></span>
@@ -216,7 +202,7 @@ export default function TrackOrder() {
                            </div>
                         )}
                         
-                        {/* Order Header */}
+                        {}
                         <div className="bg-amber-600 px-6 py-4 flex justify-between items-center text-white mt-8 sm:mt-0">
                             <div>
                                 <p className="text-amber-100 text-xs uppercase tracking-wider font-semibold">Order Code</p>
@@ -228,7 +214,7 @@ export default function TrackOrder() {
                             </div>
                         </div>
 
-                        {/* Status Bar */}
+                        {}
                         <div className="px-6 py-4 bg-gray-50 border-b border-gray-100 flex justify-between items-center">
                             <span className="text-gray-600 font-medium">Current Status</span>
                             <span className={`px-4 py-1.5 rounded-full text-sm font-bold border ${getStatusColor(orderData.orderStatus)} shadow-sm transition-all duration-300`}>
@@ -236,7 +222,7 @@ export default function TrackOrder() {
                             </span>
                         </div>
 
-                        {/* Order Items */}
+                        {}
                         <div className="p-6">
                             <h3 className="text-lg font-semibold text-gray-800 mb-4 border-b pb-2">Order Items</h3>
                             <div className="space-y-4">
@@ -250,7 +236,7 @@ export default function TrackOrder() {
                                                 <p className="text-gray-800 font-medium">{item.name}</p>
                                             </div>
                                         </div>
-                                        {/* If backend sends individual item price calculated or stored */}
+                                        {}
                                         {item.lineTotal ? (
                                             <p className="text-gray-600 font-medium">₹{item.lineTotal}</p>
                                         ) : (
@@ -260,7 +246,7 @@ export default function TrackOrder() {
                                 ))}
                             </div>
 
-                            {/* Total */}
+                            {}
                             <div className="mt-8 pt-4 border-t border-gray-100 flex justify-between items-center">
                                 <span className="text-gray-600 font-bold text-lg">Total Amount</span>
                                 <span className="text-2xl font-bold text-amber-600">₹{orderData.total}</span>

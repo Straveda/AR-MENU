@@ -23,7 +23,7 @@ export default function PlatformLayout() {
 
   return (
     <div className="flex h-screen bg-slate-50">
-      {/* Mobile Sidebar Overlay */}
+      {}
       {sidebarOpen && (
         <div 
           className="fixed inset-0 bg-black/50 z-40 md:hidden"
@@ -31,7 +31,7 @@ export default function PlatformLayout() {
         />
       )}
 
-      {/* Sidebar */}
+      {}
       <aside className={`
         fixed inset-y-0 left-0 z-50 w-64 bg-slate-900 flex flex-col transition-transform duration-300 ease-in-out md:translate-x-0 md:static md:w-60
         ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
@@ -41,7 +41,7 @@ export default function PlatformLayout() {
             <span className="text-base font-semibold text-white">RestaurantAR</span>
             <span className="ml-1.5 text-xs font-medium text-indigo-400">Platform</span>
           </div>
-          {/* Close button for mobile */}
+          {}
           <button 
             onClick={() => setSidebarOpen(false)}
             className="md:hidden text-slate-400 hover:text-white"
@@ -92,9 +92,9 @@ export default function PlatformLayout() {
         </div>
       </aside>
 
-      {/* Main Content */}
+      {}
       <main className="flex-1 flex flex-col h-screen overflow-hidden">
-        {/* Mobile Header */}
+        {}
         <div className="md:hidden bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between">
           <div className="flex items-center">
             <button 

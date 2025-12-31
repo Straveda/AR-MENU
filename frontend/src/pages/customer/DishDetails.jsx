@@ -7,7 +7,7 @@ import { useTenant } from "../../context/TenantProvider";
 export default function DishDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { slug } = useTenant(); // Use slug from context
+  const { slug } = useTenant(); 
   const { addItem } = useOrder();
   const [dish, setDish] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -17,14 +17,13 @@ export default function DishDetails() {
 
   const [recommendations, setRecommendations] = useState([]);
 
-
   const handleAddToOrder = () => {
     if (suspended) {
         alert("Ordering is temporarily unavailable as the restaurant is suspended.");
         return;
     }
     if (dish) {
-      // Ensure dish has price locally if backend doesn't send it in 'items' later (it usually does)
+      
       addItem(dish, quantity);
       alert(`Added ${quantity} x ${dish.name} to order!`);
     }
@@ -39,7 +38,6 @@ export default function DishDetails() {
     alert(`Added 1 x ${recDish.name} to order!`);
   };
 
-  // Tag color helper
   const getTagColor = (tag) => {
     const tagLower = tag.toLowerCase();
     if (tagLower.includes('spicy')) return 'bg-red-100 text-red-700';
@@ -54,7 +52,7 @@ export default function DishDetails() {
     if (!slug || !id) return;
 
     try {
-      // Backend: GET /dishes/r/:restaurantSlug/dishes/:id
+      
       const { data } = await axiosClient.get(`/dishes/r/${slug}/dishes/${id}`);
       setDish(data.data.dish);
       
@@ -71,13 +69,9 @@ export default function DishDetails() {
       console.error("Error fetching dish:", error);
       if (error.response?.status === 423) {
           setSuspended(true);
-          // Still might render the dish if data came back? 
-          // Usually 423 blocks data. Use error data if available or just block.
-          // If 423, we likely didn't get dish data.
-          // Unless backend sends 423 AND data? Unlikely.
-          // So we should show a "Restaurant Suspended" screen or Banner + specific message.
+
       } else if (error.response?.status === 404) {
-          // Dish not found
+          
           setDish(null); 
       }
     } finally {
@@ -87,13 +81,12 @@ export default function DishDetails() {
 
   useEffect(() => {
     fetchDish();
-    // Reset quantity when id changes
+    
     setQuantity(1);
-    // Scroll to top
+    
     window.scrollTo(0, 0);
   }, [id]);
 
-  // AR Status Configuration
   const arStatusConfig = {
     completed: {
       label: "View in AR",
@@ -125,7 +118,6 @@ export default function DishDetails() {
     return arStatusConfig[dish?.modelStatus] || arStatusConfig.default;
   };
 
-  // Loading State
   if (loading) {
     return (
       <div className="min-h-screen bg-amber-50 flex items-center justify-center">
@@ -137,7 +129,6 @@ export default function DishDetails() {
     );
   }
 
-  // Error State
   if (!dish) {
     return (
       <div className="min-h-screen bg-amber-50 flex items-center justify-center">
@@ -173,7 +164,7 @@ export default function DishDetails() {
           </div>
       )}
       
-      {/* Header */}
+      {}
       <div className={`border-b border-amber-200 bg-white sticky ${suspended ? 'top-12' : 'top-0'} z-20 shadow-sm`}>
         <div className="max-w-4xl mx-auto px-4 py-3">
           <button
@@ -188,11 +179,11 @@ export default function DishDetails() {
         </div>
       </div>
 
-      {/* Main Content - Split Layout */}
+      {}
       <div className="max-w-6xl mx-auto p-4 md:p-8">
         <div className="flex flex-col lg:flex-row gap-8 lg:gap-12">
 
-          {/* Left Column - Image (Sticky on Desktop) */}
+          {}
           <div className="w-full lg:w-1/2">
             <div className="sticky top-24 space-y-6">
               <div className="relative aspect-square md:aspect-4/3 w-full bg-gray-50 rounded-3xl overflow-hidden shadow-md border border-amber-100">
@@ -221,7 +212,7 @@ export default function DishDetails() {
                 )}
               </div>
 
-              {/* AR Action Block - Integrated under Image */}
+              {}
               <div className="bg-white rounded-2xl p-1 shadow-sm border border-amber-50">
                 {arStatus.color === "green" ? (
                   <button
@@ -252,9 +243,9 @@ export default function DishDetails() {
             </div>
           </div>
 
-          {/* Right Column - Details (Scrollable) */}
+          {}
           <div className="w-full lg:w-1/2 space-y-8 pb-20 lg:pb-0">
-            {/* Header */}
+            {}
             <div>
               <div className="flex items-center gap-3 mb-4">
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider bg-amber-100 text-amber-800">
@@ -279,7 +270,7 @@ export default function DishDetails() {
               </div>
             </div>
 
-            {/* Mobile Action Bar (Visible < lg) */}
+            {}
             <div className={`lg:hidden mb-6 pb-6 border-b border-gray-100 ${(!dish.available || suspended) ? 'opacity-50 pointer-events-none' : ''}`}>
               <div className="flex flex-col gap-4">
                 <div className="flex items-center justify-between bg-gray-50 border border-gray-200 rounded-xl px-4 py-3">
@@ -303,8 +294,7 @@ export default function DishDetails() {
                   {!suspended && <span className="bg-amber-700/50 px-2 py-0.5 rounded text-sm">₹{dish.price * quantity}</span>}
                 </button>
 
-                {/* Recommended Add-ons (Mobile) */}
-
+                {}
 
                 <div className="text-center">
                   <button onClick={() => navigate(`/r/${slug}/cart`)} className="text-sm font-semibold text-gray-500 hover:text-amber-600 underline decoration-2 decoration-transparent hover:decoration-amber-200 transition-all">
@@ -314,14 +304,14 @@ export default function DishDetails() {
               </div>
             </div>
 
-            {/* Description */}
+            {}
             {dish.description && (
               <div className="prose prose-amber text-gray-600 leading-relaxed text-lg">
                 <p>{dish.description}</p>
               </div>
             )}
 
-            {/* People Also Ordered Section */}
+            {}
             {recommendations.length > 0 && (
               <div className="py-4">
                 <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wide mb-4">People Also Ordered With This Dish</h3>
@@ -367,7 +357,7 @@ export default function DishDetails() {
               </div>
             )}
 
-            {/* Ingredients & Allergens Layout */}
+            {}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {dish.ingredients?.length > 0 && (
                 <div>
@@ -394,7 +384,7 @@ export default function DishDetails() {
               </div>
             </div>
 
-            {/* Nutritional Info Cards */}
+            {}
             {dish.nutritionalInfo && (
               <div className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm">
                 <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wide mb-4">Nutritional Facts</h3>
@@ -419,10 +409,10 @@ export default function DishDetails() {
               </div>
             )}
 
-            {/* Desktop Action Bar (Visible >= lg) */}
+            {}
             <div className={`hidden lg:block mt-8 pt-8 border-t border-gray-100 ${(!dish.available || suspended) ? 'opacity-50 pointer-events-none' : ''}`}>
               <div className="flex flex-col sm:flex-row gap-4">
-                {/* Quantity Control */}
+                {}
                 <div className="flex items-center justify-between bg-gray-50 border border-gray-200 rounded-xl px-4 py-2 sm:w-40">
                   <button
                     onClick={() => setQuantity(q => Math.max(1, q - 1))}
@@ -435,7 +425,7 @@ export default function DishDetails() {
                   >+</button>
                 </div>
 
-                {/* Add Button */}
+                {}
                 <button
                   onClick={handleAddToOrder}
                   disabled={suspended || !dish.available}
@@ -446,8 +436,7 @@ export default function DishDetails() {
                 </button>
               </div>
 
-              {/* Recommended Add-ons (Desktop) */}
-
+              {}
 
               <div className="mt-4 text-center">
                 <button onClick={() => navigate(`/r/${slug}/cart`)} className="text-sm font-semibold text-gray-500 hover:text-amber-600 underline decoration-2 decoration-transparent hover:decoration-amber-200 transition-all">
@@ -459,7 +448,7 @@ export default function DishDetails() {
           </div>
         </div>
       </div>
-      {/* Footer Note */}
+      {}
       <div className="text-center pb-8">
         <p className="text-sm text-gray-500">
           💫 All prices include taxes & service charges.

@@ -11,7 +11,6 @@ export const usePagination = (defaultLimit = 10) => {
   const [limit, setLimit] = useState(limitParam);
   const [paginationMeta, setPaginationMeta] = useState(null);
 
-  // Sync state with URL params
   useEffect(() => {
     const newPage = parseInt(searchParams.get('page')) || 1;
     const newLimit = parseInt(searchParams.get('limit')) || defaultLimit;
@@ -32,7 +31,7 @@ export const usePagination = (defaultLimit = 10) => {
   };
 
   const handleLimitChange = (newLimit) => {
-    // Reset to page 1 when limit changes
+    
     updateParams(1, newLimit);
   };
 

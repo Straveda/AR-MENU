@@ -98,7 +98,7 @@ export default function PlansManagement() {
         </button>
       </div>
 
-      {/* Table */}
+      {}
       <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
         <table className="min-w-full text-sm">
           <thead className="bg-gray-50 border-b border-gray-200">
@@ -151,7 +151,7 @@ export default function PlansManagement() {
         </table>
       </div>
 
-      {/* Create Modal */}
+      {}
       {modal.type === "create" && (
         <Modal title="Create plan" onClose={closeModal}>
           <PlanForm
@@ -165,7 +165,7 @@ export default function PlansManagement() {
         </Modal>
       )}
 
-      {/* Edit Modal */}
+      {}
       {modal.type === "edit" && (
         <Modal title="Edit plan" onClose={closeModal}>
           <PlanForm

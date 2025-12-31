@@ -4,8 +4,8 @@ const auditLogSchema = new mongoose.Schema({
   restaurantId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Restaurant",
-    required: false, // Optional for platform-level actions
-    index: true // Key for querying per restaurant
+    required: false, 
+    index: true 
   },
   actorId: {
     type: mongoose.Schema.Types.ObjectId,
@@ -13,7 +13,7 @@ const auditLogSchema = new mongoose.Schema({
     required: true
   },
   actorEmail: {
-    type: String, // Snapshot in case user is deleted
+    type: String, 
     required: true
   },
   action: {
@@ -30,15 +30,15 @@ const auditLogSchema = new mongoose.Schema({
     ]
   },
   targetId: {
-    type: mongoose.Schema.Types.ObjectId, // ID of the role, user, or dish being modified
+    type: mongoose.Schema.Types.ObjectId, 
     required: false
   },
   targetModel: {
-    type: String, // 'Role', 'User', 'Dish'
+    type: String, 
     required: false
   },
   changes: {
-    type: Map, // For storing before/after or just the diff
+    type: Map, 
     of: mongoose.Schema.Types.Mixed,
     default: {}
   },
@@ -52,7 +52,6 @@ const auditLogSchema = new mongoose.Schema({
   }
 }, { timestamps: true });
 
-// TTL Index: Retention Strategy (e.g., 90 days)
 auditLogSchema.index({ createdAt: 1 }, { expireAfterSeconds: 90 * 24 * 60 * 60 });
 
 export const AuditLog = mongoose.model("AuditLog", auditLogSchema);

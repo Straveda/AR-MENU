@@ -11,7 +11,6 @@ import { logAudit } from "../utils/logger.js";
 
 const streamPipeline = promisify(pipeline);
 
-
 const addDish = async (req, res) => {
   try {
     let { name, description, price, category, tags, available, ingredients, nutritionalInfo, portionSize } = req.body;
@@ -71,22 +70,19 @@ const addDish = async (req, res) => {
       portionSize,
     });
 
-    // Automatically trigger 3D model generation with Meshy
     try {
       const { taskId } = await createImageTo3DTask(cloudImageUrl, name);
 
-      // Update dish with Meshy task ID
       dish.meshyTaskId = taskId;
       dish.modelStatus = "processing";
       await dish.save();
 
-      // Start background polling for this task
       startPollingForDish(dish._id.toString(), taskId);
 
       console.log(`🚀 Started 3D model generation for "${name}" (task: ${taskId})`);
     } catch (meshyError) {
       console.error("Meshy generation error:", meshyError);
-      // Don't fail the entire request, just mark model as failed
+      
       dish.modelStatus = "failed";
       await dish.save();
     }
@@ -134,31 +130,26 @@ const getDishes = async (req, res) => {
 
     const restaurant = req.restaurant;
 
-    if (!restaurant) {
-      return res.status(500).json({
-        success: false,
-        message: "Restaurant not found",
-      });
+    const filter = {};
+    if (restaurant) {
+      filter.restaurantId = restaurant._id;
     }
-
-    // Filter logic: Admins/Staff see all dishes, Customers only see available ones
-    const filter = { restaurantId: restaurant._id };
+    
     if (!req.user) {
       filter.available = true;
     }
 
     const dishes = await Dish.find(filter).sort(sortOption);
 
-
     return res.status(200).json({
       success: true,
       message: "Dishes fetched successfully",
       data: { 
         dishes,
-        restaurant: {
+        restaurant: restaurant ? {
           name: restaurant.name,
           slug: restaurant.slug
-        }
+        } : null
       },
     });
 
@@ -172,25 +163,18 @@ const getDishes = async (req, res) => {
   }
 };
 
-
 const getDishById = async (req, res) => {
   try {
     const id = req.params.id.trim();
 
     const restaurant = req.restaurant;
 
-    if (!restaurant) {
-      return res.status(500).json({
-        success: false,
-        message: "Restaurant not found",
-      });
+    const filter = { _id: id };
+    if (restaurant) {
+      filter.restaurantId = restaurant._id;
     }
 
-    const dish = await Dish.findOne({
-      _id: id,
-      restaurantId: restaurant._id,
-    });
-
+    const dish = await Dish.findOne(filter);
 
     if (!dish) {
       return res.status(404).json({
@@ -228,18 +212,12 @@ const updateDish = async (req, res) => {
 
     const restaurant = req.restaurant;
 
-    if (!restaurant) {
-      return res.status(500).json({
-        success: false,
-        message: "Restaurant not found",
-      });
+    const query = { _id: id };
+    if (restaurant) {
+      query.restaurantId = restaurant._id;
     }
 
-    const dish = await Dish.findOne({
-      _id: id,
-      restaurantId: restaurant._id,
-    });
-
+    const dish = await Dish.findOne(query);
 
     if (!dish) {
       return res.status(404).json({
@@ -266,7 +244,7 @@ const updateDish = async (req, res) => {
         action: 'DISH_UPDATED',
         targetId: updatedDish._id,
         targetModel: 'Dish',
-        changes: { name: updatedDish.name, price: updatedDish.price } // Log key fields
+        changes: { name: updatedDish.name, price: updatedDish.price } 
     });
 
     return res.status(200).json({
@@ -290,18 +268,12 @@ const deleteDish = async (req, res) => {
 
     const restaurant = req.restaurant;
 
-    if (!restaurant) {
-  return res.status(500).json({
-    success: false,
-    message: "Restaurant not found",
-  });
-}
+    const query = { _id: id };
+    if (restaurant) {
+      query.restaurantId = restaurant._id;
+    }
 
-
-const dish = await Dish.findOne({
-  _id: id,
-  restaurantId: restaurant._id,
-});
+    const dish = await Dish.findOne(query);
 
     if (!dish) {
       return res.status(404).json({
@@ -311,7 +283,7 @@ const dish = await Dish.findOne({
     }
 
     const dishName = dish.name;
-    await Dish.deleteOne({ _id: id, restaurantId: restaurant._id });
+    await Dish.deleteOne(query);
 
     await logAudit({
         req,
@@ -347,7 +319,6 @@ if (!restaurant) {
   });
 }
 
-
     const { dishId } = req.params;
 
 const results = await Order.aggregate([
@@ -375,7 +346,6 @@ const results = await Order.aggregate([
   { $limit: 5 },
 ]);
 
-
     const dishIds = results.map(r => r._id);
     const dishes = await Dish.find({ _id: { $in: dishIds }, restaurantId: restaurant._id });
 
@@ -394,8 +364,6 @@ const results = await Order.aggregate([
   }
 };
 
-
-//Get the current 3D model generation status for a dish
 const getModelStatus = async (req, res) => {
   try {
     const id = req.params.id;
@@ -416,12 +384,10 @@ const getModelStatus = async (req, res) => {
       });
     }
 
-    // If there's a Meshy task, get latest status
     if (dish.meshyTaskId && dish.modelStatus === 'processing') {
       try {
         const taskStatus = await getTaskStatus(dish.meshyTaskId);
 
-        // Update dish with latest status
         dish.modelStatus = taskStatus.status;
         if (taskStatus.modelUrls) {
           dish.modelUrls = taskStatus.modelUrls;
@@ -450,7 +416,6 @@ const getModelStatus = async (req, res) => {
   }
 };
 
-//Manually trigger 3D model generation for a dish
 const generateModel = async (req, res) => {
   try {
     const id = req.params.id;
@@ -479,7 +444,6 @@ const generateModel = async (req, res) => {
       });
     }
 
-    // Create new Meshy task
     const { taskId } = await createImageTo3DTask(dish.imageUrl, dish.name);
 
     dish.meshyTaskId = taskId;
@@ -487,7 +451,6 @@ const generateModel = async (req, res) => {
     dish.modelUrls = { glb: null, usdz: null };
     await dish.save();
 
-    // Start background polling
     startPollingForDish(dish._id.toString(), taskId);
 
     return res.status(200).json({
@@ -509,7 +472,6 @@ const generateModel = async (req, res) => {
   }
 };
 
-//Retry failed model generation
 const retryModelGeneration = async (req, res) => {
   try {
     const id = req.params.id;
@@ -544,7 +506,6 @@ const retryModelGeneration = async (req, res) => {
       });
     }
 
-    // Create new task
     const { taskId } = await createImageTo3DTask(dish.imageUrl, dish.name);
 
     dish.meshyTaskId = taskId;
@@ -552,7 +513,6 @@ const retryModelGeneration = async (req, res) => {
     dish.modelUrls = { glb: null, usdz: null };
     await dish.save();
 
-    // Start background polling
     startPollingForDish(dish._id.toString(), taskId);
 
     return res.status(200).json({
@@ -600,12 +560,10 @@ const proxyModel = async (req, res) => {
       throw new Error(`Failed to fetch model: ${response.statusText}`);
     }
 
-    // Forward headers
     res.setHeader('Content-Type', response.headers.get('content-type'));
     res.setHeader('Content-Length', response.headers.get('content-length'));
-    res.setHeader('Cache-Control', 'public, max-age=31536000'); // Cache for 1 year
+    res.setHeader('Cache-Control', 'public, max-age=31536000'); 
 
-    // Stream the response
     await streamPipeline(response.body, res);
 
   } catch (error) {

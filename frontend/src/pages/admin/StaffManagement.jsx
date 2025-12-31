@@ -4,36 +4,23 @@ import { useNavigate } from "react-router-dom";
 import axiosClient from "../../api/axiosClient";
 import Loading from "../../components/common/Loading";
 import EmptyState from "../../components/common/EmptyState";
-import { getRoles } from "../../api/roleApi";
 import { updateStaff } from "../../api/adminApi";
 
 export default function StaffManagement() {
   const navigate = useNavigate();
   const [staff, setStaff] = useState([]);
-  const [roles, setRoles] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [updatingRole, setUpdatingRole] = useState(null);
-  
-  // Add Staff State
+
   const [showAddModal, setShowAddModal] = useState(false);
-  const [form, setForm] = useState({ username: "", email: "", password: "", roleId: "" }); // Changed role to roleId
+  const [form, setForm] = useState({ username: "", email: "", password: "", phone: "", department: "KDS", roleTitle: "" });
   const [addLoading, setAddLoading] = useState(false);
 
-  // Fetch Data
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [staffRes, rolesRes] = await Promise.all([
-          axiosClient.get("/admin/get-staff"),
-          getRoles()
-      ]);
-
-      if (rolesRes.data.success) {
-          setRoles(rolesRes.data.data);
-      }
-
-      if (staffRes.data.success) {
-        setStaff(staffRes.data.data || []);
+      const res = await axiosClient.get("/admin/get-staff");
+      if (res.data.success) {
+        setStaff(res.data.data || []);
       }
     } catch (error) {
       console.error("Failed to fetch data:", error);
@@ -50,19 +37,12 @@ export default function StaffManagement() {
     e.preventDefault();
     setAddLoading(true);
     try {
-        // Find role name for legacy support if needed, or just let backend handle it
-        const roleDoc = roles.find(r => r._id === form.roleId);
-        const submitData = {
-            ...form,
-            role: roleDoc ? roleDoc.name : 'Staff' // Legacy fallback
-        };
-
-        const res = await axiosClient.post("/admin/create-staff", submitData);
+        const res = await axiosClient.post("/admin/create-staff", form);
         if (res.data.success) {
             alert("Staff user created successfully!");
             setShowAddModal(false);
-            setForm({ username: "", email: "", password: "", roleId: "" });
-            fetchData(); // Refresh list
+            setForm({ username: "", email: "", password: "", phone: "", department: "KDS", roleTitle: "" });
+            fetchData();
         }
     } catch (error) {
         console.error("Create staff error:", error);
@@ -70,19 +50,6 @@ export default function StaffManagement() {
     } finally {
         setAddLoading(false);
     }
-  };
-
-  const handleRoleUpdate = async (userId, newRoleId) => {
-      setUpdatingRole(userId);
-      try {
-          await updateStaff(userId, { roleId: newRoleId });
-          setStaff(prev => prev.map(u => u._id === userId ? { ...u, roleId: newRoleId } : u));
-      } catch (error) {
-          console.error(error);
-          alert("Failed to update role");
-      } finally {
-          setUpdatingRole(null);
-      }
   };
 
   const handleToggleStatus = async (user) => {
@@ -107,7 +74,7 @@ export default function StaffManagement() {
 
   return (
     <div className="min-h-screen bg-amber-50 px-4 py-8">
-      {/* Header */}
+      {}
       <div className="max-w-6xl mx-auto mb-8 flex flex-col md:flex-row items-center justify-between gap-4">
         <div>
            <button
@@ -117,7 +84,7 @@ export default function StaffManagement() {
              ← Back to Dashboard
            </button>
            <h1 className="text-3xl font-bold text-gray-800">Staff Management</h1>
-           <p className="text-gray-600">Manage Kitchen Display, Waiters, and Cashiers</p>
+           <p className="text-gray-600">Manage Kitchen Display System staff</p>
         </div>
         <button 
            onClick={() => setShowAddModal(true)}
@@ -128,7 +95,7 @@ export default function StaffManagement() {
         </button>
       </div>
 
-      {/* Staff List */}
+      {}
       <div className="max-w-6xl mx-auto">
         <div className="bg-white rounded-xl shadow-sm border border-amber-100 overflow-hidden">
             <div className="px-6 py-4 border-b border-amber-100 bg-amber-50/50">
@@ -140,7 +107,7 @@ export default function StaffManagement() {
             ) : staff.length === 0 ? (
                 <EmptyState 
                     title="No staff members yet" 
-                    message="Create accounts for your kitchen and floor staff to get started." 
+                    message="Create accounts for your kitchen staff to get started." 
                     icon="👥"
                     actionLabel="Add New Staff"
                     onAction={() => setShowAddModal(true)}
@@ -151,7 +118,8 @@ export default function StaffManagement() {
                         <thead className="bg-gray-50 border-b border-gray-100">
                             <tr>
                                 <th className="px-6 py-3 font-semibold text-gray-700">Name / Username</th>
-                                <th className="px-6 py-3 font-semibold text-gray-700">Role</th>
+                                <th className="px-6 py-3 font-semibold text-gray-700">Department</th>
+                                <th className="px-6 py-3 font-semibold text-gray-700">Role Title</th>
                                 <th className="px-6 py-3 font-semibold text-gray-700">Email</th>
                                 <th className="px-6 py-3 font-semibold text-gray-700">Status</th>
                                 <th className="px-6 py-3 font-semibold text-gray-700 text-right">Actions</th>
@@ -162,30 +130,12 @@ export default function StaffManagement() {
                                 <tr key={user._id} className="hover:bg-gray-50 transition-colors">
                                     <td className="px-6 py-4 font-medium text-gray-800">{user.username}</td>
                                     <td className="px-6 py-4">
-                                        <div className="relative">
-                                            <select
-                                                value={user.roleId || ""}
-                                                onChange={(e) => handleRoleUpdate(user._id, e.target.value)}
-                                                disabled={updatingRole === user._id}
-                                                className="block w-full text-sm rounded-md border-gray-300 py-1 pl-2 pr-8 focus:border-amber-500 focus:outline-none focus:ring-amber-500 bg-white shadow-sm disabled:bg-gray-50"
-                                            >
-                                                <option value="" disabled>Select Role</option>
-                                                {roles.map(role => (
-                                                    <option key={role._id} value={role._id}>
-                                                        {role.name}
-                                                    </option>
-                                                ))}
-                                            </select>
-                                            {updatingRole === user._id && (
-                                                <div className="absolute right-2 top-1.5 w-4 h-4 text-amber-500 animate-spin">
-                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
-                                                </div>
-                                            )}
-                                        </div>
-                                        {/* Legacy Role Badge fallback if no roleId */}
-                                        {!user.roleId && user.role && (
-                                            <span className="text-xs text-gray-400 block mt-1">Legacy: {user.role}</span>
-                                        )}
+                                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                            {user.department || 'N/A'}
+                                        </span>
+                                    </td>
+                                    <td className="px-6 py-4 text-gray-700">
+                                        {user.roleTitle || <span className="text-gray-400 italic">Not set</span>}
                                     </td>
                                     <td className="px-6 py-4">{user.email}</td>
                                     <td className="px-6 py-4">
@@ -214,7 +164,7 @@ export default function StaffManagement() {
         </div>
       </div>
 
-      {/* Add Staff Modal */}
+      {}
       {showAddModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 animate-fade-in">
             <div className="bg-white rounded-xl shadow-2xl max-w-md w-full overflow-hidden">
@@ -227,30 +177,31 @@ export default function StaffManagement() {
                 
                 <form onSubmit={handleAddStaff} className="p-6 space-y-4">
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-60 overflow-y-auto pr-1">
-                            {roles.map(role => (
-                                <button
-                                    key={role._id}
-                                    type="button"
-                                    onClick={() => setForm({...form, roleId: role._id})}
-                                    className={`py-2 px-3 rounded-lg text-sm font-medium border text-left flex items-start flex-col transition-colors hover:shadow-sm ${
-                                        form.roleId === role._id 
-                                        ? 'bg-amber-500 text-white border-amber-500 shadow-md' 
-                                        : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'
-                                    }`}
-                                >
-                                    <span className="font-semibold block">{role.name}</span>
-                                    {role.description && <span className={`text-xs mt-1 block truncate w-full ${form.roleId === role._id ? 'text-amber-100' : 'text-gray-400'}`}>{role.description}</span>}
-                                </button>
-                            ))}
-                        </div>
-                        {roles.length === 0 && (
-                            <p className="text-sm text-red-500 mt-1 bg-red-50 p-2 rounded">No roles found. Please go to "Manage Roles" and create one first.</p>
-                        )}
-                        {roles.length > 0 && !form.roleId && (
-                            <p className="text-xs text-gray-500 mt-1">Please select a role for this staff member.</p>
-                        )}
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Department *</label>
+                        <select 
+                            value={form.department}
+                            onChange={e => setForm({...form, department: e.target.value})}
+                            required
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent outline-none"
+                        >
+                            <option value="KDS">Kitchen Display</option>
+                            <option value="Finance">Finance</option>
+                            <option value="Operations">Operations</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Role Title *</label>
+                        <input 
+                           type="text" 
+                           required
+                           placeholder="e.g. Senior KDS Operator, Night Shift Handler"
+                           value={form.roleTitle}
+                           onChange={e => setForm({...form, roleTitle: e.target.value})}
+                           maxLength={100}
+                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent outline-none"
+                        />
+                        <p className="text-xs text-gray-500 mt-1">Free text, max 100 characters</p>
                     </div>
 
                     <div>
