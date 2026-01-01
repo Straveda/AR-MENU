@@ -26,6 +26,7 @@ import RestaurantsManagement from '../pages/platform/RestaurantsManagement.jsx';
 import UsersManagement from '../pages/platform/UsersManagement.jsx';
 import SubscriptionsManagement from '../pages/platform/SubscriptionsManagement.jsx';
 import PlansManagement from '../pages/platform/PlansManagement.jsx';
+import LandingPage from '../pages/LandingPage.jsx';
 
 const AppRouter = () => {
     return (
@@ -78,7 +79,7 @@ const AppRouter = () => {
                                     <Route path="/r/:slug/cart" element={<OrderCart />} />
 
                                     {}
-                                    <Route path="/" element={<div className="p-10 text-center font-sans"><h1>Welcome to Restaurant-AR SaaS</h1><p>Please use a restaurant link or login.</p></div>} />
+                                    <Route path="/" element={<LandingPage />} />
                                 </Routes>
                             </ErrorBoundary>
                         </OrderProvider>
