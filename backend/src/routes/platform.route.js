@@ -137,6 +137,13 @@ platformRouter.get(
 );
 
 platformRouter.delete(
+  '/delete-restaurant/:restaurantId',
+  requireAuth,
+  requireRole('SUPER_ADMIN'),
+  deleteRestaurant,
+);
+
+platformRouter.delete(
   '/delete-user/:userId',
   requireAuth,
   requireRole('SUPER_ADMIN'),
