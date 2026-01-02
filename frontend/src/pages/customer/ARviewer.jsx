@@ -4,7 +4,7 @@ import axiosClient from "../../api/axiosClient";
 import "@google/model-viewer";
 
 export default function ARViewer() {
-    const { id } = useParams();
+    const { slug, id } = useParams();
     const navigate = useNavigate();
     const modelViewerRef = useRef(null);
     const [dish, setDish] = useState(null);
@@ -14,7 +14,7 @@ export default function ARViewer() {
 
     const fetchDish = async () => {
         try {
-            const { data } = await axiosClient.get(`/dishes/getdish/${id}`);
+            const { data } = await axiosClient.get(`/dishes/r/${slug}/dishes/${id}`);
             setDish(data.data.dish);
         } catch (error) {
             console.error("Error loading AR model:", error);
@@ -72,7 +72,7 @@ export default function ARViewer() {
                     <h3 className="text-xl font-semibold text-gray-800 mb-2">AR Model Error</h3>
                     <p className="text-gray-600 mb-4">Unable to load the AR experience for this dish.</p>
                     <button
-                        onClick={() => navigate("/")}
+                        onClick={() => navigate(`/r/${slug}/menu`)}
                         className="bg-amber-500 hover:bg-amber-600 text-white px-6 py-2 rounded-lg font-medium transition-colors"
                     >
                         Back to Menu
@@ -95,7 +95,7 @@ export default function ARViewer() {
                     <p className="text-gray-600 mb-2">The 3D model for this dish is still being generated.</p>
                     <p className="text-sm text-gray-500 mb-4">This usually takes a few minutes. Please check back later.</p>
                     <button
-                        onClick={() => navigate("/")}
+                        onClick={() => navigate(`/r/${slug}/menu`)}
                         className="bg-amber-500 hover:bg-amber-600 text-white px-6 py-2 rounded-lg font-medium transition-colors"
                     >
                         Back to Menu
@@ -111,7 +111,7 @@ export default function ARViewer() {
             <div className="border-b border-amber-200 bg-white">
                 <div className="max-w-6xl mx-auto px-4 py-4">
                     <button
-                        onClick={() => navigate("/")}
+                        onClick={() => navigate(`/r/${slug}/menu`)}
                         className="flex items-center gap-2 text-amber-600 hover:text-amber-700 font-medium transition-colors group"
                     >
                         <svg className="w-4 h-4 transform group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -162,11 +162,11 @@ export default function ARViewer() {
                             {}
                             <model-viewer
                                 ref={modelViewerRef}
-                                src={dish.modelUrls?.glb ? `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1'}/dishes/proxy-model/${dish._id}/glb` : undefined}
-                                ios-src={dish.modelUrls?.usdz ? `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1'}/dishes/proxy-model/${dish._id}/usdz` : undefined}
+                                src={dish.modelUrls?.glb ? `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1'}/dishes/r/${slug}/dishes/proxy-model/${dish._id}/glb` : undefined}
+                                ios-src={dish.modelUrls?.usdz ? `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1'}/dishes/r/${slug}/dishes/proxy-model/${dish._id}/usdz` : undefined}
                                 alt={`3D model of ${dish.name}`}
                                 ar
-                                ar-modes="scene-viewer quick-look"
+                                ar-modes="webxr scene-viewer quick-look"
                                 camera-controls
                                 auto-rotate
                                 className="w-full h-96 md:h-[500px]"
