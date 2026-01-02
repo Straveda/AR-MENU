@@ -5,7 +5,7 @@ import { Restaurant } from "../models/restaurant.models.js";
 
 const seedUsers = async () => {
   try {
-    await mongoose.connect(`mongodb+srv://SumitRaskar:darkKnight01@cluster0.s0ts6ml.mongodb.net/restaurantDB-development`);
+    await mongoose.connect(`YOUR_MONGO_URI');
     console.log("MongoDB connected");
 
     // 1. Get Demo Restaurant
