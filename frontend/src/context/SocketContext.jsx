@@ -12,9 +12,8 @@ export const SocketProvider = ({ children }) => {
 
     useEffect(() => {
 
-        const backendUrl = import.meta.env.VITE_API_BASE_URL 
-            ? import.meta.env.VITE_API_BASE_URL.replace('/api/v1', '') 
-            : 'http://localhost:8000';
+        const apiUrl = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
+        const backendUrl = apiUrl.replace('/api/v1', '');
 
         const newSocket = io(backendUrl, {
             withCredentials: true,
