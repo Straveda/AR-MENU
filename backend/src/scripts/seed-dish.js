@@ -4,8 +4,7 @@ import { Restaurant } from '../models/restaurant.models.js';
 
 const seedDishes = async () => {
   try {
-    await mongoose.connect(`mongodb+srv://SumitRaskar:darkKnight01@cluster0.s0ts6ml.mongodb.net/restaurantDB-development`);
-    console.log('Connected to MongoDB');
+    await mongoose.connect(`YOUR_MONGO_URI');
 
     const restaurant = await Restaurant.findOne({});
     if (!restaurant) {
