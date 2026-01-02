@@ -6,8 +6,7 @@ dotenv.config();
 
 const seedRestaurant = async () => {
   try {
-    await mongoose.connect(`mongodb+srv://SumitRaskar:darkKnight01@cluster0.s0ts6ml.mongodb.net/restaurantDB-development`);
-
+    await mongoose.connect(`YOUR_MONGO_URI');
     const existing = await Restaurant.findOne({ name: "Demo Restaurant" });
 
     if (existing) {
