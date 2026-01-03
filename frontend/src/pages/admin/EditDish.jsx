@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import axiosClient from "../../api/axiosClient";
+import { useToast } from "../../components/common/Toast/ToastContext";
 
 export default function EditDish() {
   const navigate = useNavigate();
   const { id } = useParams();
+  const { showSuccess, showError } = useToast();
 
   const [form, setForm] = useState({
     name: "",

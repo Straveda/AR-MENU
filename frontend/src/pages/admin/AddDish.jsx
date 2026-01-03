@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axiosClient from "../../api/axiosClient";
+import { useToast } from "../../components/common/Toast/ToastContext";
 
 export default function AddDish() {
   const navigate = useNavigate();
+  const { showSuccess, showError, showWarning } = useToast();
 
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});

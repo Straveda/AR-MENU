@@ -3,11 +3,13 @@ import axiosClient from "../../api/axiosClient";
 import { useNavigate } from "react-router-dom";
 import { useSocket } from "../../context/SocketProvider";
 import { useAuth } from "../../context/AuthProvider";
+import { useToast } from "../../components/common/Toast/ToastContext";
 import notificationSound from "../../assets/notification.mp3";
 
 export default function KDS() {
     const navigate = useNavigate();
     const { isAuthenticated, user, logout, loading: authLoading } = useAuth();
+    const { showError } = useToast();
     
     const [orders, setOrders] = useState({
         pending: [],
