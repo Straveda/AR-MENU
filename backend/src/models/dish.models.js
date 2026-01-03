@@ -58,6 +58,13 @@ const dishSchema = new mongoose.Schema(
       carbs: { type: Number, default: 0 },
       sugar: { type: Number, default: 0 },
     },
+    
+    // Controls whether the dish counts towards plan limits
+    isActive: {
+      type: Boolean,
+      default: true,
+    },
+
     orderCount: {
       type: Number,
       default: 0,

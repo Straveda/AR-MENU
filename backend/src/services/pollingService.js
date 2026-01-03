@@ -2,6 +2,8 @@
 
 import { Dish } from '../models/dish.models.js';
 import { getTaskStatus } from './meshyService.js';
+import { storageService } from './storage/StorageService.js';
+import fetch from 'node-fetch';
 
 const activePolling = new Set();
 
@@ -42,10 +44,53 @@ const pollDishTask = async (dishId, meshyTaskId, maxAttempts = 60) => {
             dish.modelStatus = taskStatus.status;
 
             if (taskStatus.status === 'completed' && taskStatus.modelUrls) {
-                dish.modelUrls = taskStatus.modelUrls;
-                await dish.save();
-                console.log(`✅ Model completed for dish "${dish.name}"`);
-                return; 
+                console.log(`✅ Meshy task completed for dish "${dish.name}". Downloading models...`);
+
+                try {
+                    const newModelUrls = { glb: null, usdz: null };
+
+                    // 1. Download and Upload GLB
+                    if (taskStatus.modelUrls.glb) {
+                        console.log(`Downloading GLB: ${taskStatus.modelUrls.glb}`);
+                        const response = await fetch(taskStatus.modelUrls.glb);
+                        if (!response.ok) throw new Error(`Failed to download GLB: ${response.statusText}`);
+                        const buffer = Buffer.from(await response.arrayBuffer());
+                        
+                        const fileName = `${dish.name.replace(/\s+/g, '_')}_${meshyTaskId}.glb`;
+                        const uploadResult = await storageService.uploadFile(buffer, fileName, "menu-ar/models");
+                        newModelUrls.glb = uploadResult.url;
+                        console.log(`✅ Uploaded GLB to ImageKit: ${uploadResult.url}`);
+                    }
+
+                    // 2. Download and Upload USDZ
+                    if (taskStatus.modelUrls.usdz) {
+                         console.log(`Downloading USDZ: ${taskStatus.modelUrls.usdz}`);
+                        const response = await fetch(taskStatus.modelUrls.usdz);
+                         if (!response.ok) throw new Error(`Failed to download USDZ: ${response.statusText}`);
+                        const buffer = Buffer.from(await response.arrayBuffer());
+                        
+                        const fileName = `${dish.name.replace(/\s+/g, '_')}_${meshyTaskId}.usdz`;
+                        const uploadResult = await storageService.uploadFile(buffer, fileName, "menu-ar/models");
+                        newModelUrls.usdz = uploadResult.url;
+                         console.log(`✅ Uploaded USDZ to ImageKit: ${uploadResult.url}`);
+                    }
+
+                    // 3. Update Dish with NEW URLs
+                    dish.modelUrls = newModelUrls;
+                    await dish.save();
+                    console.log(`✅ Dish "${dish.name}" updated with ImageKit model URLs`);
+                    return;
+
+                } catch (uploadError) {
+                     console.error("❌ Error persisting models to ImageKit:", uploadError);
+                     // Fallback: save Meshy URLs temporarily or mark as failed? 
+                     // For now, let's keep it as is (so frontend might still try Meshy URLs if we didn't save)
+                     // Or better: Fail the process so we can retry?
+                     // Let's log it and NOT save 'completed' status if we failed to persist?
+                     // Actually, if we fail here, we might want to retry model persistence.
+                     // But for now, let's rely on the outer try/catch loop.
+                     throw uploadError;
+                }
             }
 
             if (taskStatus.status === 'failed') {

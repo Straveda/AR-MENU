@@ -114,7 +114,7 @@ export default function KDS() {
             }
         } catch (error) {
             console.error(`Error updating order ${orderCode}:`, error);
-            alert(error.response?.data?.message || "Failed to update order status");
+            showError(error.response?.data?.message || "Failed to update order status");
         } finally {
             setProcessing(null);
         }

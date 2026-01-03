@@ -23,3 +23,7 @@ export const retryModelGeneration = (id) => {
 export const updateDishAvailability = (id, available) => {
   return axiosClient.put(`/dishes/updatedish/${id}`, { available });
 };
+
+export const updateDishActiveStatus = (id, isActive) => {
+  return axiosClient.put(`/dishes/updatedish/${id}`, { isActive });
+};

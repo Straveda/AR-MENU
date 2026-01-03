@@ -2,13 +2,14 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import axiosClient from "../../api/axiosClient";
 import { useOrder } from "../../context/OrderContext";
-import { useTenant } from "../../context/TenantProvider";
+import { useToast } from "../../components/common/Toast/ToastContext";
 
 export default function DishDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { slug } = useTenant(); 
   const { addItem } = useOrder();
+  const { showSuccess, showError } = useToast();
   const [dish, setDish] = useState(null);
   const [loading, setLoading] = useState(true);
   const [imageError, setImageError] = useState(false);
@@ -19,23 +20,23 @@ export default function DishDetails() {
 
   const handleAddToOrder = () => {
     if (suspended) {
-        alert("Ordering is temporarily unavailable as the restaurant is suspended.");
+        showError("Ordering is temporarily unavailable as the restaurant is suspended.");
         return;
     }
     if (dish) {
       
       addItem(dish, quantity);
-      alert(`Added ${quantity} x ${dish.name} to order!`);
+      showSuccess(`Added ${quantity} x ${dish.name} to order!`);
     }
   };
 
   const handleAddRecommendationToOrder = (recDish) => {
     if (suspended) {
-        alert("Ordering is temporarily unavailable.");
+        showError("Ordering is temporarily unavailable.");
         return;
     }
     addItem(recDish, 1);
-    alert(`Added 1 x ${recDish.name} to order!`);
+    showSuccess(`Added 1 x ${recDish.name} to order!`);
   };
 
   const getTagColor = (tag) => {

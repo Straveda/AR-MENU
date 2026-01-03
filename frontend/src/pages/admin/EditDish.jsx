@@ -48,7 +48,7 @@ export default function EditDish() {
         });
       } catch (error) {
         console.error("Error fetching dish:", error);
-        alert("Failed to load dish");
+        showError("Failed to load dish");
       } finally {
         setLoading(false);
       }
@@ -84,12 +84,12 @@ export default function EditDish() {
       const res = await axiosClient.put(`/dishes/updatedish/${id}`, payload);
 
       if (res.status === 200) {
-        alert("Dish updated successfully!");
+        showSuccess("Dish updated successfully!");
         navigate("/admin/dashboard");
       }
     } catch (error) {
       console.error("Update error:", error);
-      alert("Failed to update dish");
+      showError("Failed to update dish");
     } finally {
       setSubmitting(false);
     }

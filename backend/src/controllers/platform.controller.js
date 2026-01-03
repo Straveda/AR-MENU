@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import { Restaurant } from "../models/restaurant.models.js"
 import { User } from "../models/user.models.js";
 import { Plan } from "../models/plan.models.js";
+import { subscriptionService } from "../services/subscriptionService.js";
 import { logAudit } from "../utils/logger.js";
 import { Dish } from "../models/dish.models.js";
 import { SubscriptionLog } from "../models/subscriptionLog.models.js";
@@ -316,40 +317,53 @@ const updateUser = async (req, res) => {
 };
 
 const toggleUserStatus = async (req, res) => {
-    try {
-        const { userId } = req.params;
+  try {
+    const { userId } = req.params;
 
-        const user = await User.findById(userId);
-        if (!user) {
-            return res.status(404).json({
-                success: false,
-                message: "User not found"
-            });
-        }
-
-        if (user.role === 'SUPER_ADMIN') {
-            return res.status(403).json({
-                success: false,
-                message: "Cannot modify Super Admin users"
-            });
-        }
-
-        user.isActive = !user.isActive;
-        await user.save();
-
-        return res.status(200).json({
-            success: true,
-            message: `User ${user.isActive ? 'activated' : 'deactivated'} successfully`,
-            data: { isActive: user.isActive }
-        });
-    } catch (error) {
-        return res.status(500).json({
-            success: false,
-            message: "Internal server error",
-            error: error.message
-        });
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
     }
+
+    if (user.role === "SUPER_ADMIN") {
+      return res.status(403).json({
+        success: false,
+        message: "Cannot modify Super Admin users",
+      });
+    }
+
+    // If activating, check limit
+    if (!user.isActive) {
+      if (user.restaurantId) {
+        await subscriptionService.validateActivation(
+          user.restaurantId,
+          "maxStaff"
+        );
+      }
+    }
+
+    user.isActive = !user.isActive;
+    await user.save();
+
+    return res.status(200).json({
+      success: true,
+      message: `User ${
+        user.isActive ? "activated" : "deactivated"
+      } successfully`,
+      data: { isActive: user.isActive },
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      error: error.message,
+    });
+  }
 };
+
 
 const createRestaurant = async (req, res) => {
     try {
@@ -505,6 +519,30 @@ const createRestaurantAdmin = async (req, res) => {
       });
     }
 
+    // Check Active Staff Limit
+    // Note: Restaurant Admin is usually exempt or counts as 1. 
+    // If we count them, we should check limit here.
+    // subscriptionService assumes Role != RESTAURANT_ADMIN does not count?
+    // Let's check subscriptionService logic: "role: { $ne: 'RESTAURANT_ADMIN' }"
+    // So creating a Restaurant Admin should NOT check the staff limit if they are the admin.
+    // BUT `createRestaurantAdmin` creates the *first* admin usually.
+    // Plan limits usually apply to *staff* created BY the admin.
+    // So we can skip limit check here OR check it but expect it to be allowed.
+    // "Plan limit reached (5). Please upgrade." -> usually regarding waiters/kitchen staff.
+    // So I will SKIP the active limit check for RESTAURANT_ADMIN to ensure they can always be created to manage the restaurant.
+    
+    // However, the original code had:
+    // if (currentStaffCount >= staffLimit) ...
+    // So it WAS enforcing limit.
+    // But `subscriptionService.checkActiveLimit` excludes RESTAURANT_ADMIN.
+    // So if I call it, it will return count of OTHER staff. 
+    // Since this user IS a RESTAURANT_ADMIN, adding them won't increase the "Staff" count as per `subscriptionService`.
+    // So we are good to proceed without check, or check just to be safe but the service says they don't count can be misleading if we want to limit Total Users.
+    // I'll stick to the pattern:
+    // const limitCheck = await subscriptionService.checkActiveLimit(restaurantId, 'maxStaff');
+    // But since this user won't count towards it, we can ignore it?
+    // actually, let's keep it valid.
+
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const user = await User.create({
@@ -514,7 +552,7 @@ const createRestaurantAdmin = async (req, res) => {
       phone,
       role: "RESTAURANT_ADMIN",
       restaurantId,
-      isActive: true,
+      isActive: true, // Admin should be active by default? Yes.
     });
 
     return res.status(201).json({

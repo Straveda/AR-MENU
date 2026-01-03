@@ -108,11 +108,15 @@ platformRouter.patch(
   resumeRestaurant
 );
 
+import { resolveRestaurantFromUser } from '../middlewares/resolveRestaurantFromUser.middleware.js';
+
 platformRouter.post(
-  '/create-user',
+  "/create-user",
   requireAuth,
-  requireRole('SUPER_ADMIN'),
-  createPlatformUser,
+  requireRole("SUPER_ADMIN", "PLATFORM_ADMIN", "RESTAURANT_ADMIN"), // Restaurant Admin can create staff
+  resolveRestaurantFromUser, // If Rest Admin, attach restaurant
+  // enforcePlanFeature("maxStaff"), // REMOVED: Soft enforcement in controller
+  createPlatformUser
 );
 
 platformRouter.put(

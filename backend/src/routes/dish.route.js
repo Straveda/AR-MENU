@@ -74,7 +74,7 @@ dishRoute.post(
   resolveRestaurantFromUser,
   requireRole("RESTAURANT_ADMIN", "SUPER_ADMIN", "PLATFORM_ADMIN"),
   checkSubscription,
-  enforcePlanFeature("maxDishes"),
+  // enforcePlanFeature("maxDishes"), // REMOVED: Soft enforcement in controller
   upload.single("image"),
   addDish
 );

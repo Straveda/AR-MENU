@@ -1,14 +1,17 @@
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { deleteDish, getAllDishes, retryModelGeneration, updateDishAvailability } from "../../api/dishApi.js";
+import { deleteDish, getAllDishes, retryModelGeneration, updateDishAvailability, updateDishActiveStatus } from "../../api/dishApi.js";
 import { QRCodeSVG } from "qrcode.react";
 import { useAuth } from "../../context/AuthProvider";
 import Loading from "../../components/common/Loading";
 import EmptyState from "../../components/common/EmptyState";
+import { useToast } from "../../components/common/Toast/ToastContext";
+import ConfirmationModal from "../../components/common/ConfirmationModal";
 
 export default function Dashboard() {
   const navigate = useNavigate();
   const { logout } = useAuth();
+  const { showSuccess, showError, showInfo, showWarning } = useToast();
   const [dishes, setDishes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -20,6 +23,19 @@ export default function Dashboard() {
 
   const [showQRModal, setShowQRModal] = useState(false);
   const [homepageUrl, setHomepageUrl] = useState("");
+  
+  const [confirmModal, setConfirmModal] = useState({ 
+    isOpen: false, 
+    title: "", 
+    message: "", 
+    onConfirm: null, 
+    isDangerous: false,
+    confirmLabel: "Confirm"
+  });
+
+  const closeConfirmModal = () => {
+    setConfirmModal(prev => ({ ...prev, isOpen: false }));
+  };
 
   const fetchDishes = async () => {
     try {
@@ -27,7 +43,7 @@ export default function Dashboard() {
       setDishes(res.data.data.dishes || []);
     } catch (error) {
       console.error("Error fetching dishes:", error);
-      alert("Failed to load dishes");
+      showError("Failed to load dishes");
     } finally {
       setLoading(false);
     }
@@ -39,19 +55,30 @@ export default function Dashboard() {
     setHomepageUrl(`${window.location.origin}`);
   }, []);
 
-  const handleDelete = async (id, name) => {
-    if (!confirm(`Are you sure you want to delete "${name}"?`)) return;
+  const initiateDelete = (id, name) => {
+    setConfirmModal({
+      isOpen: true,
+      title: "Delete Dish",
+      message: `Are you sure you want to delete "${name}"? This action cannot be undone.`,
+      confirmLabel: "Delete",
+      isDangerous: true,
+      onConfirm: () => handleDelete(id, name)
+    });
+  };
 
+  const handleDelete = async (id, name) => {
     setDeleteLoading(id);
+    closeConfirmModal(); // Close modal immediately, show loading on button if needed, but here we show loading on the action
     try {
       await deleteDish(id);
       setDishes((prev) => prev.filter((dish) => dish._id !== id));
+      showSuccess(`Dish "${name}" deleted successfully`);
     } catch (error) {
       console.error("Delete error:", error);
       if (error.response?.status === 423) {
-          alert("Action Blocked: Restaurant is Suspended. Please contact support.");
+          showError("Action Blocked: Restaurant is Suspended. Please contact support.");
       } else {
-          alert("Failed to delete dish");
+          showError("Failed to delete dish");
       }
     } finally {
       setDeleteLoading(null);
@@ -89,27 +116,26 @@ export default function Dashboard() {
 
   const copyUrlToClipboard = () => {
     navigator.clipboard.writeText(homepageUrl).then(() => {
-      alert("URL copied to clipboard!");
+      showSuccess("URL copied to clipboard!");
     });
   };
 
   const handleRetryModel = async (id, dishName) => {
-    if (!confirm(`Retry 3D model generation for "${dishName}"?`)) return;
-
+    // Confirmation handled by initiateRetryModel
     setRetryLoading(id);
     try {
       await retryModelGeneration(id);
       
       await fetchDishes();
-      alert(`Model generation started for "${dishName}". This may take 2-5 minutes.`);
+      showInfo(`Model generation started for "${dishName}". This may take 2-5 minutes.`);
     } catch (error) {
       console.error("Retry error:", error);
       if (error.response?.status === 403) {
-           alert("Plan Upgrade Required: AR Models feature is not included in your current plan.");
+           showWarning("Plan Upgrade Required: AR Models feature is not included in your current plan.", 5000);
       } else if (error.response?.status === 423) {
-           alert("Action Blocked: Restaurant is Suspended.");
+           showError("Action Blocked: Restaurant is Suspended.");
       } else {
-           alert("Failed to retry model generation");
+           showError("Failed to retry model generation");
       }
     } finally {
       setRetryLoading(null);
@@ -156,12 +182,37 @@ export default function Dashboard() {
           dish._id === id ? { ...dish, available } : dish
         )
       );
+      showSuccess(`Dish marked as ${available ? 'Available' : 'Unavailable'}`);
     } catch (error) {
       console.error("Toggle error:", error);
       if (error.response?.status === 423) {
-          alert("Action Blocked: Restaurant is Suspended.");
+          showError("Action Blocked: Restaurant is Suspended.");
       } else {
-          alert("Failed to update availability");
+          showError("Failed to update availability");
+      }
+    } finally {
+      setToggleLoading(null);
+    }
+  };
+
+  const handleToggleActive = async (id, isActive) => {
+    setToggleLoading(id);
+    try {
+      await updateDishActiveStatus(id, isActive);
+      setDishes((prev) =>
+        prev.map((dish) =>
+          dish._id === id ? { ...dish, isActive } : dish
+        )
+      );
+      showSuccess(`Dish ${isActive ? 'Activated' : 'Deactivated'} successfully`);
+    } catch (error) {
+      console.error("Toggle active error:", error);
+      if (error.response?.status === 403 && error.response?.data?.message?.includes("limit")) {
+         showWarning(error.response.data.message, 5000);
+      } else if (error.response?.status === 423) {
+          showError("Action Blocked: Restaurant is Suspended.");
+      } else {
+          showError("Failed to update active status");
       }
     } finally {
       setToggleLoading(null);
@@ -444,6 +495,21 @@ export default function Dashboard() {
                       </div>
 
                       {}
+                      <div className="flex items-center justify-between mb-2 py-2 border-t border-gray-100">
+                        <span className="text-sm text-gray-700 font-medium">Plan Status</span>
+                         <button
+                          onClick={() => handleToggleActive(dish._id, !dish.isActive)}
+                          disabled={toggleLoading === dish._id}
+                          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${dish.isActive ? 'bg-indigo-500' : 'bg-gray-200'
+                            } ${toggleLoading === dish._id ? 'opacity-50' : ''}`}
+                        >
+                          <span
+                            className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${dish.isActive ? 'translate-x-6' : 'translate-x-1'
+                              }`}
+                          />
+                        </button>
+                      </div>
+
                       <div className="flex items-center justify-between mb-4 py-2 border-t border-gray-100">
                         <span className="text-sm text-gray-700 font-medium flex items-center gap-2">
                           <span className={`w-2 h-2 rounded-full ${dish.available ? 'bg-green-500' : 'bg-gray-300'}`}></span>
@@ -494,7 +560,7 @@ export default function Dashboard() {
 
                           {dish.modelStatus === 'failed' ? (
                             <button
-                              onClick={() => handleRetryModel(dish._id, dish.name)}
+                              onClick={() => initiateRetryModel(dish._id, dish.name)}
                               disabled={retryLoading === dish._id}
                               className="flex-1 bg-blue-500 hover:bg-blue-600 disabled:bg-blue-400 text-white py-2 px-3 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-1"
                             >
@@ -509,7 +575,7 @@ export default function Dashboard() {
                             </button>
                           ) : (
                             <button
-                              onClick={() => handleDelete(dish._id, dish.name)}
+                              onClick={() => initiateDelete(dish._id, dish.name)}
                               disabled={deleteLoading === dish._id}
                               className="flex-1 bg-red-500 hover:bg-red-600 disabled:bg-red-400 text-white py-2 px-3 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-1"
                             >
@@ -592,6 +658,16 @@ export default function Dashboard() {
           </div>
         </div>
       )}
+
+      <ConfirmationModal
+        isOpen={confirmModal.isOpen}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        onConfirm={confirmModal.onConfirm}
+        onCancel={closeConfirmModal}
+        confirmLabel={confirmModal.confirmLabel}
+        isDangerous={confirmModal.isDangerous}
+      />
     </div>
   );
 }

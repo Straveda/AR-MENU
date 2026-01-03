@@ -5,9 +5,12 @@ import axiosClient from "../../api/axiosClient";
 import Loading from "../../components/common/Loading";
 import EmptyState from "../../components/common/EmptyState";
 import { updateStaff } from "../../api/adminApi";
+import { useToast } from "../../components/common/Toast/ToastContext";
+import ConfirmationModal from "../../components/common/ConfirmationModal";
 
 export default function StaffManagement() {
   const navigate = useNavigate();
+  const { showSuccess, showError, showWarning } = useToast();
   const [staff, setStaff] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -15,6 +18,19 @@ export default function StaffManagement() {
   const [form, setForm] = useState({ username: "", email: "", password: "", phone: "", department: "KDS", roleTitle: "" });
   const [showPassword, setShowPassword] = useState(false);
   const [addLoading, setAddLoading] = useState(false);
+  const [actionLoading, setActionLoading] = useState(false);
+
+  const [confirmModal, setConfirmModal] = useState({ 
+    isOpen: false, 
+    title: "", 
+    message: "", 
+    onConfirm: null, 
+    isDangerous: false 
+  });
+
+  const closeConfirmModal = () => {
+    setConfirmModal({ ...confirmModal, isOpen: false });
+  };
 
   const fetchData = async () => {
     try {
@@ -40,7 +56,11 @@ export default function StaffManagement() {
     try {
         const res = await axiosClient.post("/admin/create-staff", form);
         if (res.data.success) {
-            alert("Staff user created successfully!");
+            if (res.data.warning) {
+                showWarning("Staff user created successfully, but marked as INACTIVE due to plan limits. Upgrade your plan to activate.", 5000);
+            } else {
+                showSuccess("Staff user created successfully!");
+            }
             setShowAddModal(false);
             setShowPassword(false);
             setForm({ username: "", email: "", password: "", phone: "", department: "KDS", roleTitle: "" });
@@ -48,29 +68,59 @@ export default function StaffManagement() {
         }
     } catch (error) {
         console.error("Create staff error:", error);
-        alert(error.response?.data?.message || "Failed to create staff user.");
+        showError(error.response?.data?.message || "Failed to create staff user.");
     } finally {
         setAddLoading(false);
     }
   };
 
+  const initiateToggleStatus = (user) => {
+    setConfirmModal({
+      isOpen: true,
+      title: `${user.isActive ? 'Deactivate' : 'Activate'} Staff Member`,
+      message: `Are you sure you want to ${user.isActive ? 'deactivate' : 'activate'} staff member "${user.username}"?`,
+      confirmLabel: user.isActive ? 'Deactivate' : 'Activate',
+      isDangerous: user.isActive,
+      onConfirm: () => handleToggleStatus(user),
+    });
+  };
+
   const handleToggleStatus = async (user) => {
-    if (!confirm(`${user.isActive ? 'Deactivate' : 'Activate'} staff member "${user.username}"?`)) return;
+    setActionLoading(true);
     try {
       await axiosClient.patch(`/admin/toggle-staff-status/${user._id}`);
+      showSuccess(`Staff member ${user.isActive ? 'deactivated' : 'activated'} successfully`);
       fetchData();
     } catch (err) {
-      alert(err.response?.data?.message || "Failed to update status");
+      showError(err.response?.data?.message || "Failed to update status");
+    } finally {
+      setActionLoading(false);
+      closeConfirmModal();
     }
   };
 
+  const initiateDeleteStaff = (user) => {
+    setConfirmModal({
+      isOpen: true,
+      title: "Delete Staff Member",
+      message: `Permanently delete staff member "${user.username}"? This action cannot be undone.`,
+      confirmLabel: "Delete",
+      isDangerous: true,
+      onConfirm: () => handleDeleteStaff(user),
+    });
+  };
+
   const handleDeleteStaff = async (user) => {
-    if (!confirm(`Permanently delete staff member "${user.username}"? This action cannot be undone.`)) return;
+    setActionLoading(true);
     try {
       await axiosClient.delete(`/admin/delete-staff/${user._id}`);
+      showSuccess(`Staff member "${user.username}" deleted successfully`);
       fetchData();
     } catch (err) {
-      alert(err.response?.data?.message || "Failed to delete staff member");
+      showError(err.response?.data?.message || "Failed to delete staff member");
+    } finally {
+      setActionLoading(false);
+      closeConfirmModal();
     }
   };
 
@@ -153,8 +203,8 @@ export default function StaffManagement() {
                                     <td className="px-6 py-4 text-right">
                                         <ActionDropdown 
                                             user={user} 
-                                            onToggleStatus={() => handleToggleStatus(user)}
-                                            onDelete={() => handleDeleteStaff(user)}
+                                            onToggleStatus={() => initiateToggleStatus(user)}
+                                            onDelete={() => initiateDeleteStaff(user)}
                                         />
                                     </td>
                                 </tr>
@@ -278,6 +328,17 @@ export default function StaffManagement() {
             </div>
         </div>
       )}
+
+      <ConfirmationModal
+        isOpen={confirmModal.isOpen}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        onConfirm={confirmModal.onConfirm}
+        onCancel={closeConfirmModal}
+        confirmLabel={confirmModal.confirmLabel}
+        isDangerous={confirmModal.isDangerous}
+        isLoading={actionLoading}
+      />
     </div>
   );
 }

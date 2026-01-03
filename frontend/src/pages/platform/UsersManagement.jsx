@@ -4,8 +4,12 @@ import axiosClient from "../../api/axiosClient";
 import { usePagination } from "../../hooks/usePagination";
 import Pagination from "../../components/common/Pagination";
 import PageSizeSelector from "../../components/common/PageSizeSelector";
+import Modal from "../../components/common/Modal";
+import ConfirmationModal from "../../components/common/ConfirmationModal";
+import { useToast } from "../../components/common/Toast/ToastContext";
 
 export default function UsersManagement() {
+  const { showSuccess, showError, showWarning } = useToast();
   const [users, setUsers] = useState([]);
   const [restaurants, setRestaurants] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -24,6 +28,13 @@ export default function UsersManagement() {
   } = usePagination(10);
 
   const [modal, setModal] = useState({ type: null, user: null });
+  const [confirmModal, setConfirmModal] = useState({ 
+    isOpen: false, 
+    title: "", 
+    message: "", 
+    onConfirm: null, 
+    isDangerous: false 
+  });
 
   const [userForm, setUserForm] = useState({
     username: "",
@@ -80,8 +91,12 @@ export default function UsersManagement() {
     setShowPassword(false);
   };
 
+  const closeConfirmModal = () => {
+    setConfirmModal({ ...confirmModal, isOpen: false });
+  };
+
   const handleError = (err) => {
-    setError(err.response?.data?.message || "Operation failed");
+    showError(err.response?.data?.message || "Operation failed");
   };
 
   const handleCreateUser = async (e) => {
@@ -89,7 +104,12 @@ export default function UsersManagement() {
     setActionLoading(true);
     setError("");
     try {
-      await axiosClient.post("/platform/create-user", userForm);
+      const res = await axiosClient.post("/platform/create-user", userForm);
+      if (res.data.warning) {
+          showWarning("User created successfully, but marked as INACTIVE due to plan limits. Upgrade plan to activate.", 5000);
+      } else {
+          showSuccess("User created successfully");
+      }
       await fetchData();
       closeModal();
     } catch (err) {
@@ -110,6 +130,7 @@ export default function UsersManagement() {
         role: userForm.role,
         restaurantId: userForm.restaurantId
       });
+      showSuccess("User updated successfully");
       await fetchData();
       closeModal();
     } catch (err) {
@@ -119,26 +140,53 @@ export default function UsersManagement() {
     }
   };
 
+  const initiateToggleStatus = (user) => {
+    setConfirmModal({
+      isOpen: true,
+      title: `${user.isActive ? 'Deactivate' : 'Activate'} User`,
+      message: `Are you sure you want to ${user.isActive ? 'deactivate' : 'activate'} user "${user.username}"?`,
+      confirmLabel: user.isActive ? 'Deactivate' : 'Activate',
+      isDangerous: user.isActive,
+      onConfirm: () => handleToggleStatus(user),
+    });
+  };
+
   const handleToggleStatus = async (user) => {
-    if (!confirm(`${user.isActive ? 'Deactivate' : 'Activate'} user "${user.username}"?`)) return;
+    setActionLoading(true);
     try {
       await axiosClient.patch(`/platform/toggle-user-status/${user._id}`);
+      showSuccess(`User ${user.isActive ? 'deactivated' : 'activated'} successfully`);
       await fetchData();
     } catch (err) {
-      alert(err.response?.data?.message || "Failed to update status");
+      showError(err.response?.data?.message || "Failed to update status");
+    } finally {
+      setActionLoading(false);
+      closeConfirmModal();
     }
   };
 
+  const initiateDeleteUser = (user) => {
+    setConfirmModal({
+      isOpen: true,
+      title: "Delete User",
+      message: `Permanently delete user "${user.username}"? This action cannot be undone.`,
+      confirmLabel: "Delete",
+      isDangerous: true,
+      onConfirm: () => handleDeleteUser(user),
+    });
+  };
+
   const handleDeleteUser = async (user) => {
-    if (!confirm(`Permanently delete user "${user.username}"? This action cannot be undone.`)) return;
     setActionLoading(true);
     try {
       await axiosClient.delete(`/platform/delete-user/${user._id}`);
+      showSuccess(`User "${user.username}" deleted successfully`);
       await fetchData();
     } catch (err) {
-      alert(err.response?.data?.message || "Failed to delete user");
+      showError(err.response?.data?.message || "Failed to delete user");
     } finally {
       setActionLoading(false);
+      closeConfirmModal();
     }
   };
 
@@ -297,8 +345,8 @@ export default function UsersManagement() {
                       <ActionDropdown
                         user={user}
                         onEdit={() => openEditModal(user)}
-                        onToggleStatus={() => handleToggleStatus(user)}
-                        onDelete={() => handleDeleteUser(user)}
+                        onToggleStatus={() => initiateToggleStatus(user)}
+                        onDelete={() => initiateDeleteUser(user)}
                       />
                     )}
                   </td>
@@ -410,6 +458,17 @@ export default function UsersManagement() {
           </form>
         </Modal>
       )}
+
+      <ConfirmationModal
+        isOpen={confirmModal.isOpen}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        onConfirm={confirmModal.onConfirm}
+        onCancel={closeConfirmModal}
+        confirmLabel={confirmModal.confirmLabel}
+        isDangerous={confirmModal.isDangerous}
+        isLoading={actionLoading}
+      />
     </div>
   );
 }
@@ -531,21 +590,7 @@ function ActionDropdown({ user, onEdit, onToggleStatus, onDelete }) {
   );
 }
 
-function Modal({ title, onClose, children }) {
-  return createPortal(
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="fixed inset-0 bg-black/40" onClick={onClose} />
-      <div className="relative bg-white rounded-xl w-full max-w-md shadow-2xl">
-        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
-          <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-xl">×</button>
-        </div>
-        <div className="p-5 overflow-y-auto max-h-[80vh]">{children}</div>
-      </div>
-    </div>,
-    document.body
-  );
-}
+
 
 function InputField({ label, value, onChange, type = "text", showToggle = false, isToggled = false, onToggle = null }) {
   return (

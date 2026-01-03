@@ -4,13 +4,29 @@ import axiosClient from "../../api/axiosClient";
 import { usePagination } from "../../hooks/usePagination";
 import Pagination from "../../components/common/Pagination";
 import PageSizeSelector from "../../components/common/PageSizeSelector";
+import Modal from "../../components/common/Modal";
+import ConfirmationModal from "../../components/common/ConfirmationModal";
+import { useToast } from "../../components/common/Toast/ToastContext";
 
 export default function RestaurantsManagement() {
+  const { showSuccess, showError, showWarning } = useToast();
   const [restaurants, setRestaurants] = useState([]);
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
   const [error, setError] = useState("");
+
+  const [confirmModal, setConfirmModal] = useState({ 
+    isOpen: false, 
+    title: "", 
+    message: "", 
+    onConfirm: null, 
+    isDangerous: false 
+  });
+
+  const closeConfirmModal = () => {
+    setConfirmModal({ ...confirmModal, isOpen: false });
+  };
 
   const { 
     page, 
@@ -101,7 +117,7 @@ export default function RestaurantsManagement() {
         ...adminForm,
       });
       closeModal();
-      alert("Admin created successfully!");
+      showSuccess("Admin created successfully!");
     } catch (err) {
       handleError(err);
     } finally {
@@ -179,41 +195,86 @@ export default function RestaurantsManagement() {
     }
   };
 
+  const initiateSuspend = (r) => {
+    setConfirmModal({
+      isOpen: true,
+      title: "Suspend Restaurant",
+      message: `Suspend "${r.name}"? This will block access for the restaurant.`,
+      confirmLabel: "Suspend",
+      isDangerous: true,
+      onConfirm: () => handleSuspend(r),
+    });
+  };
+
   const handleSuspend = async (r) => {
-    if (!confirm(`Suspend "${r.name}"? This will block access for the restaurant.`)) return;
+    setConfirmModal({ ...confirmModal, isLoading: true });
     try {
       await axiosClient.patch(`/platform/suspend-restaurant/${r._id}`);
+      showSuccess(`Restaurant "${r.name}" suspended successfully`);
       await fetchData();
     } catch (err) {
-      alert(err.response?.data?.message || "Failed to suspend");
+      showError(err.response?.data?.message || "Failed to suspend");
+    } finally {
+      closeConfirmModal();
     }
+  };
+
+  const initiateResume = (r) => {
+    setConfirmModal({
+      isOpen: true,
+      title: "Resume Restaurant",
+      message: `Resume access for "${r.name}"?`,
+      confirmLabel: "Resume",
+      isDangerous: false,
+      onConfirm: () => handleResume(r),
+    });
   };
 
   const handleResume = async (r) => {
+    setConfirmModal({ ...confirmModal, isLoading: true });
     try {
       await axiosClient.patch(`/platform/resume-restaurant/${r._id}`);
+      showSuccess(`Restaurant "${r.name}" resumed successfully`);
       await fetchData();
     } catch (err) {
-      alert(err.response?.data?.message || "Failed to resume");
+      showError(err.response?.data?.message || "Failed to resume");
+    } finally {
+      closeConfirmModal();
     }
   };
 
-  const handleDeleteRestaurant = async (r) => {
-    const confirm1 = confirm(`Are you sure you want to delete "${r.name}"? This action CANNOT be undone.`);
-    if (!confirm1) return;
-    
-    const confirm2 = confirm(`CRITICAL WARNING: This will permanently delete all users, dishes, orders, and logs associated with ${r.name}. Are you absolutely sure?`);
-    if (!confirm2) return;
+  const initiateDeleteRestaurant = (r) => {
+    setConfirmModal({
+      isOpen: true,
+      title: "Delete Restaurant",
+      message: `Are you sure you want to delete "${r.name}"? This action CANNOT be undone.`,
+      confirmLabel: "Continue...",
+      isDangerous: true,
+      onConfirm: () => initiateFinalDeleteRestaurant(r),
+    });
+  };
 
-    setActionLoading(true);
+  const initiateFinalDeleteRestaurant = (r) => {
+    setConfirmModal({
+      isOpen: true,
+      title: "CRITICAL DELETE WARNING",
+      message: `CRITICAL WARNING: This will permanently delete all users, dishes, orders, and logs associated with ${r.name}. Are you absolutely sure?`,
+      confirmLabel: "Yes, Delete Permanently",
+      isDangerous: true,
+      onConfirm: () => handleDeleteRestaurant(r),
+    });
+  };
+
+  const handleDeleteRestaurant = async (r) => {
+    setConfirmModal({ ...confirmModal, isLoading: true });
     try {
       await axiosClient.delete(`/platform/delete-restaurant/${r._id}`);
       await fetchData();
-      alert("Restaurant deleted successfully");
+      showSuccess("Restaurant deleted successfully");
     } catch (err) {
-      alert(err.response?.data?.message || "Failed to delete restaurant");
+      showError(err.response?.data?.message || "Failed to delete restaurant");
     } finally {
-      setActionLoading(false);
+      closeConfirmModal();
     }
   };
 
@@ -316,9 +377,9 @@ export default function RestaurantsManagement() {
                           setStatusUpdate(r.subscriptionStatus);
                           setModal({ type: "status", restaurant: r });
                         }}
-                        onSuspend={() => handleSuspend(r)}
-                        onResume={() => handleResume(r)}
-                        onDelete={() => handleDeleteRestaurant(r)}
+                        onSuspend={() => initiateSuspend(r)}
+                        onResume={() => initiateResume(r)}
+                        onDelete={() => initiateDeleteRestaurant(r)}
                       />
                     </td>
                   </tr>
@@ -498,6 +559,17 @@ export default function RestaurantsManagement() {
           </form>
         </Modal>
       )}
+      
+      <ConfirmationModal
+        isOpen={confirmModal.isOpen}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        onConfirm={confirmModal.onConfirm}
+        onCancel={closeConfirmModal}
+        confirmLabel={confirmModal.confirmLabel}
+        isDangerous={confirmModal.isDangerous}
+        isLoading={confirmModal.isLoading}
+      />
     </div>
   );
 }
@@ -608,22 +680,6 @@ function ActionDropdown({ restaurant, hasPlan, onCreateAdmin, onAssignPlan, onEx
         document.body
       )}
     </>
-  );
-}
-
-function Modal({ title, onClose, children }) {
-  return createPortal(
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="fixed inset-0 bg-black/40" onClick={onClose} />
-      <div className="relative bg-white rounded-xl w-full max-w-md shadow-2xl">
-        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
-          <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-xl">×</button>
-        </div>
-        <div className="p-5">{children}</div>
-      </div>
-    </div>,
-    document.body
   );
 }
 
