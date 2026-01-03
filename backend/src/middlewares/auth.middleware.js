@@ -1,25 +1,24 @@
-import jwt from 'jsonwebtoken'
+import jwt from 'jsonwebtoken';
 
 export const isLoggedIn = async (req, res, next) => {
-    try {
-        
-        const token = req.cookies?.token;
+  try {
+    const token = req.cookies?.token;
 
-        if(!token){
-            return res.status(400).json({
-                success: false,
-                message: "Token not Found"
-            })
-        }
-
-        const decode = await jwt.verify(token, process.env.JWT_SECRET)
-        
-        req.user = decode;
-        next();
-    } catch (error) {
-        return res.status(400).json({
-            message: "Middleware Failure",
-            success: false
-        })
+    if (!token) {
+      return res.status(400).json({
+        success: false,
+        message: 'Token not Found',
+      });
     }
-}
+
+    const decode = await jwt.verify(token, process.env.JWT_SECRET);
+
+    req.user = decode;
+    next();
+  } catch (error) {
+    return res.status(400).json({
+      message: 'Middleware Failure',
+      success: false,
+    });
+  }
+};

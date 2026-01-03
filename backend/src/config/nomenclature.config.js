@@ -1,40 +1,37 @@
-
-
 export const NOMENCLATURE = {
-  
   SYSTEM_ROLES: {
-    SUPER_ADMIN: "Super Admin",
-    PLATFORM_ADMIN: "Platform Admin",
-    RESTAURANT_ADMIN: "Restaurant Admin",
-    CUSTOMER: "Customer"
+    SUPER_ADMIN: 'Super Admin',
+    PLATFORM_ADMIN: 'Platform Admin',
+    RESTAURANT_ADMIN: 'Restaurant Admin',
+    CUSTOMER: 'Customer',
   },
 
   DEPARTMENTS: {
-    KDS: "Kitchen Display",
-    Finance: "Finance",
-    Operations: "Operations"
+    KDS: 'Kitchen Display',
+    Finance: 'Finance',
+    Operations: 'Operations',
   },
 
   LABELS: {
-    staff: "Staff",
-    staffMember: "Staff Member",
-    department: "Department",
-    role: "Role",
-    roleTitle: "Role Title"
-  }
+    staff: 'Staff',
+    staffMember: 'Staff Member',
+    department: 'Department',
+    role: 'Role',
+    roleTitle: 'Role Title',
+  },
 };
 
 export const SYSTEM_ROLE_KEYS = {
-  SUPER_ADMIN: "SUPER_ADMIN",
-  PLATFORM_ADMIN: "PLATFORM_ADMIN",
-  RESTAURANT_ADMIN: "RESTAURANT_ADMIN",
-  CUSTOMER: "CUSTOMER"
+  SUPER_ADMIN: 'SUPER_ADMIN',
+  PLATFORM_ADMIN: 'PLATFORM_ADMIN',
+  RESTAURANT_ADMIN: 'RESTAURANT_ADMIN',
+  CUSTOMER: 'CUSTOMER',
 };
 
 export const DEPARTMENT_KEYS = {
-  KDS: "KDS",
-  FINANCE: "Finance",
-  OPERATIONS: "Operations"
+  KDS: 'KDS',
+  FINANCE: 'Finance',
+  OPERATIONS: 'Operations',
 };
 
-export const VALID_DEPARTMENTS = ["KDS", "Finance", "Operations"];
+export const VALID_DEPARTMENTS = ['KDS', 'Finance', 'Operations'];

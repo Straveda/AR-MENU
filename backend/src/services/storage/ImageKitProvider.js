@@ -1,5 +1,5 @@
-import ImageKit from "imagekit";
-import { StorageProvider } from "./StorageProvider.js";
+import ImageKit from 'imagekit';
+import { StorageProvider } from './StorageProvider.js';
 
 export class ImageKitProvider extends StorageProvider {
   constructor() {
@@ -19,13 +19,13 @@ export class ImageKitProvider extends StorageProvider {
    * @param {string} folder - The folder path to upload to.
    * @returns {Promise<{ url: string, fileId: string }>}
    */
-  async uploadFile(fileBuffer, fileName, folder = "menu-ar/dishes") {
+  async uploadFile(fileBuffer, fileName, folder = 'menu-ar/dishes') {
     try {
       const response = await this.imagekit.upload({
         file: fileBuffer, // ImageKit accepts Buffer directly
         fileName: fileName,
         folder: folder,
-        useUniqueFileName: true, 
+        useUniqueFileName: true,
       });
 
       return {
@@ -33,7 +33,7 @@ export class ImageKitProvider extends StorageProvider {
         fileId: response.fileId,
       };
     } catch (error) {
-      console.error("ImageKit Upload Error:", error);
+      console.error('ImageKit Upload Error:', error);
       throw new Error(`Failed to upload file to ImageKit: ${error.message}`);
     }
   }
@@ -47,8 +47,8 @@ export class ImageKitProvider extends StorageProvider {
     try {
       await this.imagekit.deleteFile(fileId);
     } catch (error) {
-       console.error("ImageKit Delete Error:", error);
-       throw new Error(`Failed to delete file from ImageKit: ${error.message}`);
+      console.error('ImageKit Delete Error:', error);
+      throw new Error(`Failed to delete file from ImageKit: ${error.message}`);
     }
   }
 }

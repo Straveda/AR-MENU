@@ -120,6 +120,20 @@ export default function Dashboard() {
     });
   };
 
+  const initiateRetryModel = (id, name) => {
+    setConfirmModal({
+      isOpen: true,
+      title: "Retry Model Generation",
+      message: `Are you sure you want to retry 3D model generation for "${name}"?`,
+      confirmLabel: "Retry",
+      isDangerous: false,
+      onConfirm: () => {
+        closeConfirmModal();
+        handleRetryModel(id, name);
+      }
+    });
+  };
+
   const handleRetryModel = async (id, dishName) => {
     // Confirmation handled by initiateRetryModel
     setRetryLoading(id);

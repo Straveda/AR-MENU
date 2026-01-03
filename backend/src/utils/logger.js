@@ -1,10 +1,10 @@
-import { AuditLog } from "../models/auditLog.model.js";
+import { AuditLog } from '../models/auditLog.model.js';
 
 export const logAudit = async ({ req, action, targetId, targetModel, changes = {} }) => {
   try {
     if (!req.user) {
-        console.warn("Audit Log Skipped: Missing user context", { action });
-        return;
+      console.warn('Audit Log Skipped: Missing user context', { action });
+      return;
     }
 
     const ipAddress = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
@@ -19,11 +19,9 @@ export const logAudit = async ({ req, action, targetId, targetModel, changes = {
       targetModel,
       changes,
       ipAddress,
-      userAgent
+      userAgent,
     });
-
   } catch (error) {
-    
-    console.error("Failed to write audit log:", error);
+    console.error('Failed to write audit log:', error);
   }
 };

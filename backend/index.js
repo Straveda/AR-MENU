@@ -16,15 +16,15 @@ const server = http.createServer(app);
 /* ======================
    CORS CONFIG
 ====================== */
-const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:5173";
+const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:5173';
 
 app.use(
   cors({
-  origin: true,
-		credentials: true,
-		methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-		allowedHeaders: ["Content-Type", "Authorization"],
-  })
+    origin: true,
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  }),
 );
 
 /* ======================
@@ -35,41 +35,38 @@ const io = new Server(server, {
     origin: true,
     credentials: true,
   },
-  transports: ["websocket", "polling"], // important for production
+  transports: ['websocket', 'polling'], // important for production
 });
 
-io.on("connection", (socket) => {
-  console.log("Socket connected:", socket.id);
+io.on('connection', (socket) => {
+  console.log('Socket connected:', socket.id);
 
-  socket.on("join_kds", (restaurantId) => {
+  socket.on('join_kds', (restaurantId) => {
     if (restaurantId) {
       socket.join(`KDS_ROOM_${restaurantId}`);
     }
   });
 
-  socket.on("join_order", (data) => {
-    const { restaurantId, orderCode } =
-      typeof data === "string" ? { orderCode: data } : data;
+  socket.on('join_order', (data) => {
+    const { restaurantId, orderCode } = typeof data === 'string' ? { orderCode: data } : data;
 
     if (orderCode) {
-      const room = restaurantId
-        ? `ORDER_ROOM_${restaurantId}_${orderCode}`
-        : orderCode;
+      const room = restaurantId ? `ORDER_ROOM_${restaurantId}_${orderCode}` : orderCode;
 
       socket.join(room);
     }
   });
 
-  socket.on("join_room", (room) => {
+  socket.on('join_room', (room) => {
     if (room) socket.join(room);
   });
 
-  socket.on("leave_room", (room) => {
+  socket.on('leave_room', (room) => {
     if (room) socket.leave(room);
   });
 
-  socket.on("disconnect", () => {
-    console.log("Socket disconnected:", socket.id);
+  socket.on('disconnect', () => {
+    console.log('Socket disconnected:', socket.id);
   });
 });
 
@@ -109,14 +106,14 @@ import configRoute from './src/routes/config.route.js';
 app.use('/api/v1/dishes', dishRoute);
 app.use('/api/v1/orders', orderRoute);
 app.use('/api/v1/kds', kdsOrderRoute);
-app.use("/api/v1/users/auth", userAuthRoutes);
-app.use("/api/v1/platform", platformRouter);
-app.use("/api/v1/platform/plans", planRouter);
-app.use("/api/v1/admin", adminRouter);
-app.use("/api/v1/config", configRoute);
+app.use('/api/v1/users/auth', userAuthRoutes);
+app.use('/api/v1/platform', platformRouter);
+app.use('/api/v1/platform/plans', planRouter);
+app.use('/api/v1/admin', adminRouter);
+app.use('/api/v1/config', configRoute);
 
-app.get("/", (req, res) => {
-  res.send("Hello World!");
+app.get('/', (req, res) => {
+  res.send('Hello World!');
 });
 
 /* ======================

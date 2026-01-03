@@ -618,17 +618,6 @@ function ActionDropdown({ restaurant, hasPlan, onCreateAdmin, onAssignPlan, onEx
     }
   }, [open]);
 
-  const MenuItem = ({ label, onClick, danger, success }) => (
-    <button
-      onClick={() => { onClick(); setOpen(false); }}
-      className={`block w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${
-        danger ? 'text-red-600' : success ? 'text-emerald-600' : 'text-gray-700'
-      }`}
-    >
-      {label}
-    </button>
-  );
-
   return (
     <>
       <button
@@ -652,34 +641,47 @@ function ActionDropdown({ restaurant, hasPlan, onCreateAdmin, onAssignPlan, onEx
             <div className="px-4 py-2 border-b border-gray-100">
               <p className="text-xs font-medium text-gray-400 uppercase">Admin</p>
             </div>
-            <MenuItem label="Create admin user" onClick={onCreateAdmin} />
+            <MenuItem label="Create admin user" onClick={() => { onCreateAdmin(); setOpen(false); }} />
             
             <div className="px-4 py-2 border-b border-gray-100 border-t">
               <p className="text-xs font-medium text-gray-400 uppercase">Subscription</p>
             </div>
-            <MenuItem label="Assign plan" onClick={onAssignPlan} />
-            <MenuItem label="Extend subscription" onClick={onExtend} />
-            {hasPlan && <MenuItem label="Change plan" onClick={onChangePlan} />}
+            <MenuItem label="Assign plan" onClick={() => { onAssignPlan(); setOpen(false); }} />
+            <MenuItem label="Extend subscription" onClick={() => { onExtend(); setOpen(false); }} />
+            {hasPlan && <MenuItem label="Change plan" onClick={() => { onChangePlan(); setOpen(false); }} />}
             
             <div className="px-4 py-2 border-b border-gray-100 border-t">
               <p className="text-xs font-medium text-gray-400 uppercase">Status</p>
             </div>
-            <MenuItem label="Update status" onClick={onUpdateStatus} />
+            <MenuItem label="Update status" onClick={() => { onUpdateStatus(); setOpen(false); }} />
             {restaurant.subscriptionStatus === "SUSPENDED" ? (
-              <MenuItem label="Resume restaurant" onClick={onResume} success />
+              <MenuItem label="Resume restaurant" onClick={() => { onResume(); setOpen(false); }} success />
             ) : (
-              <MenuItem label="Suspend restaurant" onClick={onSuspend} danger />
+              <MenuItem label="Suspend restaurant" onClick={() => { onSuspend(); setOpen(false); }} danger />
             )}
             
             <div className="px-4 py-2 border-b border-gray-100 border-t">
               <p className="text-xs font-medium text-gray-400 uppercase">Management</p>
             </div>
-            <MenuItem label="Delete Restaurant" onClick={onDelete} danger />
+            <MenuItem label="Delete Restaurant" onClick={() => { onDelete(); setOpen(false); }} danger />
           </div>
         </>,
         document.body
       )}
     </>
+  );
+}
+
+function MenuItem({ label, onClick, danger, success }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`block w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${
+        danger ? 'text-red-600' : success ? 'text-emerald-600' : 'text-gray-700'
+      }`}
+    >
+      {label}
+    </button>
   );
 }
 

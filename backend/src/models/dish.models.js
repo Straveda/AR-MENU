@@ -30,8 +30,8 @@ const dishSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    modelStatus: { type: String, default: 'pending' }, 
-    meshyTaskId: { type: String }, 
+    modelStatus: { type: String, default: 'pending' },
+    meshyTaskId: { type: String },
     modelUrls: {
       glb: { type: String },
       usdz: { type: String },
@@ -58,7 +58,7 @@ const dishSchema = new mongoose.Schema(
       carbs: { type: Number, default: 0 },
       sugar: { type: Number, default: 0 },
     },
-    
+
     // Controls whether the dish counts towards plan limits
     isActive: {
       type: Boolean,

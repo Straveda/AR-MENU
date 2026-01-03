@@ -1,32 +1,35 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 
-const subscriptionLogSchema = new mongoose.Schema({
+const subscriptionLogSchema = new mongoose.Schema(
+  {
     restaurantId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Restaurant",
-        required: true
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Restaurant',
+      required: true,
     },
     planId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Plan",
-        required: true
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Plan',
+      required: true,
     },
     action: {
-        type: String,
-        enum: ["ASSIGN", "EXTEND", "CHANGE"],
-        required: true
+      type: String,
+      enum: ['ASSIGN', 'EXTEND', 'CHANGE'],
+      required: true,
     },
     previousPlanId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Plan"
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Plan',
     },
     durationInDays: {
-        type: Number
+      type: Number,
     },
     performedBy: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User"
-    }
-}, { timestamps: true });
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+    },
+  },
+  { timestamps: true },
+);
 
-export const SubscriptionLog = mongoose.model("SubscriptionLog", subscriptionLogSchema);
+export const SubscriptionLog = mongoose.model('SubscriptionLog', subscriptionLogSchema);

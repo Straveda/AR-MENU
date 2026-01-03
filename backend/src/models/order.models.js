@@ -1,10 +1,10 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 
 const historySchema = new mongoose.Schema(
   {
     status: {
       type: String,
-      enum: ["Pending", "Preparing", "Ready", "Completed", "Cancelled"],
+      enum: ['Pending', 'Preparing', 'Ready', 'Completed', 'Cancelled'],
       required: true,
     },
     at: {
@@ -13,18 +13,18 @@ const historySchema = new mongoose.Schema(
     },
     by: {
       type: String,
-      default: "system",
+      default: 'system',
     },
   },
-  { _id: false }
-)
+  { _id: false },
+);
 
 const orderSchema = new mongoose.Schema(
   {
     restaurantId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Restaurant",
-      required: true
+      ref: 'Restaurant',
+      required: true,
     },
     orderCode: {
       type: String,
@@ -40,7 +40,7 @@ const orderSchema = new mongoose.Schema(
       {
         dishId: {
           type: mongoose.Schema.Types.ObjectId,
-          ref: "Dish",
+          ref: 'Dish',
         },
         name: { type: String },
         price: { type: Number },
@@ -54,13 +54,13 @@ const orderSchema = new mongoose.Schema(
 
     orderStatus: {
       type: String,
-      enum: ["Pending", "Preparing", "Ready", "Completed", "Cancelled"],
-      default: "Pending",
+      enum: ['Pending', 'Preparing', 'Ready', 'Completed', 'Cancelled'],
+      default: 'Pending',
     },
 
     history: [historySchema],
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
-export const Order = mongoose.model("Order", orderSchema);
+export const Order = mongoose.model('Order', orderSchema);

@@ -1,11 +1,11 @@
-import express from "express";
-import { requireAuth } from "../middlewares/requireAuth.middleware.js";
-import { resolveRestaurantFromUser } from "../middlewares/resolveRestaurantFromUser.middleware.js";
-import { resolveRestaurant } from "../middlewares/resolveRestaurant.middleware.js";
-import { requireRole } from "../middlewares/requireRole.middleware.js";
-import { upload } from "../middlewares/upload.middleware.js";
-import { checkSubscription } from "../middlewares/checkSubscription.middleware.js";
-import { enforcePlanFeature } from "../middlewares/enforcePlanFeature.middleware.js";
+import express from 'express';
+import { requireAuth } from '../middlewares/requireAuth.middleware.js';
+import { resolveRestaurantFromUser } from '../middlewares/resolveRestaurantFromUser.middleware.js';
+import { resolveRestaurant } from '../middlewares/resolveRestaurant.middleware.js';
+import { requireRole } from '../middlewares/requireRole.middleware.js';
+import { upload } from '../middlewares/upload.middleware.js';
+import { checkSubscription } from '../middlewares/checkSubscription.middleware.js';
+import { enforcePlanFeature } from '../middlewares/enforcePlanFeature.middleware.js';
 
 import {
   addDish,
@@ -18,103 +18,87 @@ import {
   generateModel,
   retryModelGeneration,
   proxyModel,
-} from "../controllers/dish.controller.js";
+} from '../controllers/dish.controller.js';
 
 const dishRoute = express.Router();
 
-dishRoute.get(
-  "/r/:restaurantSlug/dishes",
-  resolveRestaurant,
-  getDishes
-);
+dishRoute.get('/r/:restaurantSlug/dishes', resolveRestaurant, getDishes);
 
 dishRoute.get(
-  "/getdishes",
+  '/getdishes',
   requireAuth,
   resolveRestaurantFromUser,
-  requireRole("RESTAURANT_ADMIN", "KDS", "SUPER_ADMIN", "PLATFORM_ADMIN"),
-  getDishes
+  requireRole('RESTAURANT_ADMIN', 'KDS', 'SUPER_ADMIN', 'PLATFORM_ADMIN'),
+  getDishes,
 );
 
 dishRoute.get(
-  "/getdish/:id",
+  '/getdish/:id',
   requireAuth,
   resolveRestaurantFromUser,
-  requireRole("RESTAURANT_ADMIN", "SUPER_ADMIN", "PLATFORM_ADMIN"),
-  getDishById
+  requireRole('RESTAURANT_ADMIN', 'SUPER_ADMIN', 'PLATFORM_ADMIN'),
+  getDishById,
 );
 
-dishRoute.get(
-  "/r/:restaurantSlug/dishes/:id",
-  resolveRestaurant,
-  getDishById
-);
+dishRoute.get('/r/:restaurantSlug/dishes/:id', resolveRestaurant, getDishById);
 
 dishRoute.get(
-  "/r/:restaurantSlug/dishes/:dishId/also-ordered",
+  '/r/:restaurantSlug/dishes/:dishId/also-ordered',
   resolveRestaurant,
-  peopleAlsoOrdered
+  peopleAlsoOrdered,
 );
 
-dishRoute.get(
-  "/r/:restaurantSlug/dishes/:id/model-status",
-  resolveRestaurant,
-  getModelStatus
-);
+dishRoute.get('/r/:restaurantSlug/dishes/:id/model-status', resolveRestaurant, getModelStatus);
 
-dishRoute.get(
-  "/r/:restaurantSlug/dishes/proxy-model/:id/:format",
-  resolveRestaurant,
-  proxyModel
-);
+dishRoute.get('/r/:restaurantSlug/dishes/proxy-model/:id/:format', resolveRestaurant, proxyModel);
 
 dishRoute.post(
-  "/add",
+  '/add',
   requireAuth,
   resolveRestaurantFromUser,
-  requireRole("RESTAURANT_ADMIN", "SUPER_ADMIN", "PLATFORM_ADMIN"),
+  requireRole('RESTAURANT_ADMIN', 'SUPER_ADMIN', 'PLATFORM_ADMIN'),
   checkSubscription,
   // enforcePlanFeature("maxDishes"), // REMOVED: Soft enforcement in controller
-  upload.single("image"),
-  addDish
+  upload.single('image'),
+  addDish,
 );
 
 dishRoute.put(
-  "/updatedish/:id",
+  '/updatedish/:id',
   requireAuth,
   resolveRestaurantFromUser,
-  requireRole("RESTAURANT_ADMIN", "SUPER_ADMIN", "PLATFORM_ADMIN"),
+  requireRole('RESTAURANT_ADMIN', 'SUPER_ADMIN', 'PLATFORM_ADMIN'),
   checkSubscription,
-  updateDish
+  updateDish,
 );
 
 dishRoute.delete(
-  "/deletedish/:id",
+  '/deletedish/:id',
   requireAuth,
   resolveRestaurantFromUser,
-  requireRole("RESTAURANT_ADMIN", "SUPER_ADMIN", "PLATFORM_ADMIN"),
+  requireRole('RESTAURANT_ADMIN', 'SUPER_ADMIN', 'PLATFORM_ADMIN'),
   checkSubscription,
-  deleteDish
+  deleteDish,
 );
 
 dishRoute.post(
-  "/:id/generate-model",
+  '/:id/generate-model',
   requireAuth,
   resolveRestaurantFromUser,
-  requireRole("RESTAURANT_ADMIN", "SUPER_ADMIN", "PLATFORM_ADMIN"),
+  requireRole('RESTAURANT_ADMIN', 'SUPER_ADMIN', 'PLATFORM_ADMIN'),
   checkSubscription,
-  enforcePlanFeature("aiModels"),
-  generateModel
+  enforcePlanFeature('aiModels'),
+  generateModel,
 );
 
 dishRoute.post(
-  "/:id/retry-model",
+  '/:id/retry-model',
   requireAuth,
   resolveRestaurantFromUser,
-  requireRole("RESTAURANT_ADMIN", "SUPER_ADMIN", "PLATFORM_ADMIN"),
+  requireRole('RESTAURANT_ADMIN', 'SUPER_ADMIN', 'PLATFORM_ADMIN'),
   checkSubscription,
-  enforcePlanFeature("aiModels"),
-  retryModelGeneration
+  enforcePlanFeature('aiModels'),
+  retryModelGeneration,
 );
 
 export default dishRoute;

@@ -1,4 +1,4 @@
-import { ImageKitProvider } from "./ImageKitProvider.js";
+import { ImageKitProvider } from './ImageKitProvider.js';
 
 class StorageService {
   constructor() {
@@ -8,18 +8,18 @@ class StorageService {
 
   /**
    * Uploads a file using the configured provider.
-   * @param {Buffer} fileBuffer 
-   * @param {string} fileName 
-   * @param {string} folder 
+   * @param {Buffer} fileBuffer
+   * @param {string} fileName
+   * @param {string} folder
    * @returns {Promise<{ url: string, fileId: string }>}
    */
   async uploadFile(fileBuffer, fileName, folder) {
     return this.provider.uploadFile(fileBuffer, fileName, folder);
   }
 
-    /**
+  /**
    * Deletes a file using the configured provider.
-   * @param {string} fileId 
+   * @param {string} fileId
    * @returns {Promise<void>}
    */
   async deleteFile(fileId) {

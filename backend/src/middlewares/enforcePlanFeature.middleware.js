@@ -1,5 +1,5 @@
-import { Plan } from "../models/plan.models.js";
-import { Dish } from "../models/dish.models.js";
+import { Plan } from '../models/plan.models.js';
+import { Dish } from '../models/dish.models.js';
 
 export const enforcePlanFeature = (feature) => {
   return async (req, res, next) => {
@@ -9,7 +9,7 @@ export const enforcePlanFeature = (feature) => {
       if (!restaurant || !restaurant.planId) {
         return res.status(403).json({
           success: false,
-          message: "No subscription plan assigned to this restaurant.",
+          message: 'No subscription plan assigned to this restaurant.',
         });
       }
 
@@ -18,11 +18,11 @@ export const enforcePlanFeature = (feature) => {
       if (!plan) {
         return res.status(404).json({
           success: false,
-          message: "Assigned plan not found.",
+          message: 'Assigned plan not found.',
         });
       }
 
-      if (feature === "maxDishes") {
+      if (feature === 'maxDishes') {
         const dishCount = await Dish.countDocuments({
           restaurantId: restaurant._id,
         });
@@ -35,8 +35,8 @@ export const enforcePlanFeature = (feature) => {
         return next();
       }
 
-      if (feature === "maxStaff") {
-        const { User } = await import("../models/user.models.js");
+      if (feature === 'maxStaff') {
+        const { User } = await import('../models/user.models.js');
         const staffCount = await User.countDocuments({
           restaurantId: restaurant._id,
         });
@@ -50,9 +50,9 @@ export const enforcePlanFeature = (feature) => {
       }
 
       const featureMap = {
-        aiModels: "arModels",
-        kdsAccess: "kds",
-        analytics: "analytics",
+        aiModels: 'arModels',
+        kdsAccess: 'kds',
+        analytics: 'analytics',
       };
 
       const modelFeatureName = featureMap[feature] || feature;
@@ -68,7 +68,7 @@ export const enforcePlanFeature = (feature) => {
     } catch (error) {
       return res.status(500).json({
         success: false,
-        message: "Failed to verify plan features",
+        message: 'Failed to verify plan features',
         error: error.message,
       });
     }

@@ -1,11 +1,11 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 
 const planSchema = new mongoose.Schema(
   {
     name: {
       type: String,
       required: true,
-      unique: true, 
+      unique: true,
       uppercase: true,
       trim: true,
     },
@@ -16,13 +16,13 @@ const planSchema = new mongoose.Schema(
 
     price: {
       type: Number,
-      default: 0, 
+      default: 0,
     },
 
     interval: {
       type: String,
-      enum: ["MONTHLY", "YEARLY"],
-      default: "MONTHLY",
+      enum: ['MONTHLY', 'YEARLY'],
+      default: 'MONTHLY',
     },
 
     features: {
@@ -43,7 +43,7 @@ const planSchema = new mongoose.Schema(
     limits: {
       maxDishes: {
         type: Number,
-        default: 0, 
+        default: 0,
       },
       maxStaff: {
         type: Number,
@@ -56,7 +56,7 @@ const planSchema = new mongoose.Schema(
       default: true,
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
-export const Plan = mongoose.model("Plan", planSchema);
+export const Plan = mongoose.model('Plan', planSchema);

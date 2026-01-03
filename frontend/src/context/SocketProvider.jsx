@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useRef, useCallback } from "react";
+import { createContext, useContext, useEffect, useRef, useCallback, useState } from "react";
 import { io } from "socket.io-client";
 import { useAuth } from "./AuthProvider";
 
@@ -7,51 +7,57 @@ const SocketContext = createContext();
 export const useSocket = () => useContext(SocketContext);
 
 export default function SocketProvider({ children }) {
-  const { isAuthenticated } = useAuth(); 
-
+  const [socket, setSocket] = useState(null);
   const socketRef = useRef(null);
 
-  if (!socketRef.current) {
-      socketRef.current = io("http://localhost:8000", {
-          autoConnect: false,
-          reconnection: true,
-      });
-  }
-  const socket = socketRef.current;
+  useEffect(() => {
+    const apiUrl = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
+    const backendUrl = apiUrl.replace('/api/v1', '');
+
+    if (!socketRef.current) {
+        socketRef.current = io(backendUrl, {
+            autoConnect: false,
+            reconnection: true,
+        });
+        setSocket(socketRef.current);
+    }
+
+    return () => {
+        if (socketRef.current) {
+            socketRef.current.disconnect();
+            socketRef.current = null;
+            setSocket(null);
+        }
+    };
+  }, []);
 
   const connect = useCallback(() => {
-    if (!socket.connected) {
-        socket.connect();
+    if (socketRef.current && !socketRef.current.connected) {
+        socketRef.current.connect();
     }
-  }, [socket]);
+  }, []);
 
   const disconnect = useCallback(() => {
-    if (socket.connected) {
-        socket.disconnect();
+    if (socketRef.current && socketRef.current.connected) {
+        socketRef.current.disconnect();
     }
-  }, [socket]);
+  }, []);
 
   const joinRoom = useCallback((roomName) => {
-    if (socket.connected) {
+    if (socketRef.current && socketRef.current.connected) {
         console.log(`Joining Room: ${roomName}`);
-        socket.emit("join_room", roomName);
+        socketRef.current.emit("join_room", roomName);
     } else {
         console.warn("Attempted to join room without connection");
     }
-  }, [socket]);
+  }, []);
 
   const leaveRoom = useCallback((roomName) => {
-    if (socket.connected) {
+    if (socketRef.current && socketRef.current.connected) {
         console.log(`Leaving Room: ${roomName}`);
-        socket.emit("leave_room", roomName);
+        socketRef.current.emit("leave_room", roomName);
     }
-  }, [socket]);
-
-  useEffect(() => {
-    return () => {
-        disconnect();
-    };
-  }, [disconnect]);
+  }, []);
 
   const value = {
       socket,

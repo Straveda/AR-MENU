@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import axiosClient from "../../api/axiosClient";
 import { useOrder } from "../../context/OrderContext";
 import { useToast } from "../../components/common/Toast/ToastContext";
+import { useTenant } from "../../context/TenantProvider";
 
 export default function DishDetails() {
   const { id } = useParams();

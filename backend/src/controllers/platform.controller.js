@@ -1,24 +1,24 @@
-import mongoose from "mongoose";
-import { Restaurant } from "../models/restaurant.models.js"
-import { User } from "../models/user.models.js";
-import { Plan } from "../models/plan.models.js";
-import { subscriptionService } from "../services/subscriptionService.js";
-import { logAudit } from "../utils/logger.js";
-import { Dish } from "../models/dish.models.js";
-import { SubscriptionLog } from "../models/subscriptionLog.models.js";
-import slugify from "slugify";
-import bcrypt from "bcryptjs"
-import { validateMeshyConfig } from "../config/meshy.config.js";
-import { Order } from "../models/order.models.js";
-import { AuditLog } from "../models/auditLog.model.js";
+import mongoose from 'mongoose';
+import { Restaurant } from '../models/restaurant.models.js';
+import { User } from '../models/user.models.js';
+import { Plan } from '../models/plan.models.js';
+import { subscriptionService } from '../services/subscriptionService.js';
+import { logAudit } from '../utils/logger.js';
+import { Dish } from '../models/dish.models.js';
+import { SubscriptionLog } from '../models/subscriptionLog.models.js';
+import slugify from 'slugify';
+import bcrypt from 'bcryptjs';
+import { validateMeshyConfig } from '../config/meshy.config.js';
+import { Order } from '../models/order.models.js';
+import { AuditLog } from '../models/auditLog.model.js';
 
 const getSubscriptionLogs = async (req, res) => {
   try {
     const logs = await SubscriptionLog.find({})
-      .populate("restaurantId", "name slug")
-      .populate("planId", "name price")
-      .populate("previousPlanId", "name")
-      .populate("performedBy", "username")
+      .populate('restaurantId', 'name slug')
+      .populate('planId', 'name price')
+      .populate('previousPlanId', 'name')
+      .populate('performedBy', 'username')
       .sort({ createdAt: -1 })
       .limit(100);
 
@@ -29,7 +29,7 @@ const getSubscriptionLogs = async (req, res) => {
   } catch (error) {
     return res.status(500).json({
       success: false,
-      message: "Internal server error",
+      message: 'Internal server error',
       error: error.message,
     });
   }
@@ -37,33 +37,25 @@ const getSubscriptionLogs = async (req, res) => {
 
 const getSubscriptionStats = async (req, res) => {
   try {
-    const [
-      total,
-      active,
-      trial,
-      suspended,
-      expired,
-      noPlan,
-      restaurants
-    ] = await Promise.all([
+    const [total, active, trial, suspended, expired, noPlan, restaurants] = await Promise.all([
       Restaurant.countDocuments({}),
-      Restaurant.countDocuments({ subscriptionStatus: "ACTIVE" }),
-      Restaurant.countDocuments({ subscriptionStatus: "TRIAL" }),
-      Restaurant.countDocuments({ subscriptionStatus: "SUSPENDED" }),
-      Restaurant.countDocuments({ subscriptionStatus: "EXPIRED" }),
+      Restaurant.countDocuments({ subscriptionStatus: 'ACTIVE' }),
+      Restaurant.countDocuments({ subscriptionStatus: 'TRIAL' }),
+      Restaurant.countDocuments({ subscriptionStatus: 'SUSPENDED' }),
+      Restaurant.countDocuments({ subscriptionStatus: 'EXPIRED' }),
       Restaurant.countDocuments({ planId: null }),
-      Restaurant.find({ 
-        subscriptionStatus: { $in: ["ACTIVE", "TRIAL"] },
-        planId: { $ne: null }
-      }).populate("planId")
+      Restaurant.find({
+        subscriptionStatus: { $in: ['ACTIVE', 'TRIAL'] },
+        planId: { $ne: null },
+      }).populate('planId'),
     ]);
 
     let totalMRR = 0;
-    restaurants.forEach(r => {
+    restaurants.forEach((r) => {
       if (r.planId && r.planId.price) {
         const price = r.planId.price;
         const interval = r.planId.interval?.toLowerCase();
-        if (interval === "yearly") {
+        if (interval === 'yearly') {
           totalMRR += price / 12;
         } else {
           totalMRR += price;
@@ -76,7 +68,7 @@ const getSubscriptionStats = async (req, res) => {
 
     const expiringSoon = await Restaurant.countDocuments({
       subscriptionEndsAt: { $gt: now, $lte: next7Days },
-      subscriptionStatus: { $ne: "SUSPENDED" }
+      subscriptionStatus: { $ne: 'SUSPENDED' },
     });
 
     return res.status(200).json({
@@ -90,230 +82,230 @@ const getSubscriptionStats = async (req, res) => {
         noPlan,
         totalMRR: Math.round(totalMRR),
         activeSubscriptions: restaurants.length,
-        expiringSoon
-      }
+        expiringSoon,
+      },
     });
   } catch (error) {
     return res.status(500).json({
       success: false,
-      message: "Internal server error",
+      message: 'Internal server error',
       error: error.message,
     });
   }
 };
 
 const getAllRestaurants = async (req, res) => {
-    try {
-        const page = parseInt(req.query.page) || 1;
-        const limit = parseInt(req.query.limit) || 10;
-        const skip = (page - 1) * limit;
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
 
-        const [restaurants, totalItems] = await Promise.all([
-            Restaurant.find({}).skip(skip).limit(limit),
-            Restaurant.countDocuments({})
-        ]);
+    const [restaurants, totalItems] = await Promise.all([
+      Restaurant.find({}).skip(skip).limit(limit),
+      Restaurant.countDocuments({}),
+    ]);
 
-        const totalPages = Math.ceil(totalItems / limit);
+    const totalPages = Math.ceil(totalItems / limit);
 
-        return res.status(200).json({
-            success: true,
-            message: "Restaurant fetched successfully",
-            data: restaurants,
-            meta: {
-                page,
-                limit,
-                totalItems,
-                totalPages
-            }
-        })
-    } catch (error) {
-        return res.status(500).json({
-            success: false,
-            message: "Internal server error",
-            error: error.message
-        })
-    }
-}
+    return res.status(200).json({
+      success: true,
+      message: 'Restaurant fetched successfully',
+      data: restaurants,
+      meta: {
+        page,
+        limit,
+        totalItems,
+        totalPages,
+      },
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: 'Internal server error',
+      error: error.message,
+    });
+  }
+};
 
 const getAllUsers = async (req, res) => {
-    try {
-        const page = parseInt(req.query.page) || 1;
-        const limit = parseInt(req.query.limit) || 10;
-        const skip = (page - 1) * limit;
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
 
-        const [users, totalItems] = await Promise.all([
-            User.find({})
-                .select('-password')
-                .populate('restaurantId', 'name slug')
-                .skip(skip)
-                .limit(limit),
-            User.countDocuments({})
-        ]);
+    const [users, totalItems] = await Promise.all([
+      User.find({})
+        .select('-password')
+        .populate('restaurantId', 'name slug')
+        .skip(skip)
+        .limit(limit),
+      User.countDocuments({}),
+    ]);
 
-        const totalPages = Math.ceil(totalItems / limit);
+    const totalPages = Math.ceil(totalItems / limit);
 
-        return res.status(200).json({
-            success: true,
-            message: "Users fetched successfully",
-            data: users,
-            meta: {
-                page,
-                limit,
-                totalItems,
-                totalPages
-            }
-        });
-    } catch (error) {
-        return res.status(500).json({
-            success: false,
-            message: "Internal server error",
-            error: error.message
-        });
-    }
+    return res.status(200).json({
+      success: true,
+      message: 'Users fetched successfully',
+      data: users,
+      meta: {
+        page,
+        limit,
+        totalItems,
+        totalPages,
+      },
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: 'Internal server error',
+      error: error.message,
+    });
+  }
 };
 
 const createPlatformUser = async (req, res) => {
-    try {
-        const { email, password, username, phone, role, restaurantId } = req.body;
+  try {
+    const { email, password, username, phone, role, restaurantId } = req.body;
 
-        if (!email || !password || !username || !role) {
-            return res.status(400).json({
-                success: false,
-                message: "Email, password, username, and role are required"
-            });
-        }
-
-        const validRoles = ["SUPER_ADMIN", "PLATFORM_ADMIN", "RESTAURANT_ADMIN", "KDS", "CUSTOMER"];
-        if (!validRoles.includes(role)) {
-            return res.status(400).json({
-                success: false,
-                message: "Invalid role. Must be one of: " + validRoles.join(', ')
-            });
-        }
-
-        const existingUser = await User.findOne({ email });
-        if (existingUser) {
-            return res.status(400).json({
-                success: false,
-                message: "User with this email already exists"
-            });
-        }
-
-        const isPlatformRole = ["SUPER_ADMIN", "PLATFORM_ADMIN"].includes(role);
-        if (!isPlatformRole && !restaurantId) {
-            return res.status(400).json({
-                success: false,
-                message: "Restaurant ID is required for this role"
-            });
-        }
-
-        if (restaurantId) {
-            const restaurant = await Restaurant.findById(restaurantId);
-            if (!restaurant) {
-                return res.status(404).json({
-                    success: false,
-                    message: "Restaurant not found"
-                });
-            }
-        }
-
-        const hashedPassword = await bcrypt.hash(password, 10);
-
-        const user = await User.create({
-            email,
-            password: hashedPassword,
-            username,
-            phone,
-            role,
-            restaurantId: isPlatformRole ? null : restaurantId,
-            isActive: true
-        });
-
-        const userResponse = user.toObject();
-        delete userResponse.password;
-
-        return res.status(201).json({
-            success: true,
-            message: "User created successfully",
-            data: userResponse
-        });
-    } catch (error) {
-        return res.status(500).json({
-            success: false,
-            message: "Internal server error",
-            error: error.message
-        });
+    if (!email || !password || !username || !role) {
+      return res.status(400).json({
+        success: false,
+        message: 'Email, password, username, and role are required',
+      });
     }
+
+    const validRoles = ['SUPER_ADMIN', 'PLATFORM_ADMIN', 'RESTAURANT_ADMIN', 'KDS', 'CUSTOMER'];
+    if (!validRoles.includes(role)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid role. Must be one of: ' + validRoles.join(', '),
+      });
+    }
+
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({
+        success: false,
+        message: 'User with this email already exists',
+      });
+    }
+
+    const isPlatformRole = ['SUPER_ADMIN', 'PLATFORM_ADMIN'].includes(role);
+    if (!isPlatformRole && !restaurantId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Restaurant ID is required for this role',
+      });
+    }
+
+    if (restaurantId) {
+      const restaurant = await Restaurant.findById(restaurantId);
+      if (!restaurant) {
+        return res.status(404).json({
+          success: false,
+          message: 'Restaurant not found',
+        });
+      }
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const user = await User.create({
+      email,
+      password: hashedPassword,
+      username,
+      phone,
+      role,
+      restaurantId: isPlatformRole ? null : restaurantId,
+      isActive: true,
+    });
+
+    const userResponse = user.toObject();
+    delete userResponse.password;
+
+    return res.status(201).json({
+      success: true,
+      message: 'User created successfully',
+      data: userResponse,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: 'Internal server error',
+      error: error.message,
+    });
+  }
 };
 
 const updateUser = async (req, res) => {
-    try {
-        const { userId } = req.params;
-        const { username, phone, role, restaurantId } = req.body;
+  try {
+    const { userId } = req.params;
+    const { username, phone, role, restaurantId } = req.body;
 
-        const user = await User.findById(userId);
-        if (!user) {
-            return res.status(404).json({
-                success: false,
-                message: "User not found"
-            });
-        }
-
-        if (user.role === 'SUPER_ADMIN') {
-            return res.status(403).json({
-                success: false,
-                message: "Cannot modify Super Admin users"
-            });
-        }
-
-        if (username) user.username = username;
-        if (phone) user.phone = phone;
-        if (role) {
-            const validRoles = ["SUPER_ADMIN", "PLATFORM_ADMIN", "RESTAURANT_ADMIN", "KDS", "CUSTOMER"];
-            if (!validRoles.includes(role)) {
-                return res.status(400).json({
-                    success: false,
-                    message: "Invalid role"
-                });
-            }
-            user.role = role;
-        }
-
-        const isPlatformRole = ["SUPER_ADMIN", "PLATFORM_ADMIN"].includes(user.role);
-        
-        if (restaurantId !== undefined) {
-            if (restaurantId && !isPlatformRole) {
-                const restaurant = await Restaurant.findById(restaurantId);
-                if (!restaurant) {
-                    return res.status(404).json({
-                        success: false,
-                        message: "Restaurant not found"
-                    });
-                }
-                user.restaurantId = restaurantId;
-            } else if (isPlatformRole) {
-                user.restaurantId = null;
-            }
-        }
-
-        await user.save();
-
-        const userResponse = await User.findById(userId)
-            .select('-password')
-            .populate('restaurantId', 'name slug');
-
-        return res.status(200).json({
-            success: true,
-            message: "User updated successfully",
-            data: userResponse
-        });
-    } catch (error) {
-        return res.status(500).json({
-            success: false,
-            message: "Internal server error",
-            error: error.message
-        });
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found',
+      });
     }
+
+    if (user.role === 'SUPER_ADMIN') {
+      return res.status(403).json({
+        success: false,
+        message: 'Cannot modify Super Admin users',
+      });
+    }
+
+    if (username) user.username = username;
+    if (phone) user.phone = phone;
+    if (role) {
+      const validRoles = ['SUPER_ADMIN', 'PLATFORM_ADMIN', 'RESTAURANT_ADMIN', 'KDS', 'CUSTOMER'];
+      if (!validRoles.includes(role)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid role',
+        });
+      }
+      user.role = role;
+    }
+
+    const isPlatformRole = ['SUPER_ADMIN', 'PLATFORM_ADMIN'].includes(user.role);
+
+    if (restaurantId !== undefined) {
+      if (restaurantId && !isPlatformRole) {
+        const restaurant = await Restaurant.findById(restaurantId);
+        if (!restaurant) {
+          return res.status(404).json({
+            success: false,
+            message: 'Restaurant not found',
+          });
+        }
+        user.restaurantId = restaurantId;
+      } else if (isPlatformRole) {
+        user.restaurantId = null;
+      }
+    }
+
+    await user.save();
+
+    const userResponse = await User.findById(userId)
+      .select('-password')
+      .populate('restaurantId', 'name slug');
+
+    return res.status(200).json({
+      success: true,
+      message: 'User updated successfully',
+      data: userResponse,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: 'Internal server error',
+      error: error.message,
+    });
+  }
 };
 
 const toggleUserStatus = async (req, res) => {
@@ -324,24 +316,21 @@ const toggleUserStatus = async (req, res) => {
     if (!user) {
       return res.status(404).json({
         success: false,
-        message: "User not found",
+        message: 'User not found',
       });
     }
 
-    if (user.role === "SUPER_ADMIN") {
+    if (user.role === 'SUPER_ADMIN') {
       return res.status(403).json({
         success: false,
-        message: "Cannot modify Super Admin users",
+        message: 'Cannot modify Super Admin users',
       });
     }
 
     // If activating, check limit
     if (!user.isActive) {
       if (user.restaurantId) {
-        await subscriptionService.validateActivation(
-          user.restaurantId,
-          "maxStaff"
-        );
+        await subscriptionService.validateActivation(user.restaurantId, 'maxStaff');
       }
     }
 
@@ -350,61 +339,57 @@ const toggleUserStatus = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      message: `User ${
-        user.isActive ? "activated" : "deactivated"
-      } successfully`,
+      message: `User ${user.isActive ? 'activated' : 'deactivated'} successfully`,
       data: { isActive: user.isActive },
     });
   } catch (error) {
     return res.status(500).json({
       success: false,
-      message: "Internal server error",
+      message: 'Internal server error',
       error: error.message,
     });
   }
 };
 
-
 const createRestaurant = async (req, res) => {
-    try {
-        const { name } = req.body;
+  try {
+    const { name } = req.body;
 
-        if (!name) {
-            return res.status(400).json({
-                success: false,
-                message: "Name is required"
-            })
-        }
-
-        let slug = slugify(name, { lower: true })
-
-        const existing = await Restaurant.findOne({ slug })
-        if (existing) {
-            slug = `${slug}-${Date.now()}`;
-        }
-
-        const restaurant = await Restaurant.create({
-            name,
-            slug,
-            status: "Active",
-            subscriptionStatus: "TRIAL",
-            subscriptionEndsAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
-        })
-
-        return res.status(201).json({
-            success: true,
-            message: "Restaurant created successfully",
-            data: restaurant
-        })
-
-    } catch (error) {
-        return res.status(500).json({
-            success: false,
-            message: "Can't create new Restaurant",
-            error: error.message
-        })
+    if (!name) {
+      return res.status(400).json({
+        success: false,
+        message: 'Name is required',
+      });
     }
-}
+
+    let slug = slugify(name, { lower: true });
+
+    const existing = await Restaurant.findOne({ slug });
+    if (existing) {
+      slug = `${slug}-${Date.now()}`;
+    }
+
+    const restaurant = await Restaurant.create({
+      name,
+      slug,
+      status: 'Active',
+      subscriptionStatus: 'TRIAL',
+      subscriptionEndsAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+    });
+
+    return res.status(201).json({
+      success: true,
+      message: 'Restaurant created successfully',
+      data: restaurant,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Can't create new Restaurant",
+      error: error.message,
+    });
+  }
+};
 
 const updateRestaurantStatus = async (req, res) => {
   try {
@@ -414,15 +399,15 @@ const updateRestaurantStatus = async (req, res) => {
     if (!subscriptionStatus) {
       return res.status(400).json({
         success: false,
-        message: "Subscription Status is required",
+        message: 'Subscription Status is required',
       });
     }
 
-    const allowedStatuses = ["ACTIVE", "SUSPENDED", "EXPIRED"];
+    const allowedStatuses = ['ACTIVE', 'SUSPENDED', 'EXPIRED'];
     if (!allowedStatuses.includes(subscriptionStatus)) {
       return res.status(400).json({
         success: false,
-        message: "Invalid subscription status",
+        message: 'Invalid subscription status',
       });
     }
 
@@ -431,25 +416,24 @@ const updateRestaurantStatus = async (req, res) => {
     if (!restaurant) {
       return res.status(404).json({
         success: false,
-        message: "Restaurant not found",
+        message: 'Restaurant not found',
       });
     }
 
     restaurant.subscriptionStatus = subscriptionStatus;
-    restaurant.isActive = subscriptionStatus === "ACTIVE";
+    restaurant.isActive = subscriptionStatus === 'ACTIVE';
 
     await restaurant.save();
 
     return res.status(200).json({
       success: true,
-      message: "Restaurant status updated successfully",
+      message: 'Restaurant status updated successfully',
       data: restaurant,
     });
-
   } catch (error) {
     return res.status(500).json({
       success: false,
-      message: "Internal server error",
+      message: 'Internal server error',
       error: error.message,
     });
   }
@@ -462,7 +446,7 @@ const createRestaurantAdmin = async (req, res) => {
     if (!restaurantId || !email || !password || !username || !phone) {
       return res.status(400).json({
         success: false,
-        message: "All fields are required",
+        message: 'All fields are required',
       });
     }
 
@@ -470,21 +454,21 @@ const createRestaurantAdmin = async (req, res) => {
     if (!restaurant) {
       return res.status(404).json({
         success: false,
-        message: "Restaurant not found",
+        message: 'Restaurant not found',
       });
     }
 
-    if (restaurant.subscriptionStatus !== "ACTIVE") {
+    if (restaurant.subscriptionStatus !== 'ACTIVE') {
       return res.status(403).json({
         success: false,
-        message: "Restaurant subscription is not active.",
+        message: 'Restaurant subscription is not active.',
       });
     }
 
     if (!restaurant.planId) {
       return res.status(403).json({
         success: false,
-        message: "No plan assigned to this restaurant.",
+        message: 'No plan assigned to this restaurant.',
       });
     }
 
@@ -501,13 +485,13 @@ const createRestaurantAdmin = async (req, res) => {
 
     const existingAdmin = await User.findOne({
       restaurantId,
-      role: "RESTAURANT_ADMIN",
+      role: 'RESTAURANT_ADMIN',
     });
 
     if (existingAdmin) {
       return res.status(400).json({
         success: false,
-        message: "Restaurant admin already exists",
+        message: 'Restaurant admin already exists',
       });
     }
 
@@ -515,12 +499,12 @@ const createRestaurantAdmin = async (req, res) => {
     if (existingUser) {
       return res.status(400).json({
         success: false,
-        message: "Email already in use",
+        message: 'Email already in use',
       });
     }
 
     // Check Active Staff Limit
-    // Note: Restaurant Admin is usually exempt or counts as 1. 
+    // Note: Restaurant Admin is usually exempt or counts as 1.
     // If we count them, we should check limit here.
     // subscriptionService assumes Role != RESTAURANT_ADMIN does not count?
     // Let's check subscriptionService logic: "role: { $ne: 'RESTAURANT_ADMIN' }"
@@ -530,12 +514,12 @@ const createRestaurantAdmin = async (req, res) => {
     // So we can skip limit check here OR check it but expect it to be allowed.
     // "Plan limit reached (5). Please upgrade." -> usually regarding waiters/kitchen staff.
     // So I will SKIP the active limit check for RESTAURANT_ADMIN to ensure they can always be created to manage the restaurant.
-    
+
     // However, the original code had:
     // if (currentStaffCount >= staffLimit) ...
     // So it WAS enforcing limit.
     // But `subscriptionService.checkActiveLimit` excludes RESTAURANT_ADMIN.
-    // So if I call it, it will return count of OTHER staff. 
+    // So if I call it, it will return count of OTHER staff.
     // Since this user IS a RESTAURANT_ADMIN, adding them won't increase the "Staff" count as per `subscriptionService`.
     // So we are good to proceed without check, or check just to be safe but the service says they don't count can be misleading if we want to limit Total Users.
     // I'll stick to the pattern:
@@ -550,14 +534,14 @@ const createRestaurantAdmin = async (req, res) => {
       password: hashedPassword,
       username,
       phone,
-      role: "RESTAURANT_ADMIN",
+      role: 'RESTAURANT_ADMIN',
       restaurantId,
       isActive: true, // Admin should be active by default? Yes.
     });
 
     return res.status(201).json({
       success: true,
-      message: "Restaurant admin created successfully",
+      message: 'Restaurant admin created successfully',
       data: {
         id: user._id,
         email: user.email,
@@ -566,11 +550,10 @@ const createRestaurantAdmin = async (req, res) => {
         restaurantId: user.restaurantId,
       },
     });
-
   } catch (error) {
     return res.status(500).json({
       success: false,
-      message: "Internal server error",
+      message: 'Internal server error',
       error: error.message,
     });
   }
@@ -583,7 +566,7 @@ const assignPlanToRestaurant = async (req, res) => {
     if (!restaurantId || !planId || !durationInDays) {
       return res.status(400).json({
         success: false,
-        message: "restaurantId, planId and durationInDays are required",
+        message: 'restaurantId, planId and durationInDays are required',
       });
     }
 
@@ -591,7 +574,7 @@ const assignPlanToRestaurant = async (req, res) => {
     if (!restaurant) {
       return res.status(404).json({
         success: false,
-        message: "Restaurant not found",
+        message: 'Restaurant not found',
       });
     }
 
@@ -599,17 +582,15 @@ const assignPlanToRestaurant = async (req, res) => {
     if (!plan) {
       return res.status(404).json({
         success: false,
-        message: "Plan not found",
+        message: 'Plan not found',
       });
     }
 
     const now = new Date();
-    const subscriptionEndsAt = new Date(
-      now.getTime() + durationInDays * 24 * 60 * 60 * 1000
-    );
+    const subscriptionEndsAt = new Date(now.getTime() + durationInDays * 24 * 60 * 60 * 1000);
 
     restaurant.planId = plan._id;
-    restaurant.subscriptionStatus = "ACTIVE";
+    restaurant.subscriptionStatus = 'ACTIVE';
     restaurant.subscriptionEndsAt = subscriptionEndsAt;
 
     await restaurant.save();
@@ -617,14 +598,14 @@ const assignPlanToRestaurant = async (req, res) => {
     await SubscriptionLog.create({
       restaurantId: restaurant._id,
       planId: plan._id,
-      action: "ASSIGN",
+      action: 'ASSIGN',
       durationInDays: Number(durationInDays),
       performedBy: req.user?._id,
     });
 
     return res.status(200).json({
       success: true,
-      message: "Plan assigned to restaurant successfully",
+      message: 'Plan assigned to restaurant successfully',
       data: {
         restaurantId: restaurant._id,
         plan: plan.name,
@@ -634,7 +615,7 @@ const assignPlanToRestaurant = async (req, res) => {
   } catch (error) {
     return res.status(500).json({
       success: false,
-      message: "Internal server error",
+      message: 'Internal server error',
       error: error.message,
     });
   }
@@ -648,14 +629,14 @@ const extendSubscription = async (req, res) => {
     if (!mongoose.Types.ObjectId.isValid(restaurantId)) {
       return res.status(400).json({
         success: false,
-        message: "Invalid restaurantId",
+        message: 'Invalid restaurantId',
       });
     }
 
     if (!extendByDays || extendByDays <= 0) {
       return res.status(400).json({
         success: false,
-        message: "extendByDays must be a positive number",
+        message: 'extendByDays must be a positive number',
       });
     }
 
@@ -664,24 +645,23 @@ const extendSubscription = async (req, res) => {
     if (!restaurant) {
       return res.status(404).json({
         success: false,
-        message: "Restaurant not found",
+        message: 'Restaurant not found',
       });
     }
 
     const now = new Date();
 
     const baseDate =
-      !restaurant.subscriptionEndsAt ||
-      restaurant.subscriptionEndsAt < now
+      !restaurant.subscriptionEndsAt || restaurant.subscriptionEndsAt < now
         ? now
         : restaurant.subscriptionEndsAt;
 
     restaurant.subscriptionEndsAt = new Date(
-      baseDate.getTime() + extendByDays * 24 * 60 * 60 * 1000
+      baseDate.getTime() + extendByDays * 24 * 60 * 60 * 1000,
     );
 
-    if (restaurant.subscriptionStatus !== "SUSPENDED") {
-      restaurant.subscriptionStatus = "ACTIVE";
+    if (restaurant.subscriptionStatus !== 'SUSPENDED') {
+      restaurant.subscriptionStatus = 'ACTIVE';
     }
 
     await restaurant.save();
@@ -689,14 +669,14 @@ const extendSubscription = async (req, res) => {
     await SubscriptionLog.create({
       restaurantId: restaurant._id,
       planId: restaurant.planId,
-      action: "EXTEND",
+      action: 'EXTEND',
       durationInDays: Number(extendByDays),
       performedBy: req.user?._id,
     });
 
     return res.status(200).json({
       success: true,
-      message: "Subscription extended successfully",
+      message: 'Subscription extended successfully',
       data: {
         restaurantId: restaurant._id,
         subscriptionStatus: restaurant.subscriptionStatus,
@@ -706,7 +686,7 @@ const extendSubscription = async (req, res) => {
   } catch (error) {
     return res.status(500).json({
       success: false,
-      message: "Internal server error",
+      message: 'Internal server error',
       error: error.message,
     });
   }
@@ -723,7 +703,7 @@ const changeRestaurantPlan = async (req, res) => {
     ) {
       return res.status(400).json({
         success: false,
-        message: "Invalid restaurantId or planId",
+        message: 'Invalid restaurantId or planId',
       });
     }
 
@@ -733,7 +713,7 @@ const changeRestaurantPlan = async (req, res) => {
     if (!restaurant || !newPlan) {
       return res.status(404).json({
         success: false,
-        message: "Restaurant or Plan not found",
+        message: 'Restaurant or Plan not found',
       });
     }
 
@@ -746,20 +726,14 @@ const changeRestaurantPlan = async (req, res) => {
       isActive: true,
     });
 
-    if (
-      newPlan.limits?.maxDishes !== undefined &&
-      dishCount > newPlan.limits.maxDishes
-    ) {
+    if (newPlan.limits?.maxDishes !== undefined && dishCount > newPlan.limits.maxDishes) {
       return res.status(400).json({
         success: false,
         message: `Plan downgrade blocked: ${dishCount} dishes exceed new plan limit (${newPlan.limits.maxDishes})`,
       });
     }
 
-    if (
-      newPlan.limits?.maxStaff !== undefined &&
-      staffCount > newPlan.limits.maxStaff
-    ) {
+    if (newPlan.limits?.maxStaff !== undefined && staffCount > newPlan.limits.maxStaff) {
       return res.status(400).json({
         success: false,
         message: `Plan downgrade blocked: ${staffCount} staff exceed new plan limit (${newPlan.limits.maxStaff})`,
@@ -773,14 +747,14 @@ const changeRestaurantPlan = async (req, res) => {
     await SubscriptionLog.create({
       restaurantId: restaurant._id,
       planId: newPlan._id,
-      action: "CHANGE",
+      action: 'CHANGE',
       previousPlanId: oldPlanId,
       performedBy: req.user?._id,
     });
 
     return res.status(200).json({
       success: true,
-      message: "Restaurant plan updated successfully",
+      message: 'Restaurant plan updated successfully',
       data: {
         restaurantId: restaurant._id,
         newPlan: newPlan.name,
@@ -789,7 +763,7 @@ const changeRestaurantPlan = async (req, res) => {
   } catch (error) {
     return res.status(500).json({
       success: false,
-      message: "Internal server error",
+      message: 'Internal server error',
       error: error.message,
     });
   }
@@ -802,7 +776,7 @@ const suspendRestaurant = async (req, res) => {
     if (!mongoose.Types.ObjectId.isValid(restaurantId)) {
       return res.status(400).json({
         success: false,
-        message: "Invalid restaurantId",
+        message: 'Invalid restaurantId',
       });
     }
 
@@ -811,21 +785,21 @@ const suspendRestaurant = async (req, res) => {
     if (!restaurant) {
       return res.status(404).json({
         success: false,
-        message: "Restaurant not found",
+        message: 'Restaurant not found',
       });
     }
 
-    restaurant.subscriptionStatus = "SUSPENDED";
+    restaurant.subscriptionStatus = 'SUSPENDED';
     await restaurant.save();
 
     return res.status(200).json({
       success: true,
-      message: "Restaurant suspended successfully",
+      message: 'Restaurant suspended successfully',
     });
   } catch (error) {
     return res.status(500).json({
       success: false,
-      message: "Internal server error",
+      message: 'Internal server error',
       error: error.message,
     });
   }
@@ -838,7 +812,7 @@ const resumeRestaurant = async (req, res) => {
     if (!mongoose.Types.ObjectId.isValid(restaurantId)) {
       return res.status(400).json({
         success: false,
-        message: "Invalid restaurantId",
+        message: 'Invalid restaurantId',
       });
     }
 
@@ -847,31 +821,28 @@ const resumeRestaurant = async (req, res) => {
     if (!restaurant) {
       return res.status(404).json({
         success: false,
-        message: "Restaurant not found",
+        message: 'Restaurant not found',
       });
     }
 
-    if (
-      !restaurant.subscriptionEndsAt ||
-      restaurant.subscriptionEndsAt < new Date()
-    ) {
+    if (!restaurant.subscriptionEndsAt || restaurant.subscriptionEndsAt < new Date()) {
       return res.status(400).json({
         success: false,
-        message: "Cannot resume: subscription expired",
+        message: 'Cannot resume: subscription expired',
       });
     }
 
-    restaurant.subscriptionStatus = "ACTIVE";
+    restaurant.subscriptionStatus = 'ACTIVE';
     await restaurant.save();
 
     return res.status(200).json({
       success: true,
-      message: "Restaurant resumed successfully",
+      message: 'Restaurant resumed successfully',
     });
   } catch (error) {
     return res.status(500).json({
       success: false,
-      message: "Internal server error",
+      message: 'Internal server error',
       error: error.message,
     });
   }
@@ -883,24 +854,24 @@ const getStaff = async (req, res) => {
     if (!restaurant) {
       return res.status(500).json({
         success: false,
-        message: "Restaurant context not found",
+        message: 'Restaurant context not found',
       });
     }
 
     const staff = await User.find({
       restaurantId: restaurant._id,
-      role: { $in: ["KDS"] }, 
-    }).select("-password");
+      role: { $in: ['KDS'] },
+    }).select('-password');
 
     return res.status(200).json({
       success: true,
-      message: "Staff fetched successfully",
+      message: 'Staff fetched successfully',
       data: staff,
     });
   } catch (error) {
     return res.status(500).json({
       success: false,
-      message: "Internal server error",
+      message: 'Internal server error',
       error: error.message,
     });
   }
@@ -915,7 +886,7 @@ const createStaffUser = async (req, res) => {
     if (!plan) {
       return res.status(403).json({
         success: false,
-        message: "No active plan found for this restaurant.",
+        message: 'No active plan found for this restaurant.',
       });
     }
 
@@ -933,30 +904,30 @@ const createStaffUser = async (req, res) => {
     if (!email || !password || !username || !department || !roleTitle) {
       return res.status(400).json({
         success: false,
-        message: "Email, password, username, department, and role title are required",
+        message: 'Email, password, username, department, and role title are required',
       });
     }
 
-    const validDepartments = ["KDS", "Finance", "Operations"];
+    const validDepartments = ['KDS', 'Finance', 'Operations'];
     if (!validDepartments.includes(department)) {
-        return res.status(400).json({
-            success: false,
-            message: "Invalid department. Must be one of: KDS, Finance, Operations",
-        });
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid department. Must be one of: KDS, Finance, Operations',
+      });
     }
 
     if (roleTitle.length > 100) {
-        return res.status(400).json({
-            success: false,
-            message: "Role title must be 100 characters or less",
-        });
+      return res.status(400).json({
+        success: false,
+        message: 'Role title must be 100 characters or less',
+      });
     }
 
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({
         success: false,
-        message: "User already exists",
+        message: 'User already exists',
       });
     }
 
@@ -967,7 +938,7 @@ const createStaffUser = async (req, res) => {
       password: hashedPassword,
       username,
       phone,
-      role: "KDS", 
+      role: 'KDS',
       department,
       roleTitle,
       restaurantId: restaurant._id,
@@ -975,69 +946,68 @@ const createStaffUser = async (req, res) => {
     });
 
     await logAudit({
-        req,
-        action: 'STAFF_CREATED',
-        targetId: user._id,
-        targetModel: 'User',
-        changes: { email, department, roleTitle }
+      req,
+      action: 'STAFF_CREATED',
+      targetId: user._id,
+      targetModel: 'User',
+      changes: { email, department, roleTitle },
     });
 
     return res.status(201).json({
       success: true,
-      message: "Staff created successfully",
+      message: 'Staff created successfully',
       data: user,
     });
   } catch (error) {
     return res.status(500).json({
       success: false,
-      message: "Internal server error",
+      message: 'Internal server error',
       error: error.message,
     });
   }
 };
 
 const updateStaffUser = async (req, res) => {
-    try {
-        const { userId } = req.params;
-        const { username, phone, role } = req.body;
-        const restaurant = req.restaurant;
+  try {
+    const { userId } = req.params;
+    const { username, phone, role } = req.body;
+    const restaurant = req.restaurant;
 
-        const user = await User.findOne({ _id: userId, restaurantId: restaurant._id });
-        if (!user) {
-            return res.status(404).json({ success: false, message: "Staff user not found" });
-        }
-
-        if (username) user.username = username;
-        if (phone) user.phone = phone;
-
-        if (role) {
-             const allowedRoles = ["KDS"];
-             if (!allowedRoles.includes(role)) {
-                 return res.status(400).json({ success: false, message: "Invalid Role" });
-             }
-             const oldRole = user.role;
-             user.role = role;
-             
-             await logAudit({
-                req,
-                action: 'STAFF_UPDATED',
-                targetId: user._id,
-                targetModel: 'User',
-                changes: { roleChange: { from: oldRole, to: role } }
-             });
-        }
-
-        await user.save();
-
-        return res.status(200).json({
-            success: true,
-            message: "Staff updated successfully",
-            data: user
-        });
-
-    } catch (error) {
-        return res.status(500).json({ success: false, message: error.message });
+    const user = await User.findOne({ _id: userId, restaurantId: restaurant._id });
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'Staff user not found' });
     }
+
+    if (username) user.username = username;
+    if (phone) user.phone = phone;
+
+    if (role) {
+      const allowedRoles = ['KDS'];
+      if (!allowedRoles.includes(role)) {
+        return res.status(400).json({ success: false, message: 'Invalid Role' });
+      }
+      const oldRole = user.role;
+      user.role = role;
+
+      await logAudit({
+        req,
+        action: 'STAFF_UPDATED',
+        targetId: user._id,
+        targetModel: 'User',
+        changes: { roleChange: { from: oldRole, to: role } },
+      });
+    }
+
+    await user.save();
+
+    return res.status(200).json({
+      success: true,
+      message: 'Staff updated successfully',
+      data: user,
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
 };
 
 const toggleStaffStatus = async (req, res) => {
@@ -1049,7 +1019,7 @@ const toggleStaffStatus = async (req, res) => {
     if (!user) {
       return res.status(404).json({
         success: false,
-        message: "Staff member not found in your restaurant",
+        message: 'Staff member not found in your restaurant',
       });
     }
 
@@ -1057,22 +1027,22 @@ const toggleStaffStatus = async (req, res) => {
     await user.save();
 
     await logAudit({
-        req,
-        action: 'STAFF_STATUS_CHANGED',
-        targetId: user._id,
-        targetModel: 'User',
-        changes: { isActive: user.isActive }
+      req,
+      action: 'STAFF_STATUS_CHANGED',
+      targetId: user._id,
+      targetModel: 'User',
+      changes: { isActive: user.isActive },
     });
 
     return res.status(200).json({
       success: true,
       message: `Staff ${user.isActive ? 'activated' : 'deactivated'} successfully`,
-      data: { isActive: user.isActive }
+      data: { isActive: user.isActive },
     });
   } catch (error) {
     return res.status(500).json({
       success: false,
-      message: "Internal server error",
+      message: 'Internal server error',
       error: error.message,
     });
   }
@@ -1087,27 +1057,27 @@ const deleteStaff = async (req, res) => {
     if (!user) {
       return res.status(404).json({
         success: false,
-        message: "Staff member not found in your restaurant",
+        message: 'Staff member not found in your restaurant',
       });
     }
 
     await User.deleteOne({ _id: userId });
 
     await logAudit({
-        req,
-        action: 'STAFF_DELETED',
-        targetId: userId,
-        targetModel: 'User'
+      req,
+      action: 'STAFF_DELETED',
+      targetId: userId,
+      targetModel: 'User',
     });
 
     return res.status(200).json({
       success: true,
-      message: "Staff member deleted successfully",
+      message: 'Staff member deleted successfully',
     });
   } catch (error) {
     return res.status(500).json({
       success: false,
-      message: "Internal server error",
+      message: 'Internal server error',
       error: error.message,
     });
   }
@@ -1122,7 +1092,7 @@ const deleteRestaurant = async (req, res) => {
     if (!mongoose.Types.ObjectId.isValid(restaurantId)) {
       return res.status(400).json({
         success: false,
-        message: "Invalid restaurantId",
+        message: 'Invalid restaurantId',
       });
     }
 
@@ -1130,7 +1100,7 @@ const deleteRestaurant = async (req, res) => {
     if (!restaurant) {
       return res.status(404).json({
         success: false,
-        message: "Restaurant not found",
+        message: 'Restaurant not found',
       });
     }
 
@@ -1140,7 +1110,6 @@ const deleteRestaurant = async (req, res) => {
       Order.deleteMany({ restaurantId }).session(session),
       SubscriptionLog.deleteMany({ restaurantId }).session(session),
       AuditLog.deleteMany({ restaurantId }).session(session),
-      
     ]);
 
     await Restaurant.findByIdAndDelete(restaurantId).session(session);
@@ -1150,14 +1119,14 @@ const deleteRestaurant = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      message: "Restaurant and all associated data deleted successfully",
+      message: 'Restaurant and all associated data deleted successfully',
     });
   } catch (error) {
     await session.abortTransaction();
     session.endSession();
     return res.status(500).json({
       success: false,
-      message: "Internal server error during deletion",
+      message: 'Internal server error during deletion',
       error: error.message,
     });
   }
@@ -1166,20 +1135,20 @@ const deleteRestaurant = async (req, res) => {
 const getSystemHealth = async (req, res) => {
   try {
     const health = {
-      apiServer: "operational",
-      database: mongoose.connection.readyState === 1 ? "operational" : "degraded",
-      modelService: validateMeshyConfig() ? "operational" : "unconfigured",
+      apiServer: 'operational',
+      database: mongoose.connection.readyState === 1 ? 'operational' : 'degraded',
+      modelService: validateMeshyConfig() ? 'operational' : 'unconfigured',
     };
 
     return res.status(200).json({
       success: true,
-      message: "System health fetched successfully",
+      message: 'System health fetched successfully',
       data: health,
     });
   } catch (error) {
     return res.status(500).json({
       success: false,
-      message: "Internal server error during health check",
+      message: 'Internal server error during health check',
       error: error.message,
     });
   }
@@ -1192,7 +1161,7 @@ const deleteUser = async (req, res) => {
     if (!mongoose.Types.ObjectId.isValid(userId)) {
       return res.status(400).json({
         success: false,
-        message: "Invalid userId",
+        message: 'Invalid userId',
       });
     }
 
@@ -1200,14 +1169,14 @@ const deleteUser = async (req, res) => {
     if (!user) {
       return res.status(404).json({
         success: false,
-        message: "User not found",
+        message: 'User not found',
       });
     }
 
     if (user._id.toString() === req.user?._id.toString()) {
       return res.status(400).json({
         success: false,
-        message: "You cannot delete your own account from here",
+        message: 'You cannot delete your own account from here',
       });
     }
 
@@ -1218,44 +1187,44 @@ const deleteUser = async (req, res) => {
       action: 'USER_DELETED',
       targetId: userId,
       targetModel: 'User',
-      changes: { email: user.email, role: user.role }
+      changes: { email: user.email, role: user.role },
     });
 
     return res.status(200).json({
       success: true,
-      message: "User deleted successfully",
+      message: 'User deleted successfully',
     });
   } catch (error) {
     return res.status(500).json({
       success: false,
-      message: "Internal server error during user deletion",
+      message: 'Internal server error during user deletion',
       error: error.message,
     });
   }
 };
 
 export {
-    getAllRestaurants,
-    getSubscriptionLogs,
-    getSubscriptionStats,
-    getAllUsers,
-    createPlatformUser,
-    updateUser,
-    toggleUserStatus,
-    createRestaurant,
-    updateRestaurantStatus,
-    createRestaurantAdmin,
-    assignPlanToRestaurant,
-    extendSubscription,
-    changeRestaurantPlan,
-    suspendRestaurant,
-    resumeRestaurant,
-    getStaff,
-    createStaffUser,
-    updateStaffUser,
-    toggleStaffStatus,
-    deleteStaff,
-    getSystemHealth,
-    deleteRestaurant,
-    deleteUser
-}
+  getAllRestaurants,
+  getSubscriptionLogs,
+  getSubscriptionStats,
+  getAllUsers,
+  createPlatformUser,
+  updateUser,
+  toggleUserStatus,
+  createRestaurant,
+  updateRestaurantStatus,
+  createRestaurantAdmin,
+  assignPlanToRestaurant,
+  extendSubscription,
+  changeRestaurantPlan,
+  suspendRestaurant,
+  resumeRestaurant,
+  getStaff,
+  createStaffUser,
+  updateStaffUser,
+  toggleStaffStatus,
+  deleteStaff,
+  getSystemHealth,
+  deleteRestaurant,
+  deleteUser,
+};

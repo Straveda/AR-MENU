@@ -19,7 +19,7 @@ import {
   toggleUserStatus,
   getSystemHealth,
   deleteRestaurant,
-  deleteUser
+  deleteUser,
 } from '../controllers/platform.controller.js';
 
 const platformRouter = express.Router();
@@ -31,12 +31,7 @@ platformRouter.get(
   getAllRestaurants,
 );
 
-platformRouter.get(
-  '/get-all-users',
-  requireAuth,
-  requireRole('SUPER_ADMIN'),
-  getAllUsers,
-);
+platformRouter.get('/get-all-users', requireAuth, requireRole('SUPER_ADMIN'), getAllUsers);
 
 platformRouter.get(
   '/get-subscription-logs',
@@ -95,36 +90,31 @@ platformRouter.patch(
 );
 
 platformRouter.patch(
-  "/suspend-restaurant/:restaurantId",
+  '/suspend-restaurant/:restaurantId',
   requireAuth,
-  requireRole("SUPER_ADMIN"),
-  suspendRestaurant
+  requireRole('SUPER_ADMIN'),
+  suspendRestaurant,
 );
 
 platformRouter.patch(
-  "/resume-restaurant/:restaurantId",
+  '/resume-restaurant/:restaurantId',
   requireAuth,
-  requireRole("SUPER_ADMIN"),
-  resumeRestaurant
+  requireRole('SUPER_ADMIN'),
+  resumeRestaurant,
 );
 
 import { resolveRestaurantFromUser } from '../middlewares/resolveRestaurantFromUser.middleware.js';
 
 platformRouter.post(
-  "/create-user",
+  '/create-user',
   requireAuth,
-  requireRole("SUPER_ADMIN", "PLATFORM_ADMIN", "RESTAURANT_ADMIN"), // Restaurant Admin can create staff
+  requireRole('SUPER_ADMIN', 'PLATFORM_ADMIN', 'RESTAURANT_ADMIN'), // Restaurant Admin can create staff
   resolveRestaurantFromUser, // If Rest Admin, attach restaurant
   // enforcePlanFeature("maxStaff"), // REMOVED: Soft enforcement in controller
-  createPlatformUser
+  createPlatformUser,
 );
 
-platformRouter.put(
-  '/update-user/:userId',
-  requireAuth,
-  requireRole('SUPER_ADMIN'),
-  updateUser,
-);
+platformRouter.put('/update-user/:userId', requireAuth, requireRole('SUPER_ADMIN'), updateUser);
 
 platformRouter.patch(
   '/toggle-user-status/:userId',
@@ -133,12 +123,7 @@ platformRouter.patch(
   toggleUserStatus,
 );
 
-platformRouter.get(
-  '/get-system-health',
-  requireAuth,
-  requireRole('SUPER_ADMIN'),
-  getSystemHealth,
-);
+platformRouter.get('/get-system-health', requireAuth, requireRole('SUPER_ADMIN'), getSystemHealth);
 
 platformRouter.delete(
   '/delete-restaurant/:restaurantId',
@@ -147,11 +132,6 @@ platformRouter.delete(
   deleteRestaurant,
 );
 
-platformRouter.delete(
-  '/delete-user/:userId',
-  requireAuth,
-  requireRole('SUPER_ADMIN'),
-  deleteUser,
-);
+platformRouter.delete('/delete-user/:userId', requireAuth, requireRole('SUPER_ADMIN'), deleteUser);
 
 export default platformRouter;
