@@ -1,4 +1,5 @@
 import { Plan } from '../models/plan.models.js';
+import { Restaurant } from '../models/restaurant.models.js';
 
 const createPlan = async (req, res) => {
   try {
@@ -86,4 +87,37 @@ const updatePlan = async (req, res) => {
   }
 };
 
-export { createPlan, getAllPlans, updatePlan };
+const deletePlan = async (req, res) => {
+  try {
+    const { planId } = req.params;
+
+    const plan = await Plan.findById(planId);
+    if (!plan) {
+      return res.status(404).json({ success: false, message: 'Plan not found' });
+    }
+
+    // Safety Check: Is it in use?
+    const usageCount = await Restaurant.countDocuments({ planId });
+    if (usageCount > 0) {
+      return res.status(400).json({
+        success: false,
+        message: `Cannot delete plan: It is currently assigned to ${usageCount} restaurant(s).`,
+      });
+    }
+
+    await Plan.findByIdAndDelete(planId);
+
+    return res.status(200).json({
+      success: true,
+      message: 'Plan deleted successfully',
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: 'Internal server error',
+      error: error.message,
+    });
+  }
+};
+
+export { createPlan, getAllPlans, updatePlan, deletePlan };

@@ -15,6 +15,28 @@ const restaurantSchema = new mongoose.Schema(
       trim: true,
     },
 
+    address: {
+      type: String,
+      trim: true,
+    },
+
+    contactEmail: {
+      type: String,
+      lowercase: true,
+      trim: true,
+    },
+
+    contactPhone: {
+      type: String,
+      trim: true,
+    },
+
+    subscriptionType: {
+      type: String,
+      enum: ['MONTHLY', 'YEARLY'],
+      default: 'MONTHLY',
+    },
+
     status: {
       type: String,
       enum: ['Active', 'Inactive'],

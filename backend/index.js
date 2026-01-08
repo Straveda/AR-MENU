@@ -102,6 +102,10 @@ import platformRouter from './src/routes/platform.route.js';
 import planRouter from './src/routes/plan.route.js';
 import adminRouter from './src/routes/admin.route.js';
 import configRoute from './src/routes/config.route.js';
+import inventoryRoute from './src/routes/inventory.route.js';
+import expensesRoute from './src/routes/expenses.route.js';
+import analyticsRoutes from './src/routes/analytics.routes.js';
+
 
 app.use('/api/v1/dishes', dishRoute);
 app.use('/api/v1/orders', orderRoute);
@@ -111,27 +115,25 @@ app.use('/api/v1/platform', platformRouter);
 app.use('/api/v1/platform/plans', planRouter);
 app.use('/api/v1/admin', adminRouter);
 app.use('/api/v1/config', configRoute);
+app.use('/api/v1/inventory', inventoryRoute);
+app.use('/api/v1/expenses/:restaurantSlug', expensesRoute);
+app.use('/api/v1/analytics', analyticsRoutes);
+
 
 app.get('/', (req, res) => {
   res.send('Hello World!');
 });
 
-/* ======================
-   ERROR HANDLER
-====================== */
+
 import { errorHandler } from './src/middlewares/errorHandler.middleware.js';
 app.use(errorHandler);
 
-/* ======================
-   SERVER START (RENDER)
-====================== */
+
 const PORT = process.env.PORT || 8000;
 
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
 
-/* ======================
-   EXPORTS
-====================== */
 export { io, app };
+

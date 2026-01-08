@@ -1,0 +1,189 @@
+{
+  "project_identity": {
+    "name": "Restaurant AR (AR-MENU)",
+    "type": "B2B SaaS / Restaurant Platform",
+    "domain": "Restaurant Technology / Food & Beverage",
+    "summary": "A comprehensive restaurant management and ordering platform that leverages Augmented Reality (AR) and AI-generated 3D models to enhance the dining experience. The system allows restaurant owners to create digital menus with 3D visualizations, manages kitchen operations via a KDS, and provides customers with a web-based interface to browse, view AR models, and place orders directly from their tables."
+  },
+  "product_vision": {
+    "core_problem": "Static 2D menus often fail to accurately represent the appearance and portion size of dishes, leading to customer hesitation or dissatisfaction upon delivery. Additionally, restaurant management systems often lack integrated AR/AI capabilities for modern visual marketing.",
+    "purpose": "To bridge the gap between digital menus and physical reality using AR, while streamlining restaurant operations through a multi-tenant SaaS model.",
+    "success_metrics": "Increased menu engagement, reduced order errors, faster kitchen turnaround (via KDS), and high 3D model generation accuracy.",
+    "non_goals": [
+      "Physical POS hardware integration (currently web-based)",
+      "Delivery driver logistics (focused on on-premise/pickup)",
+      "Financial accounting software replacement (basic finance department tracking only)"
+    ]
+  },
+  "target_users_and_personas": {
+    "super_admin": {
+      "responsibility": "Global platform management, restaurant onboarding, subscription plan management, and system-wide user administration.",
+      "access_boundary": "Full access to all tenants and platform-level configurations.",
+      "type": "Platform-level"
+    },
+    "restaurant_admin": {
+      "responsibility": "Management of a specific restaurant's menu (dishes, prices, 3D models), staff accounts, and viewing restaurant-specific analytics.",
+      "access_boundary": "Restricted to data associated with their own `restaurantId`.",
+      "type": "Tenant-level"
+    },
+    "kds_staff": {
+      "responsibility": "Managing the Kitchen Display System (KDS), tracking order status, and ensuring timely food preparation.",
+      "access_boundary": "Accessed via the staff portal, focused on live order streams for their specific restaurant.",
+      "type": "Tenant-level"
+    },
+    "customer": {
+      "responsibility": "Browsing the digital menu, interacting with AR dish models, and placing orders.",
+      "access_boundary": "Public access via restaurant-specific slugs; no authentication required for browsing or ordering.",
+      "type": "End-user"
+    }
+  },
+  "domain_language_and_nomenclature": {
+    "tenant": "A unique restaurant entity identified by a slug and ObjectId.",
+    "kds": "Kitchen Display System - the digital interface for kitchen staff.",
+    "ar_model": "A 3D representation of a dish (GLB/USDZ formats) viewed via Augmented Reality.",
+    "meshy": "The external AI service used to generate 3D models from text prompts or images.",
+    "slug": "A URL-friendly unique identifier for a restaurant (e.g., '/r/pizza-hut').",
+    "order_code": "A human-readable short code for tracking customer orders."
+  },
+  "system_architecture": {
+    "style": "Modular Monolith (Backend) with a decoupled SPA Frontend.",
+    "subsystems": [
+      "Frontend: React-based dashboard and customer portal.",
+      "Backend: Node.js Express API handling business logic and data persistence.",
+      "Real-time Engine: Socket.io for live KDS updates and order tracking.",
+      "AI Pipeline: Asynchronous polling service for Meshy 3D generation.",
+      "Storage: ImageKit for hosting high-bandwidth 3D assets and images."
+    ],
+    "separation_of_concerns": "Frontend handles UI/UX and client-side routing; Backend enforces roles, plan limits, and data isolation. AI tasks are offloaded to an async polling service to prevent blocking the main event loop."
+  },
+  "frontend": {
+    "frameworks": "React (v19) with Vite.",
+    "routing": "React Router Dom (v7) with role-based guards (`RoleGuard`).",
+    "state_management": "React Context API (`AuthProvider`, `TenantProvider`, `SocketProvider`, `OrderContext`).",
+    "access_control": "Enforced via `RoleGuard` logic based on JWT claims (role, restaurantId).",
+    "ui_paradigm": "Admin-first dashboard for management; Mobile-responsive 'Scan-to-Order' interface for customers."
+  },
+  "backend": {
+    "frameworks": "Express.js (v5), MongoDB (Mongoose).",
+    "layering": "Routes -> Middlewares -> Controllers -> Models.",
+    "error_handling": "Centralized `errorHandler` middleware; consistent JSON response structure ({success, message, data}).",
+    "validation": "Handled within controllers and Mongoose schema pre-save hooks."
+  },
+  "authentication_and_authorization": {
+    "mechanism": "JWT (JSON Web Tokens) stored in `localStorage` on the client and verified via `requireAuth` middleware.",
+    "authorization": "Role-Based Access Control (RBAC). Roles: SUPER_ADMIN, PLATFORM_ADMIN, RESTAURANT_ADMIN, KDS, CUSTOMER.",
+    "enforcement": "Middleware `requireRole` restricts routes based on role; `resolveRestaurant` ensures tenant isolation for API requests.",
+    "decisions": "Authorization logic lives in backend middlewares and is reflected in the frontend's routing configuration."
+  },
+  "data_model_and_storage": {
+    "databases": "MongoDB (NoSQL).",
+    "core_entities": [
+      "User: Auth credentials, roles, and restaurant link.",
+      "Restaurant: Configuration, slug, plan subscription, and status.",
+      "Dish: Menu item details, prices, and 3D model metadata.",
+      "Order: Order items, table number, status, and tracking code.",
+      "Plan: Quotas (max dishes, max staff) and feature flags (AI, KDS)."
+    ],
+    "tenant_isolation": "Logical separation using `restaurantId` on all tenant-specific entities (Dish, Order, Staff Users).",
+    "storage": "ImageKit for images and 3D model files (GLB/USDZ)."
+  },
+  "api_contracts": {
+    "style": "RESTful API.",
+    "versioning": "URI versioning (e.g., `/api/v1/...`).",
+    "consistency": "Response objects consistently use `success`, `message`, and `data`/`error` fields.",
+    "coordination": "Frontend uses a central `axiosClient` with interceptors for attaching JWTs."
+  },
+  "business_logic_and_workflows": {
+    "ordering_flow": "Customer adds dishes to cart -> Submits order with table number -> Order appears in restaurant KDS -> Customer tracks status via short code.",
+    "3d_generation_flow": "Admin uploads image/prompt for dish -> Backend starts Meshy task -> Polling service monitors progress -> On completion, models are downloaded, re-uploaded to ImageKit, and dish is updated.",
+    "concurrency_handling": "Socket.io rooms are used to broadcast order updates only to the relevant restaurant's KDS and the specific customer's tracking page."
+  },
+  "ai_and_automation": {
+    "component": "Meshy 3D API integration.",
+    "purpose": "Automated generation of 3D assets for AR visualization of menu items.",
+    "data_dependencies": "Requires dish name, image, or text prompt.",
+    "coupling": "Loosely coupled via an asynchronous polling service (`pollingService.js`)."
+  },
+  "multi_tenancy_and_isolation": {
+    "tenant_id": "Each restaurant is a tenant, identified by a unique `restaurantId` (ObjectId).",
+    "enforcement": "Backend middlewares (`resolveRestaurant`) ensure that users only access data belonging to their assigned restaurantId.",
+    "risks": "Potential for ID-guessing if `restaurantId` is used directly in URLs; mitigated by using slugs for public routes and ObjectId for internal API calls."
+  },
+  "configuration_and_environment": {
+    "environment_variables": [
+      "MONGODB_URI",
+      "JWT_SECRET",
+      "MESHY_API_KEY",
+      "IMAGEKIT_PUBLIC/PRIVATE_KEYS",
+      "CLIENT_URL (for CORS)"
+    ],
+    "secrets": "Managed via `.env` files (server-side only).",
+    "feature_flags": "Managed via the `Plan` model (enforces features like `arModels`, `kdsAccess`)."
+  },
+  "deployment_and_runtime": {
+    "model": "Cloud-native (Vercel for Frontend, Render/Heroku for Backend - inferred from `vercel.json` and package scripts).",
+    "build_process": "Vite build for frontend; Node start for backend.",
+    "runtime": "Node.js environment; MongoDB Atlas (likely) for DB."
+  },
+  "observability_and_logging": {
+    "logging": "Basic console logging; `auditLog.model.js` indicates a structured audit trail for sensitive actions.",
+    "error_visibility": "Structured error responses from backend; frontend `ErrorBoundary` for crash prevention."
+  },
+  "security_posture": {
+    "authn": "Secured via JWT with expiration; passwords hashed via bcryptJS.",
+    "authz": "Strict RBAC via middleware.",
+    "data_exposure": "Limited by `restaurantId` partitioning; customer routes are public but read-only for menu data."
+  },
+  "invariants_and_system_laws": {
+    "user_tenancy": "Non-platform users MUST belong to exactly one restaurant.",
+    "platform_tenancy": "Platform admins MUST NOT be associated with a specific restaurant.",
+    "order_integrity": "An order must contain at least one dish and a valid table number."
+  },
+  "constraints_and_tradeoffs": {
+    "decisions": [
+      "Multi-tenancy implemented at the application level (Logical isolation) rather than database level for simplicity.",
+      "Asynchronous AI polling chosen over Webhooks to avoid setting up public endpoints for external callbacks in dev environments.",
+      "Vite used for fast frontend development and OOTB HMR."
+    ],
+    "optimizations": "Optimized for speed of development and low-cost scaling initially."
+  },
+  "anti_patterns_and_things_to_avoid": {
+    "logic_duplication": "Avoid duplication of role-based accessibility logic in both frontend routes and backend controllers; favor centralized permission models.",
+    "polling_overhead": "The current Meshy polling implementation starts on server restart; at very large scales, this could lead to thundering herd problems on the Meshy API.",
+    "unfiltered_socket_joins": "Avoid joining rooms without verifying the user's `restaurantId` in the socket handshake or join message."
+  },
+  "testing_and_quality_strategy": {
+    "strategy": "Manual verification and lint-based static analysis.",
+    "automated_tests": "Basic Supertest setup exists in `package.json` but no extensive test coverage is visible for core workflows.",
+    "linting": "ESLint and Prettier are configured for both frontend and backend to maintain code style."
+  },
+  "change_impact_map": {
+    "restaurant_model": "Significant impact; changes to `slug` or `restaurantId` partitioning will break both frontend routing and data access.",
+    "plan_limit_logic": "Impacts tenant operations; changes to `enforcePlanFeature` or `Plan` schema directly affect restaurant feature availability.",
+    "socket_events": "Impacts live KDS and Order tracking; changes to event names or payloads must be synchronized across FE/BE."
+  },
+  "known_gaps_and_technical_debt": {
+    "testing": "Lack of comprehensive unit/integration test suites for core ordering and AI pipelines.",
+    "auth_rotation": "JWT secret rotation and token refresh mechanisms are not visible.",
+    "rate_limiting": "Public customer API routes lack visible rate limiting to prevent scrape/spam attacks."
+  },
+  "evolution_history_and_context": {
+    "initial_scope": "Focused on AR dish visualization for single restaurant use-cases.",
+    "current_state": "Evolved into a full multi-tenant SaaS platform with subscription management, kitchen operations (KDS), and global platform administration.",
+    "future_intent": "Scaling to support a high volume of restaurants with automated 3D catalog generation."
+  },
+  "scalability_and_future_readiness": {
+    "bottlenecks": "Meshy generation polling; recommend switching to Webhooks. Express monolith might face CPU bottlenecks during high-load socket traffic.",
+    "architecture": "Clean separation of Concerns allows for future migration to microservices for the AI and Order engines.",
+    "10x_growth": "Ready for horizontal scaling of the API; MongoDB would require sharding by `restaurantId`."
+  },
+  "ownership_and_decision_authority": {
+    "code_ownership": "Centralized under the Straveda/AR-MENU project.",
+    "authority": "System design follows standard MVC/Middleware patterns for easy onboarding and predictable evolution."
+  },
+  "mental_model_for_future_ai": {
+    "core_concept": "Everything revolves around the `restaurantId`. When modifying any tenant-specific feature, ensure the `restaurantId` filter is present in both DB queries and Socket.io room joins.",
+    "integrity_rules": "Never allow a platform-level role to hold a `restaurantId`; Never allow a `dish` to exist without a parent restaurant; AR models are assets, not just properties, and follow an async lifecycle.",
+    "foundational_foundries": "The system assumes a 'Physical QR -> Web App -> Digital Menu -> AR' user flow. Do not break the slug-based restaurant resolution."
+  }
+}

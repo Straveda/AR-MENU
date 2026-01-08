@@ -123,32 +123,32 @@ export default function KDS() {
     };
 
     const OrderCard = ({ order, status, buttonText, nextStatus, accentColor, btnColor }) => (
-        <div className={`bg-white rounded-lg shadow-sm p-4 mb-4 border-l-4 ${accentColor} border-t border-r border-b border-gray-100 animate-fade-in`}>
-            <div className="flex justify-between items-start mb-3">
+        <div className={`bg-white rounded-xl shadow-md p-5 mb-4 border-l-4 ${accentColor} border-t border-r border-b border-gray-100/50 animate-fade-in transition-all hover:shadow-lg`}>
+            <div className="flex justify-between items-start mb-4">
                 <div>
-                    <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Order</span>
-                    <p className="text-lg font-bold text-gray-800">{order.orderCode}</p>
+                    <span className="type-label opacity-80">Order</span>
+                    <p className="type-metric">{order.orderCode}</p>
                 </div>
                 <div className="text-right">
-                    <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Table</span>
-                    <p className="text-lg font-bold text-gray-800">{order.tableNumber}</p>
+                    <span className="type-label opacity-80">Table</span>
+                    <p className="type-metric">{order.tableNumber}</p>
                 </div>
             </div>
 
-            <div className="mb-4 space-y-2">
+            <div className="mb-5 space-y-2.5">
                 {order.items.map((item, idx) => (
-                    <div key={idx} className="flex justify-between text-sm border-b border-gray-50 pb-2 last:border-0 last:pb-0">
-                        <span className="text-gray-700 font-medium">{item.name}</span>
-                        <span className="bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full text-xs font-bold">
+                    <div key={idx} className="flex justify-between type-body border-b border-gray-50 pb-2.5 last:border-0 last:pb-0">
+                        <span className="text-gray-900 font-medium">{item.name}</span>
+                        <span className="bg-amber-100 text-amber-900 px-2 py-0.5 rounded-md type-caption font-bold">
                             x{item.quantity}
                         </span>
                     </div>
                 ))}
             </div>
 
-            <div className="mt-4 pt-3 border-t border-gray-50 flex justify-between items-center text-xs text-gray-500">
+            <div className="mt-4 pt-3 border-t border-gray-100 flex justify-between items-center type-caption text-gray-500 font-medium">
                 <span>{new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                <span className={`px-2 py-0.5 rounded-full font-semibold ${accentColor.replace('border-', 'bg-').replace('500', '100')} ${accentColor.replace('border-', 'text-').replace('500', '800')}`}>
+                <span className={`px-2 py-0.5 rounded-full font-bold uppercase tracking-wider text-[10px] ${accentColor.replace('border-', 'bg-').replace('500', '100')} ${accentColor.replace('border-', 'text-').replace('500', '800')}`}>
                     {status}
                 </span>
             </div>
@@ -156,7 +156,7 @@ export default function KDS() {
             <button
                 onClick={() => updateStatus(order.orderCode, nextStatus)}
                 disabled={processing === order.orderCode}
-                className={`w-full mt-3 py-2.5 rounded-lg font-bold text-white shadow-sm transition-all transform active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed ${btnColor}`}
+                className={`w-full mt-4 py-3 rounded-lg font-bold text-white shadow-sm transition-all transform active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed ${btnColor}`}
             >
                 {processing === order.orderCode ? (
                     <span className="flex items-center justify-center gap-2">
@@ -206,8 +206,8 @@ export default function KDS() {
             {}
             <div className="bg-white border-b border-amber-100 px-6 py-4 shadow-sm flex justify-between items-center z-10">
                 <div className="flex items-center gap-4">
-                    <h1 className="text-2xl font-bold text-gray-800 tracking-wide">👨‍🍳 Kitchen Display</h1>
-                    {restaurantName && <span className="text-gray-400 text-sm border-l border-gray-300 pl-4">{restaurantName}</span>}
+                    <h1 className="type-h1">👨‍🍳 Kitchen Display</h1>
+                    {restaurantName && <span className="type-secondary border-l border-gray-300 pl-4">{restaurantName}</span>}
                 </div>
 
                 <div className="flex items-center gap-6">
@@ -239,11 +239,11 @@ export default function KDS() {
                     {}
                     <div className="flex-1 min-w-[320px] flex flex-col bg-gray-50 rounded-xl overflow-hidden shadow-sm border border-amber-200/50">
                         <div className="bg-white p-3 border-b border-yellow-100 sticky top-0 z-10 flex justify-between items-center px-4 shadow-sm">
-                            <h2 className="font-bold text-gray-800 uppercase tracking-wide flex items-center gap-2">
+                            <h2 className="type-h3 flex items-center gap-2">
                                 <span className="w-2 h-8 bg-yellow-400 rounded-full"></span>
                                 Pending
                             </h2>
-                            <span className="bg-yellow-100 text-yellow-800 px-2.5 py-0.5 rounded-full text-sm font-bold border border-yellow-200">
+                            <span className="bg-yellow-100 text-yellow-800 px-2.5 py-0.5 rounded-full type-body-sm font-bold border border-yellow-200">
                                 {orders.pending.length}
                             </span>
                         </div>
@@ -272,11 +272,11 @@ export default function KDS() {
                     {}
                     <div className="flex-1 min-w-[320px] flex flex-col bg-gray-50 rounded-xl overflow-hidden shadow-sm border border-amber-200/50">
                         <div className="bg-white p-3 border-b border-orange-100 sticky top-0 z-10 flex justify-between items-center px-4 shadow-sm">
-                            <h2 className="font-bold text-gray-800 uppercase tracking-wide flex items-center gap-2">
+                            <h2 className="type-h3 flex items-center gap-2">
                                 <span className="w-2 h-8 bg-orange-500 rounded-full"></span>
                                 Preparing
                             </h2>
-                            <span className="bg-orange-100 text-orange-800 px-2.5 py-0.5 rounded-full text-sm font-bold border border-orange-200">
+                            <span className="bg-orange-100 text-orange-800 px-2.5 py-0.5 rounded-full type-body-sm font-bold border border-orange-200">
                                 {orders.preparing.length}
                             </span>
                         </div>
@@ -305,11 +305,11 @@ export default function KDS() {
                     {}
                     <div className="flex-1 min-w-[320px] flex flex-col bg-gray-50 rounded-xl overflow-hidden shadow-sm border border-amber-200/50">
                         <div className="bg-white p-3 border-b border-green-100 sticky top-0 z-10 flex justify-between items-center px-4 shadow-sm">
-                            <h2 className="font-bold text-gray-800 uppercase tracking-wide flex items-center gap-2">
+                            <h2 className="type-h3 flex items-center gap-2">
                                 <span className="w-2 h-8 bg-green-500 rounded-full"></span>
                                 Ready
                             </h2>
-                            <span className="bg-green-100 text-green-800 px-2.5 py-0.5 rounded-full text-sm font-bold border border-green-200">
+                            <span className="bg-green-100 text-green-800 px-2.5 py-0.5 rounded-full type-body-sm font-bold border border-green-200">
                                 {orders.ready.length}
                             </span>
                         </div>

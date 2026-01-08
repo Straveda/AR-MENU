@@ -1,1 +1,165 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
 @import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
+    Arial, sans-serif;
+
+  /* Typography Scale (Desktop) - Mobile adjustments handled in media queries */
+  --text-h1: 24px;
+  --text-h2: 18px;
+  --text-h3: 15px;
+  --text-body: 14px;
+  --text-body-sm: 13px;
+  --text-caption: 12px;
+  --text-metric: 20px;
+
+  /* Colors */
+  --color-slate-50: #f8fafc;
+  --color-slate-100: #f1f5f9;
+  --color-slate-200: #e2e8f0;
+  --color-slate-400: #94a3b8;
+  --color-slate-500: #64748b;
+  --color-slate-600: #475569;
+  --color-slate-700: #334155;
+  --color-slate-800: #1e293b;
+  --color-slate-900: #0f172a;
+
+  --color-amber-50: #fffbeb;
+  --color-amber-500: #f59e0b;
+  --color-amber-600: #d97706;
+}
+
+@layer base {
+  body {
+    @apply bg-slate-50 text-slate-800 antialiased font-sans transition-colors duration-200;
+    font-size: 15px; /* Mobile base */
+    font-weight: 400;
+    line-height: 1.5;
+  }
+
+  @media (min-width: 1024px) {
+    body {
+      font-size: 16px; /* Desktop base */
+    }
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply text-slate-900 tracking-tight font-semibold;
+  }
+}
+
+@layer components {
+  /* 
+   * SYSTEM TYPOGRAPHY UTILITIES 
+   * V2: Production Dashboard Grade
+   */
+
+  /* Page Title (H1) */
+  .type-h1 {
+    font-size: 20px;
+    font-weight: 600;
+    line-height: 1.3;
+    color: #0f172a; /* slate-900 */
+    letter-spacing: -0.01em;
+  }
+  @media (min-width: 768px) { .type-h1 { font-size: 22px; } }
+  @media (min-width: 1280px) { .type-h1 { font-size: 24px; line-height: 1.3; } }
+
+  /* Section Title (H2) */
+  .type-h2 {
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 1.35;
+    color: #1e293b; /* slate-800 */
+    letter-spacing: -0.01em;
+  }
+  @media (min-width: 1280px) { .type-h2 { font-size: 18px; line-height: 1.35; } }
+
+  /* Card/Widget Title (H3) */
+  .type-h3 {
+    font-size: 14px;
+    font-weight: 600; /* Increased from 500 */
+    line-height: 1.4;
+    color: #1e293b; /* slate-800 */
+  }
+  @media (min-width: 1280px) { .type-h3 { font-size: 15px; line-height: 1.4; } }
+
+  /* Primary Body Text */
+  .type-body {
+    font-size: 14px;
+    font-weight: 400; /* Regular default */
+    line-height: 1.5;
+    color: #1e293b; /* slate-800 */
+  }
+  @media (min-width: 1280px) { .type-body { font-size: 15px; line-height: 1.5; } }
+
+  /* Secondary Text (descriptions, hints) */
+  .type-secondary {
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 1.5;
+    color: #64748b; /* slate-500 */
+  }
+  @media (min-width: 1280px) { .type-secondary { font-size: 14px; line-height: 1.5; } }
+
+  /* Labels (table headers, form labels) */
+  .type-label {
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1.4;
+    color: #64748b; /* slate-500 */
+    letter-spacing: 0.01em;
+  }
+  /* Optional: Add .uppercase utility if needed locally, don't force it global */
+
+  /* Metric Values */
+  .type-metric {
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 1.2;
+    color: #0f172a; /* slate-900 */
+    letter-spacing: -0.02em;
+  }
+  @media (min-width: 1280px) { .type-metric { font-size: 20px; line-height: 1.2; } }
+
+  /* Buttons - Stronger presence */
+  .type-btn {
+    font-size: 14px;
+    font-weight: 500;
+    /* Increased padding happens in component classes */
+  }
+  @media (min-width: 1280px) { .type-btn { font-size: 15px; } }
+  
+  /* 
+   * COMPONENT HELPERS 
+   */
+  
+  .card-premium {
+    @apply bg-white border border-slate-200 rounded-xl shadow-md transition-all duration-200;
+    /* Vertical padding should be added via utility classes like p-5 or p-6 */
+  }
+
+  .btn-primary {
+    @apply bg-amber-500 hover:bg-amber-600 text-white flex items-center justify-center transition-all active:scale-95 disabled:opacity-50 text-sm font-medium shadow-sm;
+    padding: 10px 20px; /* Slight increase */
+    border-radius: 8px;
+  }
+
+  .btn-secondary {
+    @apply bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 flex items-center justify-center transition-all active:scale-95 text-sm font-medium shadow-sm;
+    padding: 10px 20px; /* Slight increase */
+    border-radius: 8px;
+  }
+  
+  .input-standard {
+    @apply bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 outline-none transition-all text-sm font-normal text-slate-800 shadow-sm;
+    padding: 10px 14px;
+    line-height: 1.5;
+  }
+
+  /* Badge Standard */
+  .badge-standard {
+    @apply inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold;
+  }
+}

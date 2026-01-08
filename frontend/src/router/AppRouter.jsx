@@ -7,10 +7,12 @@ import ErrorBoundary from '../components/common/ErrorBoundary';
 import RoleGuard from './RoleGuard';
 
 import Login from '../pages/admin/Login.jsx';
-import Dashboard from '../pages/admin/Dashboard.jsx'; 
+import AnalyticsDashboard from '../pages/admin/AnalyticsDashboard.jsx';
+import MenuManagement from '../pages/admin/MenuManagement.jsx';
 import AddDish from '../pages/admin/AddDish.jsx';
 import EditDish from '../pages/admin/EditDish.jsx';
 import StaffManagement from '../pages/admin/StaffManagement.jsx';
+import Inventory from '../pages/admin/Inventory.jsx';
 import KDS from '../pages/admin/KDS.jsx';
 import ComingSoon from '../pages/staff/ComingSoon.jsx';
 
@@ -27,6 +29,9 @@ import UsersManagement from '../pages/platform/UsersManagement.jsx';
 import SubscriptionsManagement from '../pages/platform/SubscriptionsManagement.jsx';
 import PlansManagement from '../pages/platform/PlansManagement.jsx';
 import LandingPage from '../pages/LandingPage.jsx';
+
+import AdminLayout from '../components/layout/AdminLayout.jsx';
+import ExpensesPage from '../pages/admin/ExpensesPage.jsx';
 
 const AppRouter = () => {
     return (
@@ -54,11 +59,17 @@ const AppRouter = () => {
 
                                     {}
                                     <Route element={<RoleGuard allowedRoles={['RESTAURANT_ADMIN']} />}>
-                                        <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
-                                        <Route path="/admin/dashboard" element={<Dashboard />} />
-                                        <Route path="/admin/add-dish" element={<AddDish />} />
-                                        <Route path="/admin/edit-dish/:id" element={<EditDish />} />
-                                        <Route path="/admin/staff" element={<StaffManagement />} />
+                                        <Route element={<AdminLayout />}>
+                                            <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
+                                            <Route path="/admin/dashboard" element={<AnalyticsDashboard />} />
+                                            <Route path="/admin/menu" element={<MenuManagement />} />
+
+                                            <Route path="/admin/add-dish" element={<AddDish />} />
+                                            <Route path="/admin/edit-dish/:id" element={<EditDish />} />
+                                            <Route path="/admin/staff" element={<StaffManagement />} />
+                                            <Route path="/admin/inventory" element={<Inventory />} />
+                                            <Route path="/admin/expenses" element={<ExpensesPage />} />
+                                        </Route>
                                     </Route>
 
                                     {}

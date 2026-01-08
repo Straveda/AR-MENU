@@ -518,12 +518,19 @@ function ActionDropdown({ user, onEdit, onToggleStatus, onDelete }) {
   const [open, setOpen] = useState(false);
   const buttonRef = useRef(null);
   const [menuStyle, setMenuStyle] = useState({});
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 640);
 
   useEffect(() => {
-    if (open && buttonRef.current) {
+    const handleResize = () => setIsMobile(window.innerWidth < 640);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  useEffect(() => {
+    if (open && buttonRef.current && !isMobile) {
       const rect = buttonRef.current.getBoundingClientRect();
       const screenHeight = window.innerHeight;
-      const menuHeightEstimate = 200; 
+      const menuHeightEstimate = 200;
       
       const spaceBelow = screenHeight - rect.bottom;
       const shouldOpenUpwards = spaceBelow < menuHeightEstimate;
@@ -533,60 +540,115 @@ function ActionDropdown({ user, onEdit, onToggleStatus, onDelete }) {
           position: 'fixed',
           bottom: screenHeight - rect.top + 4,
           right: window.innerWidth - rect.right,
+          overflowY: 'auto'
         });
       } else {
         setMenuStyle({
           position: 'fixed',
           top: rect.bottom + 4,
           right: window.innerWidth - rect.right,
+          overflowY: 'auto'
         });
       }
     }
-  }, [open]);
+  }, [open, isMobile]);
+
+  const MenuContent = () => (
+    <>
+      <div className="py-2">
+        <div className="px-4 py-1 text-xs font-bold text-slate-400 uppercase tracking-wider">Account</div>
+        <MenuItem 
+          icon={<svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>}
+          label="Edit Details" 
+          onClick={() => { onEdit(); setOpen(false); }} 
+        />
+        <MenuItem 
+          icon={user.isActive ? 
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" /></svg> : 
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+          }
+          label={user.isActive ? 'Deactivate User' : 'Activate User'}
+          onClick={() => { onToggleStatus(); setOpen(false); }}
+          variant={user.isActive ? 'warning' : 'success'}
+        />
+      </div>
+
+      <div className="border-t border-slate-100 my-1"></div>
+
+      <div className="py-2">
+        <div className="px-4 py-1 text-xs font-bold text-slate-400 uppercase tracking-wider">Danger Zone</div>
+        <MenuItem 
+           icon={<svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>}
+           label="Delete User"
+           onClick={() => { onDelete(); setOpen(false); }}
+           variant="danger"
+        />
+      </div>
+    </>
+  );
 
   return (
-    <div className="relative inline-block">
+    <>
       <button
         ref={buttonRef}
         onClick={() => setOpen(!open)}
-        className="px-3 py-1.5 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 shadow-sm"
+        className="inline-flex items-center px-3 py-1.5 text-xs font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 shadow-sm transition-colors"
       >
-        Actions ▾
+        Actions
+        <svg className={`ml-1.5 w-3.5 h-3.5 transition-transform ${open ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
       </button>
-      
+
       {open && createPortal(
         <>
-          <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
-          <div 
-            style={menuStyle}
-            className="z-50 w-48 bg-white border border-gray-200 rounded-lg shadow-xl py-1"
-          >
-            <button
-              onClick={() => { onEdit(); setOpen(false); }}
-              className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+          <div className="fixed inset-0 z-40 bg-slate-900/10 backdrop-blur-[1px]" onClick={() => setOpen(false)} />
+          {isMobile ? (
+             <div className="fixed bottom-0 left-0 right-0 z-50 bg-white rounded-t-2xl shadow-2xl border-t border-slate-200 animate-in slide-in-from-bottom duration-200">
+                <div className="flex justify-center pt-3 pb-1">
+                   <div className="w-12 h-1.5 bg-slate-200 rounded-full" />
+                </div>
+                <div className="pb-6">
+                  <div className="px-4 py-2 border-b border-slate-100 mb-2">
+                     <h3 className="font-semibold text-slate-900">Manage User</h3>
+                  </div>
+                  <MenuContent />
+                </div>
+             </div>
+          ) : (
+            <div 
+              style={menuStyle}
+              className="z-50 w-56 bg-white border border-slate-200 rounded-xl shadow-xl shadow-slate-200/50 py-1 overflow-hidden animate-in fade-in zoom-in-95 duration-100"
             >
-              Edit Details
-            </button>
-            <button
-              onClick={() => { onToggleStatus(); setOpen(false); }}
-              className={`block w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${
-                user.isActive ? 'text-red-600' : 'text-emerald-600'
-              }`}
-            >
-              {user.isActive ? 'Deactivate User' : 'Activate User'}
-            </button>
-            <div className="h-px bg-gray-100 my-1" />
-            <button
-              onClick={() => { onDelete(); setOpen(false); }}
-              className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
-            >
-              Delete User
-            </button>
-          </div>
+              <MenuContent />
+            </div>
+          )}
         </>,
         document.body
       )}
-    </div>
+    </>
+  );
+}
+
+function MenuItem({ label, onClick, icon, variant = 'default', disabled = false }) {
+  const styles = {
+    default: "text-slate-700 hover:bg-slate-50 hover:text-indigo-600",
+    success: "text-emerald-700 hover:bg-emerald-50 hover:text-emerald-800",
+    warning: "text-amber-700 hover:bg-amber-50 hover:text-amber-800",
+    danger: "text-red-600 hover:bg-red-50 hover:text-red-700",
+  };
+
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      className={`w-full text-left px-4 py-2.5 text-sm flex items-center gap-3 transition-colors ${
+         disabled ? 'opacity-50 cursor-not-allowed bg-slate-50 text-slate-400' : styles[variant]
+      }`}
+    >
+      {icon && <span className={disabled ? '' : "opacity-75"}>{icon}</span>}
+      <span className="font-medium">{label}</span>
+    </button>
   );
 }
 

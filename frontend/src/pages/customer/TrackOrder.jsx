@@ -122,20 +122,20 @@ export default function TrackOrderV2() {
         <div className="min-h-screen bg-amber-50 px-4 py-8 flex flex-col items-center">
             {}
             <div className="text-center mb-10 w-full max-w-2xl">
-                <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-2 tracking-wide">
+                <h1 className="type-h1 text-gray-800 mb-2 tracking-wide">
                     Track Your Order
                 </h1>
                 <div className="w-20 h-1 bg-amber-600 mx-auto mb-4"></div>
-                <p className="text-gray-600">
+                <p className="type-secondary">
                     Enter your unique order code to see the realtime status of your meal.
                 </p>
             </div>
 
             {}
-            <div className="w-full max-w-md bg-white rounded-xl shadow-lg p-6 border border-amber-100 mb-8">
+            <div className="card-premium w-full max-w-md p-6 border-amber-100/50 mb-8">
                 <form onSubmit={handleTrackOrder} className="flex flex-col gap-4">
                     <div>
-                        <label htmlFor="orderCode" className="block text-sm font-medium text-gray-700 mb-1">
+                        <label htmlFor="orderCode" className="block type-label mb-1">
                             Enter your order code
                         </label>
                         <input
@@ -150,7 +150,7 @@ export default function TrackOrderV2() {
                     <button
                         type="submit"
                         disabled={loading || !orderCode.trim()}
-                        className="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold py-3 rounded-lg shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none flex justify-center items-center"
+                        className="w-full bg-amber-600 hover:bg-amber-700 type-btn text-white py-3 rounded-lg shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none flex justify-center items-center"
                     >
                         {loading ? (
                             <>
@@ -172,7 +172,7 @@ export default function TrackOrderV2() {
                 {error && (
                     <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-md shadow-sm animate-fade-in">
                         <div className="flex">
-                            <div className="flex-shrink-0">
+                            <div className="shrink-0">
                                 <svg className="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
                                 </svg>
@@ -187,7 +187,7 @@ export default function TrackOrderV2() {
                 )}
 
                 {orderData && (
-                    <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-amber-100 animate-slide-up relative">
+                    <div className="card-premium overflow-hidden border-amber-100/50 animate-slide-up relative">
                         {}
                         {isLive && (
                            <div className="absolute top-4 right-1/2 translate-x-1/2 sm:translate-x-0 sm:right-6 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold text-green-600 border border-green-100 shadow-sm flex items-center gap-2 z-10 animate-pulse">
@@ -205,26 +205,26 @@ export default function TrackOrderV2() {
                         {}
                         <div className="bg-amber-600 px-6 py-4 flex justify-between items-center text-white mt-8 sm:mt-0">
                             <div>
-                                <p className="text-amber-100 text-xs uppercase tracking-wider font-semibold">Order Code</p>
-                                <p className="text-xl font-bold">{orderData.orderCode}</p>
+                                <p className="text-amber-100 type-label mb-1">Order Code</p>
+                                <p className="type-metric font-bold">{orderData.orderCode}</p>
                             </div>
                             <div className="text-right">
-                                <p className="text-amber-100 text-xs uppercase tracking-wider font-semibold">Table No</p>
-                                <p className="text-xl font-bold">{orderData.tableNumber}</p>
+                                <p className="text-amber-100 type-label mb-1">Table No</p>
+                                <p className="type-metric font-bold">{orderData.tableNumber}</p>
                             </div>
                         </div>
 
                         {}
                         <div className="px-6 py-4 bg-gray-50 border-b border-gray-100 flex justify-between items-center">
-                            <span className="text-gray-600 font-medium">Current Status</span>
-                            <span className={`px-4 py-1.5 rounded-full text-sm font-bold border ${getStatusColor(orderData.orderStatus)} shadow-sm transition-all duration-300`}>
+                            <span className="type-body text-gray-600 font-medium">Current Status</span>
+                            <span className={`px-4 py-1.5 rounded-full badge-standard border ${getStatusColor(orderData.orderStatus)} shadow-sm transition-all duration-300`}>
                                 {orderData.orderStatus}
                             </span>
                         </div>
 
                         {}
                         <div className="p-6">
-                            <h3 className="text-lg font-semibold text-gray-800 mb-4 border-b pb-2">Order Items</h3>
+                            <h3 className="type-h3 text-gray-800 mb-4 border-b pb-2">Order Items</h3>
                             <div className="space-y-4">
                                 {orderData.orderItems.map((item, index) => (
                                     <div key={index} className="flex justify-between items-center">
@@ -233,7 +233,7 @@ export default function TrackOrderV2() {
                                                 {item.quantity}x
                                             </div>
                                             <div>
-                                                <p className="text-gray-800 font-medium">{item.name}</p>
+                                                <p className="type-body text-gray-800 font-medium">{item.name}</p>
                                             </div>
                                         </div>
                                         {}
@@ -248,8 +248,8 @@ export default function TrackOrderV2() {
 
                             {}
                             <div className="mt-8 pt-4 border-t border-gray-100 flex justify-between items-center">
-                                <span className="text-gray-600 font-bold text-lg">Total Amount</span>
-                                <span className="text-2xl font-bold text-amber-600">₹{orderData.total}</span>
+                                <span className="type-h3 text-gray-600">Total Amount</span>
+                                <span className="type-metric text-amber-600">₹{orderData.total}</span>
                             </div>
                         </div>
 

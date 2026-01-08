@@ -45,15 +45,15 @@ export default function OrderCart() {
     if (items.length === 0) {
         return (
             <div className="min-h-screen bg-amber-50 flex flex-col items-center justify-center p-4">
-                <div className="bg-white p-8 rounded-2xl shadow-lg border border-amber-100 text-center max-w-sm w-full">
+                <div className="card-premium p-8 text-center max-w-sm w-full border-amber-100/50">
                     <div className="w-20 h-20 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-6">
                         <span className="text-4xl">🛒</span>
                     </div>
-                    <h2 className="text-2xl font-bold text-gray-800 mb-2">Your Cart is Empty</h2>
-                    <p className="text-gray-600 mb-6">Looks like you haven't added any delicious dishes yet.</p>
+                    <h2 className="type-h2 text-gray-800 mb-2">Your Cart is Empty</h2>
+                    <p className="type-secondary mb-6">Looks like you haven't added any delicious dishes yet.</p>
                     <button
                         onClick={() => navigate(`/r/${slug}/menu`)}
-                        className="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold py-3 px-6 rounded-xl transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+                        className="w-full bg-amber-600 hover:bg-amber-700 type-btn text-white py-3 px-6 rounded-xl transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
                     >
                         Browse Menu
                     </button>
@@ -75,7 +75,7 @@ export default function OrderCart() {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                         </svg>
                     </button>
-                    <h1 className="text-xl font-bold text-gray-800">Your Order</h1>
+                    <h1 className="type-h1 text-gray-800">Your Order</h1>
                     <div className="w-8"></div> {/* Spacer for centering */}
                 </div>
             </div>
@@ -84,9 +84,9 @@ export default function OrderCart() {
                 {/* Order Items */}
                 <div className="space-y-4 mb-8">
                     {items.map((item) => (
-                        <div key={item.dishId} className="bg-white rounded-xl p-4 shadow-sm border border-amber-100 flex gap-4 animate-fade-in">
+                        <div key={item.dishId} className="card-premium p-4 border-amber-100/50 flex gap-4 animate-fade-in">
                             {/* Image Thumbnail */}
-                            <div className="w-20 h-20 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
+                            <div className="w-20 h-20 bg-gray-100 rounded-lg overflow-hidden shrink-0">
                                 {item.image ? (
                                     <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
                                 ) : (
@@ -97,7 +97,7 @@ export default function OrderCart() {
                             {/* Details */}
                             <div className="flex-1 flex flex-col justify-between">
                                 <div className="flex justify-between items-start">
-                                    <h3 className="font-bold text-gray-800 line-clamp-2">{item.name}</h3>
+                                    <h3 className="type-h3 text-gray-800 line-clamp-2">{item.name}</h3>
                                     <button
                                         onClick={() => removeItem(item.dishId)}
                                         className="text-gray-400 hover:text-red-500 transition-colors p-1"
@@ -116,7 +116,7 @@ export default function OrderCart() {
                                         >
                                             -
                                         </button>
-                                        <span className="w-8 text-center font-semibold text-gray-800 text-sm">{item.quantity}</span>
+                                        <span className="w-8 text-center type-body text-gray-800 text-sm">{item.quantity}</span>
                                         <button
                                             onClick={() => updateQuantity(item.dishId, item.quantity + 1)}
                                             className="w-8 h-8 flex items-center justify-center text-amber-600 hover:bg-amber-100 rounded-r-lg transition-colors"
@@ -124,7 +124,7 @@ export default function OrderCart() {
                                             +
                                         </button>
                                     </div>
-                                    <span className="font-bold text-amber-600">₹{item.price * item.quantity}</span>
+                                    <span className="type-metric text-amber-600">₹{item.price * item.quantity}</span>
                                 </div>
                             </div>
                         </div>
@@ -132,10 +132,10 @@ export default function OrderCart() {
                 </div>
 
                 {/* Bill Details */}
-                <div className="bg-white rounded-xl p-6 shadow-sm border border-amber-100 mb-8">
-                    <h3 className="font-bold text-gray-800 mb-4 text-sm uppercase tracking-wide opacity-70">Bill Summary</h3>
-                    <div className="space-y-2 text-sm">
-                        <div className="flex justify-between text-gray-600">
+                <div className="card-premium p-6 border-amber-100/50 mb-8">
+                    <h3 className="type-label mb-4 opacity-70">Bill Summary</h3>
+                    <div className="space-y-2 type-body-sm">
+                        <div className="flex justify-between type-secondary">
                             <span>Item Total</span>
                             <span>₹{subtotal}</span>
                         </div>
@@ -144,15 +144,15 @@ export default function OrderCart() {
               <span>₹0</span>
             </div> */}
                         <div className="border-t border-dashed border-gray-200 my-3 pt-3 flex justify-between items-center">
-                            <span className="font-bold text-lg text-gray-800">To Pay</span>
-                            <span className="font-bold text-xl text-amber-600">₹{total}</span>
+                            <span className="type-h3 text-gray-800">To Pay</span>
+                            <span className="type-metric text-amber-600">₹{total}</span>
                         </div>
                     </div>
                 </div>
 
                 {/* Table Number Input */}
-                <div className="bg-white rounded-xl p-6 shadow-sm border border-amber-100 mb-8">
-                    <label className="block text-sm font-bold text-gray-700 mb-2">
+                <div className="card-premium p-6 border-amber-100/50 mb-8">
+                    <label className="block type-label mb-2">
                         Table Number <span className="text-red-500">*</span>
                     </label>
                     <input
@@ -177,13 +177,13 @@ export default function OrderCart() {
             <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 p-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-20">
                 <div className="max-w-3xl mx-auto flex gap-4 items-center">
                     <div className="flex-1">
-                        <span className="block text-xs text-gray-500 uppercase font-semibold">Total</span>
-                        <span className="block text-xl font-bold text-gray-900">₹{total}</span>
+                        <span className="block type-label">Total</span>
+                        <span className="block type-metric text-gray-900">₹{total}</span>
                     </div>
                     <button
                         onClick={handlePlaceOrder}
                         disabled={loading}
-                        className={`flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-3.5 px-6 rounded-xl shadow-lg shadow-green-200 transition-all transform hover:-translate-y-0.5 flex justify-center items-center gap-2 ${loading ? 'opacity-75 cursor-wait' : ''}`}
+                        className={`flex-1 bg-green-600 hover:bg-green-700 type-btn text-white py-3.5 px-6 rounded-xl shadow-lg shadow-green-200 transition-all transform hover:-translate-y-0.5 flex justify-center items-center gap-2 ${loading ? 'opacity-75 cursor-wait' : ''}`}
                     >
                         {loading ? (
                             <>

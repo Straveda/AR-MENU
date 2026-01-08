@@ -183,6 +183,17 @@ const createPlatformUser = async (req, res) => {
       });
     }
 
+    // Security: Prevent privilege escalation
+    if (role === 'SUPER_ADMIN' && req.user.role !== 'SUPER_ADMIN') {
+        return res.status(403).json({ success: false, message: 'Only Super Admins can create Super Admins' });
+    }
+    if (role === 'PLATFORM_ADMIN' && req.user.role !== 'SUPER_ADMIN') {
+        return res.status(403).json({ success: false, message: 'Only Super Admins can create Platform Admins' });
+    }
+    if (req.user.role === 'RESTAURANT_ADMIN' && ['SUPER_ADMIN', 'PLATFORM_ADMIN'].includes(role)) {
+        return res.status(403).json({ success: false, message: 'Restaurant Admins cannot create platform roles' });
+    }
+
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({
@@ -268,6 +279,12 @@ const updateUser = async (req, res) => {
           message: 'Invalid role',
         });
       }
+
+      // Security: Prevent privilege escalation during update
+      if ((role === 'SUPER_ADMIN' || role === 'PLATFORM_ADMIN') && req.user.role !== 'SUPER_ADMIN') {
+         return res.status(403).json({ success: false, message: 'Insufficient permissions to assign this role' });
+      }
+
       user.role = role;
     }
 
@@ -353,12 +370,21 @@ const toggleUserStatus = async (req, res) => {
 
 const createRestaurant = async (req, res) => {
   try {
-    const { name } = req.body;
+    const { name, address, email, phone, planId, subscriptionType, status } = req.body;
 
-    if (!name) {
+    if (!name || !address || !email || !phone || !planId || !status) {
       return res.status(400).json({
         success: false,
-        message: 'Name is required',
+        message: 'Name, address, email, phone, plan, and status are required',
+      });
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid email format',
       });
     }
 
@@ -369,12 +395,47 @@ const createRestaurant = async (req, res) => {
       slug = `${slug}-${Date.now()}`;
     }
 
+    const plan = await Plan.findById(planId);
+    if (!plan) {
+      return res.status(404).json({
+        success: false,
+        message: 'Selected plan not found',
+      });
+    }
+
+    const isActive = status === 'Active';
+    const hasPaidPlan = plan.price > 0;
+    
+    // Calculate subscription end date based on type
+    let subscriptionEndsAt = new Date();
+    if (subscriptionType === 'YEARLY') {
+      subscriptionEndsAt.setFullYear(subscriptionEndsAt.getFullYear() + 1);
+    } else {
+      subscriptionEndsAt.setMonth(subscriptionEndsAt.getMonth() + 1);
+    }
+
     const restaurant = await Restaurant.create({
       name,
       slug,
-      status: 'Active',
-      subscriptionStatus: 'TRIAL',
-      subscriptionEndsAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+      address,
+      contactEmail: email,
+      contactPhone: phone,
+      planId: plan._id,
+      subscriptionType: subscriptionType || 'MONTHLY',
+      status: status,
+      subscriptionStatus: isActive ? 'ACTIVE' : 'SUSPENDED',
+      subscriptionStartsAt: new Date(),
+      subscriptionEndsAt: subscriptionEndsAt,
+      isActive: isActive // Assuming isActive flag on model is used for login checks
+    });
+
+    // Log subscription creation
+    await SubscriptionLog.create({
+      restaurantId: restaurant._id,
+      planId: plan._id,
+      action: 'ASSIGN',
+      durationInDays: subscriptionType === 'YEARLY' ? 365 : 30,
+      performedBy: req.user?._id,
     });
 
     return res.status(201).json({

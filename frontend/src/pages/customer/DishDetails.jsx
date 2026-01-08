@@ -144,7 +144,7 @@ export default function DishDetails() {
           <p className="text-gray-600 mb-4">The dish you're looking for doesn't exist or has been removed.</p>
           <button
             onClick={() => navigate("/")}
-            className="bg-amber-500 hover:bg-amber-600 text-white px-6 py-2 rounded-lg font-medium transition-colors"
+            className="bg-amber-500 hover:bg-amber-600 type-btn text-white px-6 py-2 rounded-lg transition-colors"
           >
             Back to Menu
           </button>
@@ -227,8 +227,8 @@ export default function DishDetails() {
                         {arStatus.icon}
                       </span>
                       <div className="text-left">
-                        <span className="block text-sm font-normal text-gray-300">Experience it in 3D</span>
-                        <span className="block text-lg heading-font">View in AR</span>
+                        <span className="block type-secondary text-gray-300">Experience it in 3D</span>
+                        <span className="block type-h2 text-white">View in AR</span>
                       </div>
                     </span>
                     <svg className="w-6 h-6 text-white/50 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -260,14 +260,14 @@ export default function DishDetails() {
                 ))}
               </div>
 
-              <h1 className="text-3xl md:text-5xl font-bold text-gray-900 mb-4 leading-tight">
+              <h1 className="type-h1 text-gray-900 mb-4">
                 {dish.name}
               </h1>
 
               <div className="flex items-baseline gap-4 py-4 border-b border-gray-100">
-                <span className="text-4xl font-extrabold text-amber-600">₹{dish.price}</span>
+                <span className="type-h1 text-amber-600">₹{dish.price}</span>
                 {dish.portionSize && (
-                  <span className="text-lg text-gray-400 font-medium">/ {dish.portionSize}</span>
+                  <span className="type-secondary text-gray-400">/ {dish.portionSize}</span>
                 )}
               </div>
             </div>
@@ -278,9 +278,9 @@ export default function DishDetails() {
                 <div className="flex items-center justify-between bg-gray-50 border border-gray-200 rounded-xl px-4 py-3">
                   <button
                     onClick={() => setQuantity(q => Math.max(1, q - 1))}
-                    className="w-10 h-10 flex items-center justify-center text-xl font-bold text-gray-500 hover:text-amber-600 transition-colors"
+                    className="w-10 h-10 flex items-center justify-center type-h2 text-gray-500 hover:text-amber-600 transition-colors"
                   >-</button>
-                  <span className="font-bold text-xl text-gray-800 w-8 text-center">{quantity}</span>
+                  <span className="type-h2 text-gray-800 w-8 text-center">{quantity}</span>
                   <button
                     onClick={() => setQuantity(q => q + 1)}
                     className="w-10 h-10 flex items-center justify-center text-xl font-bold text-gray-500 hover:text-amber-600 transition-colors"
@@ -290,7 +290,7 @@ export default function DishDetails() {
                 <button
                   onClick={handleAddToOrder}
                   disabled={suspended || !dish.available}
-                  className={`w-full font-bold text-lg py-4 px-8 rounded-xl shadow-xl transition-all transform flex items-center justify-center gap-3 ${suspended ? 'bg-gray-400 text-gray-200 cursor-not-allowed' : 'bg-amber-600 hover:bg-amber-700 text-white hover:-translate-y-1 hover:shadow-2xl shadow-amber-200'}`}
+                  className={`w-full type-btn text-lg py-4 px-8 rounded-xl shadow-xl transition-all transform flex items-center justify-center gap-3 ${suspended ? 'bg-gray-400 text-gray-200 cursor-not-allowed' : 'bg-amber-600 hover:bg-amber-700 text-white hover:-translate-y-1 hover:shadow-2xl shadow-amber-200'}`}
                 >
                   <span>{suspended ? 'Ordering Unavailable' : 'Add to Order'}</span>
                   {!suspended && <span className="bg-amber-700/50 px-2 py-0.5 rounded text-sm">₹{dish.price * quantity}</span>}
@@ -308,7 +308,7 @@ export default function DishDetails() {
 
             {}
             {dish.description && (
-              <div className="prose prose-amber text-gray-600 leading-relaxed text-lg">
+              <div className="prose prose-amber type-secondary text-lg">
                 <p>{dish.description}</p>
               </div>
             )}
@@ -316,11 +316,11 @@ export default function DishDetails() {
             {}
             {recommendations.length > 0 && (
               <div className="py-4">
-                <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wide mb-4">People Also Ordered With This Dish</h3>
+                <h3 className="type-label mb-4">People Also Ordered With This Dish</h3>
                 <div className="overflow-x-auto pb-4 -mx-4 px-4 scrollbar-hide">
                   <div className="flex gap-4 w-max">
                     {recommendations.map((recDish) => (
-                      <div key={recDish._id} className="w-40 bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden shrink-0">
+                      <div key={recDish._id} className="w-40 card-premium border-gray-100/50 overflow-hidden shrink-0">
                         <div 
                           className="h-28 w-full bg-gray-100 cursor-pointer"
                           onClick={() => navigate(`/r/${slug}/dish/${recDish._id}`)}
@@ -333,13 +333,13 @@ export default function DishDetails() {
                         </div>
                         <div className="p-3">
                           <h4 
-                            className="font-bold text-gray-900 text-sm truncate cursor-pointer hover:text-amber-600"
+                            className="type-body font-bold text-gray-900 truncate cursor-pointer hover:text-amber-600"
                             onClick={() => navigate(`/r/${slug}/dish/${recDish._id}`)}
                           >
                             {recDish.name}
                           </h4>
                           <div className="mt-2 flex items-center justify-between">
-                            <span className="font-bold text-amber-600 text-sm">₹{recDish.price}</span>
+                            <span className="type-body font-semibold text-amber-600">₹{recDish.price}</span>
                             <button 
                               onClick={() => handleAddRecommendationToOrder(recDish)}
                               className="bg-amber-100 hover:bg-amber-200 text-amber-700 p-1.5 rounded-lg transition-colors"
@@ -363,7 +363,7 @@ export default function DishDetails() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {dish.ingredients?.length > 0 && (
                 <div>
-                  <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wide mb-3 flex items-center gap-2">
+                  <h3 className="type-label mb-3 flex items-center gap-2">
                     <span>🥬</span> Ingredients
                   </h3>
                   <div className="flex flex-wrap gap-2">
@@ -377,10 +377,10 @@ export default function DishDetails() {
               )}
 
               <div>
-                <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wide mb-3 flex items-center gap-2">
+                <h3 className="type-label mb-3 flex items-center gap-2">
                   <span>ℹ️</span> Dietary Info
                 </h3>
-                <div className="bg-blue-50 p-4 rounded-xl text-sm text-blue-800 leading-snug">
+                <div className="bg-blue-50 p-4 rounded-xl type-secondary text-blue-800 leading-snug">
                   Specific allergies? Please verify with staff. Kitchen handles common allergens.
                 </div>
               </div>
@@ -388,24 +388,24 @@ export default function DishDetails() {
 
             {}
             {dish.nutritionalInfo && (
-              <div className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm">
-                <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wide mb-4">Nutritional Facts</h3>
+              <div className="card-premium p-5 border-gray-100/50">
+                <h3 className="type-label mb-4">Nutritional Facts</h3>
                 <div className="grid grid-cols-4 gap-2 text-center divide-x divide-gray-100">
                   <div>
-                    <div className="font-bold text-lg text-amber-600">{dish.nutritionalInfo.calories || 0}</div>
-                    <div className="text-[10px] uppercase text-gray-400 font-bold tracking-wider">Cals</div>
+                    <div className="type-metric text-amber-600">{dish.nutritionalInfo.calories || 0}</div>
+                    <div className="type-label text-gray-400">Cals</div>
                   </div>
                   <div>
-                    <div className="font-bold text-lg text-gray-800">{dish.nutritionalInfo.protein || 0}g</div>
-                    <div className="text-[10px] uppercase text-gray-400 font-bold tracking-wider">Protein</div>
+                    <div className="type-metric text-gray-800">{dish.nutritionalInfo.protein || 0}g</div>
+                    <div className="type-label text-gray-400">Protein</div>
                   </div>
                   <div>
-                    <div className="font-bold text-lg text-gray-800">{dish.nutritionalInfo.carbs || 0}g</div>
-                    <div className="text-[10px] uppercase text-gray-400 font-bold tracking-wider">Carbs</div>
+                    <div className="type-metric text-gray-800">{dish.nutritionalInfo.carbs || 0}g</div>
+                    <div className="type-label text-gray-400">Carbs</div>
                   </div>
                   <div>
-                    <div className="font-bold text-lg text-gray-800">{dish.nutritionalInfo.sugar || 0}g</div>
-                    <div className="text-[10px] uppercase text-gray-400 font-bold tracking-wider">Sugar</div>
+                    <div className="type-metric text-gray-800">{dish.nutritionalInfo.sugar || 0}g</div>
+                    <div className="type-label text-gray-400">Sugar</div>
                   </div>
                 </div>
               </div>
@@ -431,7 +431,7 @@ export default function DishDetails() {
                 <button
                   onClick={handleAddToOrder}
                   disabled={suspended || !dish.available}
-                  className={`flex-1 font-bold text-lg py-4 px-8 rounded-xl shadow-xl transition-all transform flex items-center justify-center gap-3 ${suspended ? 'bg-gray-400 text-gray-200 cursor-not-allowed' : 'bg-amber-600 hover:bg-amber-700 text-white hover:-translate-y-1 hover:shadow-2xl shadow-amber-200'}`}
+                  className={`flex-1 type-btn text-lg py-4 px-8 rounded-xl shadow-xl transition-all transform flex items-center justify-center gap-3 ${suspended ? 'bg-gray-400 text-gray-200 cursor-not-allowed' : 'bg-amber-600 hover:bg-amber-700 text-white hover:-translate-y-1 hover:shadow-2xl shadow-amber-200'}`}
                 >
                   <span>{suspended ? 'Ordering Unavailable' : 'Add to Order'}</span>
                   {!suspended && <span className="bg-amber-700/50 px-2 py-0.5 rounded text-sm">₹{dish.price * quantity}</span>}

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
 export const usePagination = (defaultLimit = 10) => {
@@ -12,7 +12,7 @@ export const usePagination = (defaultLimit = 10) => {
     const params = new URLSearchParams(searchParams);
     if (newPage) params.set('page', newPage);
     if (newLimit) params.set('limit', newLimit);
-    setSearchParams(params);
+    setSearchParams(params, { replace: true });
   };
 
   const handlePageChange = (newPage) => {
@@ -23,6 +23,8 @@ export const usePagination = (defaultLimit = 10) => {
     updateParams(1, newLimit);
   };
 
+  const paginationParams = useMemo(() => ({ page, limit }), [page, limit]);
+
   return {
     page,
     limit,
@@ -30,6 +32,6 @@ export const usePagination = (defaultLimit = 10) => {
     setPaginationMeta,
     handlePageChange,
     handleLimitChange,
-    paginationParams: { page, limit }
+    paginationParams
   };
 };

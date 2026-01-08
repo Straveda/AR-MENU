@@ -1,7 +1,17 @@
 import React from 'react';
 
-export default function Pagination({ currentPage, totalPages, onPageChange, totalItems, limit }) {
+export default function Pagination({ currentPage, totalPages, onPageChange, totalItems, limit, activeColor = 'indigo' }) {
   if (totalPages <= 1) return null;
+
+  const colorClasses = {
+    indigo: 'bg-indigo-600 focus-visible:outline-indigo-600',
+    amber: 'bg-amber-600 focus-visible:outline-amber-600',
+    blue: 'bg-blue-600 focus-visible:outline-blue-600',
+    orange: 'bg-orange-600 focus-visible:outline-orange-600',
+  };
+
+  const activeClass = colorClasses[activeColor] || colorClasses.indigo;
+
 
   const getPageNumbers = () => {
 
@@ -65,7 +75,7 @@ export default function Pagination({ currentPage, totalPages, onPageChange, tota
                   onClick={() => onPageChange(pageNum)}
                   className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold ${
                     currentPage === pageNum
-                      ? 'z-10 bg-indigo-600 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600'
+                      ? `z-10 text-white focus-visible:outline focus-visible:outline-offset-2 ${activeClass}`
                       : 'text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:outline-offset-0'
                   }`}
                 >
@@ -87,9 +97,9 @@ export default function Pagination({ currentPage, totalPages, onPageChange, tota
                     <button
                       key={pageNum}
                       onClick={() => onPageChange(pageNum)}
-                      className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold ${
+                       className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold ${
                         currentPage === pageNum
-                          ? 'z-10 bg-indigo-600 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600'
+                          ? `z-10 text-white focus-visible:outline focus-visible:outline-offset-2 ${activeClass}`
                           : 'text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:outline-offset-0'
                       }`}
                     >
