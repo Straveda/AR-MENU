@@ -93,7 +93,7 @@ export default function VendorsTab() {
 
   return (
     <div className="space-y-8 animate-fade-in">
-      {/* Search and Action Bar */}
+      {}
       <div className="card-premium p-4 flex flex-col sm:flex-row gap-4 items-center justify-between">
         <div className="relative w-full sm:w-96">
           <input

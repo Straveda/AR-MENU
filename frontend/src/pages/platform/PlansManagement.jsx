@@ -376,7 +376,7 @@ function ActionDropdown({ plan, onEdit, onDelete }) {
     if (open && buttonRef.current && !isMobile) {
       const rect = buttonRef.current.getBoundingClientRect();
       const screenHeight = window.innerHeight;
-      const menuHeightEstimate = 100; // Small menu here
+      const menuHeightEstimate = 100; 
       
       const spaceBelow = screenHeight - rect.bottom;
       const shouldOpenUpwards = spaceBelow < menuHeightEstimate;

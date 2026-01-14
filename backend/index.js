@@ -13,9 +13,7 @@ dotenv.config();
 const app = express();
 const server = http.createServer(app);
 
-/* ======================
-   CORS CONFIG
-====================== */
+
 const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:5173';
 
 app.use(
@@ -27,15 +25,13 @@ app.use(
   }),
 );
 
-/* ======================
-   SOCKET.IO
-====================== */
+
 const io = new Server(server, {
   cors: {
     origin: true,
     credentials: true,
   },
-  transports: ['websocket', 'polling'], // important for production
+  transports: ['websocket', 'polling'], 
 });
 
 io.on('connection', (socket) => {
@@ -70,17 +66,13 @@ io.on('connection', (socket) => {
   });
 });
 
-/* ======================
-   MIDDLEWARES
-====================== */
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
 app.use(cookieParser());
 
-/* ======================
-   DB INIT
-====================== */
+
 connectDB()
   .then(async () => {
     console.log('Database connected successfully');
@@ -91,9 +83,7 @@ connectDB()
     console.error('Database connection failed:', error);
   });
 
-/* ======================
-   ROUTES
-====================== */
+
 import dishRoute from './src/routes/dish.route.js';
 import orderRoute from './src/routes/order.route.js';
 import kdsOrderRoute from './src/routes/kdsorder.route.js';
@@ -105,6 +95,7 @@ import configRoute from './src/routes/config.route.js';
 import inventoryRoute from './src/routes/inventory.route.js';
 import expensesRoute from './src/routes/expenses.route.js';
 import analyticsRoutes from './src/routes/analytics.routes.js';
+import settingsRouter from './src/routes/settings.route.js';
 
 
 app.use('/api/v1/dishes', dishRoute);
@@ -118,6 +109,7 @@ app.use('/api/v1/config', configRoute);
 app.use('/api/v1/inventory', inventoryRoute);
 app.use('/api/v1/expenses/:restaurantSlug', expensesRoute);
 app.use('/api/v1/analytics', analyticsRoutes);
+app.use('/api/v1/settings', settingsRouter);
 
 
 app.get('/', (req, res) => {

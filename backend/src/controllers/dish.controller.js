@@ -15,9 +15,8 @@ const streamPipeline = promisify(pipeline);
 const addDish = async (req, res) => {
   try {
     const restaurantId = req.restaurant._id;
-    // Check plan limits for ACTIVE dishes
-    const limitCheck = await subscriptionService.checkActiveLimit(restaurantId, 'maxDishes');
-    const shouldBeActive = limitCheck.allowed;
+    
+
 
     let {
       name,
@@ -104,7 +103,7 @@ const addDish = async (req, res) => {
       ingredients,
       nutritionalInfo,
       portionSize,
-      isActive: shouldBeActive, // Set based on limit
+      portionSize,
       isChefSpecial,
     });
 
@@ -139,11 +138,8 @@ const addDish = async (req, res) => {
 
     return res.status(201).json({
       success: true,
-      message: shouldBeActive
-        ? 'Dish added successfully. 3D model generation started.'
-        : `Dish added as INACTIVE. Plan limit of ${limitCheck.limit} active dishes reached.`,
+      message: 'Dish added successfully. 3D model generation started.',
       data: { dish },
-      warning: !shouldBeActive,
     });
   } catch (error) {
     return res.status(500).json({
@@ -257,16 +253,13 @@ const updateDish = async (req, res) => {
       available,
       portionSize,
       nutritionalInfo,
-      isActive,
       isChefSpecial,
     } = req.body;
 
     if (typeof available === 'string') {
       available = available === 'true';
     }
-    if (typeof isActive === 'string') {
-      isActive = isActive === 'true';
-    }
+
     if (typeof isChefSpecial === 'string') {
       isChefSpecial = isChefSpecial === 'true';
     }
@@ -297,12 +290,6 @@ const updateDish = async (req, res) => {
       });
     }
 
-    // If activating, check limit
-    if (isActive === true && dish.isActive !== true) {
-      // Validate limit
-      await subscriptionService.validateActivation(req.restaurant._id, 'maxDishes');
-    }
-
     if (name) dish.name = name;
     if (description) dish.description = description;
     if (price) dish.price = price;
@@ -311,7 +298,6 @@ const updateDish = async (req, res) => {
     if (ingredients) dish.ingredients = ingredients;
     if (tags) dish.tags = tags;
     if (available !== undefined) dish.available = available;
-    if (isActive !== undefined) dish.isActive = isActive;
     if (portionSize) dish.portionSize = portionSize;
     if (nutritionalInfo) dish.nutritionalInfo = nutritionalInfo;
     if (isChefSpecial !== undefined) dish.isChefSpecial = isChefSpecial;
@@ -631,13 +617,13 @@ const proxyModel = async (req, res) => {
       throw new Error(`Failed to fetch model: ${response.statusText}`);
     }
 
-    // Explicitly set Content-Type based on format for iOS compatibility
+    
     const contentTypes = {
       glb: 'model/gltf-binary',
       usdz: 'model/vnd.usdz+zip',
     };
 
-    // Fallback to upstream content-type if not in our map (though we validate format above)
+    
     const contentType = contentTypes[format] || response.headers.get('content-type');
     res.setHeader('Content-Type', contentType);
     res.setHeader('Content-Length', response.headers.get('content-length'));

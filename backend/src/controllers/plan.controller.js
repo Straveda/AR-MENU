@@ -96,7 +96,7 @@ const deletePlan = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Plan not found' });
     }
 
-    // Safety Check: Is it in use?
+    
     const usageCount = await Restaurant.countDocuments({ planId });
     if (usageCount > 0) {
       return res.status(400).json({

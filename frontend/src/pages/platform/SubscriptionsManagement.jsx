@@ -138,7 +138,7 @@ export default function SubscriptionsManagement() {
   }
 
   const now = new Date();
-  // Sort by expiry but put active ones first, or close to expiry first
+  
   const sortedRestaurants = Array.isArray(restaurants) ? [...restaurants].sort((a, b) => {
      if (!a?.subscriptionEndsAt) return 1;
      if (!b?.subscriptionEndsAt) return -1;

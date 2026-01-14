@@ -9,7 +9,7 @@ export const getDashboardAnalytics = async (restaurantId) => {
 
   const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
 
-  // A. SALES & ORDERS
+  
   const salesMetrics = await Order.aggregate([
     { $match: { restaurantId, createdAt: { $gte: startOfMonth } } },
     {
@@ -50,7 +50,7 @@ export const getDashboardAnalytics = async (restaurantId) => {
     ? (metrics.totalRevenueMonth / metrics.completedOrdersMonth).toFixed(2)
     : 0;
 
-  // B. OPERATIONS SNAPSHOT
+  
   const operationsSnapshot = await Order.aggregate([
     { $match: { restaurantId, createdAt: { $gte: today } } },
     {
@@ -67,9 +67,9 @@ export const getDashboardAnalytics = async (restaurantId) => {
     }
   ]);
 
-  // For inProgress, we should probably check historical orders too that are not yet finished, 
-  // but usually "in progress" means current active orders.
-  // Let's check all active orders regardless of date for inProgress.
+  
+  
+  
   const activeOrdersCount = await Order.countDocuments({
     restaurantId,
     orderStatus: { $in: ['Pending', 'Preparing', 'Ready'] }
@@ -77,7 +77,7 @@ export const getDashboardAnalytics = async (restaurantId) => {
 
   const ops = operationsSnapshot[0] || { completedToday: 0, cancelledToday: 0 };
 
-  // C. INVENTORY SNAPSHOT
+  
   const inventoryMetrics = await Ingredient.aggregate([
     { $match: { restaurantId } },
     {
@@ -96,7 +96,7 @@ export const getDashboardAnalytics = async (restaurantId) => {
 
   const inv = inventoryMetrics[0] || { lowStockCount: 0, deadStockCount: 0, totalValue: 0 };
 
-  // D. EXPENSES SNAPSHOT
+  
   const expenseMetrics = await Expense.aggregate([
     { $match: { restaurantId, expenseDate: { $gte: startOfMonth } } },
     {
@@ -111,7 +111,7 @@ export const getDashboardAnalytics = async (restaurantId) => {
   const monthlyExpenses = expenseMetrics.reduce((sum, item) => sum + item.totalAmount, 0);
   const topExpenseCategory = expenseMetrics.length > 0 ? expenseMetrics[0]._id : 'N/A';
 
-  // E. MENU INSIGHTS
+  
   const topDish = await Dish.findOne({ restaurantId }).sort({ orderCount: -1 }).select('name orderCount');
   const leastDish = await Dish.findOne({ restaurantId }).sort({ orderCount: 1 }).select('name orderCount');
   

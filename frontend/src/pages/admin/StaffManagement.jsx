@@ -5,6 +5,8 @@ import EmptyState from "../../components/common/EmptyState";
 import { useToast } from "../../components/common/Toast/ToastContext";
 import ConfirmationModal from "../../components/common/ConfirmationModal";
 import Modal from "../../components/common/Modal";
+import ChangePasswordModal from "../../components/admin/ChangePasswordModal";
+import ActionMenu from "../../components/common/ActionMenu";
 
 export default function StaffManagement() {
   const { showSuccess, showError, showWarning } = useToast();
@@ -24,6 +26,17 @@ export default function StaffManagement() {
     onConfirm: null, 
     isDangerous: false 
   });
+
+  const [passwordModal, setPasswordModal] = useState({
+    isOpen: false,
+    user: null
+  });
+
+  const openPasswordModal = (user) => {
+    setPasswordModal({ isOpen: true, user });
+  };
+
+
 
   const closeConfirmModal = () => {
     setConfirmModal((prev) => ({ ...prev, isOpen: false }));
@@ -126,7 +139,7 @@ export default function StaffManagement() {
 
   return (
     <div className="space-y-10 animate-fade-in pb-12">
-      {/* Header */}
+      {}
       <div className="flex flex-col md:flex-row items-center justify-between gap-4">
         <div>
           <h1 className="type-h1">Staff Management</h1>
@@ -141,7 +154,7 @@ export default function StaffManagement() {
         </button>
       </div>
 
-      {/* Content */}
+      {}
       <div className="card-premium overflow-hidden">
         <div className="px-6 py-4 border-b border-slate-100 bg-slate-50/50">
             <h2 className="type-h2">Active Personnel ({staff.length})</h2>
@@ -201,33 +214,36 @@ export default function StaffManagement() {
                             </span>
                         </div>
                       </td>
+
                       <td className="px-6 py-4 text-right">
                         <div className="flex justify-end gap-2">
-                          <button
-                            onClick={() => initiateToggleStatus(user)}
-                            className={`p-2 rounded-lg transition-colors border ${
-                              user.isActive 
-                                ? "text-amber-500 border-slate-200 hover:bg-amber-50" 
-                                : "text-emerald-500 border-emerald-100 hover:bg-emerald-50"
-                            }`}
-                            title={user.isActive ? "Deactivate" : "Activate"}
-                            disabled={actionLoading}
-                          >
-                            <svg className="w-5 h-5 font-bold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              {user.isActive 
-                                ? <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
-                                : <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          <ActionMenu
+                            actions={[
+                              {
+                                label: user.isActive ? 'Deactivate User' : 'Activate User',
+                                icon: user.isActive 
+                                  ? <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" /></svg>
+                                  : <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
+                                onClick: () => initiateToggleStatus(user),
+                                className: user.isActive ? 'text-amber-600' : 'text-emerald-600',
+                                disabled: actionLoading
+                              },
+                              {
+                                label: 'Change Password',
+                                icon: <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11.536 16.536L13.95 19H11.55l-2.05-2.05L7 19.5 5.5 18l2.5-2.5L5.5 13l2.05-2.05-2.436-1.564A6 6 0 0115 7z" /></svg>,
+                                onClick: () => openPasswordModal(user),
+                                className: 'text-slate-600',
+                                disabled: actionLoading
+                              },
+                              {
+                                label: 'Delete User',
+                                icon: <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>,
+                                onClick: () => initiateDeleteStaff(user),
+                                className: 'text-rose-600',
+                                disabled: actionLoading
                               }
-                            </svg>
-                          </button>
-                          <button
-                            onClick={() => initiateDeleteStaff(user)}
-                            className="p-2 text-rose-400 border border-slate-200 hover:bg-rose-50 hover:text-rose-600 rounded-lg transition-colors"
-                            title="Delete"
-                            disabled={actionLoading}
-                          >
-                            <svg className="w-5 h-5 font-bold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                          </button>
+                            ]}
+                          />
                         </div>
                       </td>
                     </tr>
@@ -364,6 +380,16 @@ export default function StaffManagement() {
           </form>
         </Modal>
       )}
+
+
+      <ChangePasswordModal
+        isOpen={passwordModal.isOpen}
+        onClose={() => setPasswordModal({ isOpen: false, user: null })}
+        user={passwordModal.user}
+        onSuccess={() => {
+            
+        }}
+      />
     </div>
   );
 }

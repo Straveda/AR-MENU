@@ -183,7 +183,7 @@ const createPlatformUser = async (req, res) => {
       });
     }
 
-    // Security: Prevent privilege escalation
+    
     if (role === 'SUPER_ADMIN' && req.user.role !== 'SUPER_ADMIN') {
         return res.status(403).json({ success: false, message: 'Only Super Admins can create Super Admins' });
     }
@@ -280,7 +280,7 @@ const updateUser = async (req, res) => {
         });
       }
 
-      // Security: Prevent privilege escalation during update
+      
       if ((role === 'SUPER_ADMIN' || role === 'PLATFORM_ADMIN') && req.user.role !== 'SUPER_ADMIN') {
          return res.status(403).json({ success: false, message: 'Insufficient permissions to assign this role' });
       }
@@ -344,7 +344,7 @@ const toggleUserStatus = async (req, res) => {
       });
     }
 
-    // If activating, check limit
+    
     if (!user.isActive) {
       if (user.restaurantId) {
         await subscriptionService.validateActivation(user.restaurantId, 'maxStaff');
@@ -379,7 +379,7 @@ const createRestaurant = async (req, res) => {
       });
     }
 
-    // Validate email format
+    
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       return res.status(400).json({
@@ -406,7 +406,7 @@ const createRestaurant = async (req, res) => {
     const isActive = status === 'Active';
     const hasPaidPlan = plan.price > 0;
     
-    // Calculate subscription end date based on type
+    
     let subscriptionEndsAt = new Date();
     if (subscriptionType === 'YEARLY') {
       subscriptionEndsAt.setFullYear(subscriptionEndsAt.getFullYear() + 1);
@@ -426,10 +426,10 @@ const createRestaurant = async (req, res) => {
       subscriptionStatus: isActive ? 'ACTIVE' : 'SUSPENDED',
       subscriptionStartsAt: new Date(),
       subscriptionEndsAt: subscriptionEndsAt,
-      isActive: isActive // Assuming isActive flag on model is used for login checks
+      isActive: isActive 
     });
 
-    // Log subscription creation
+    
     await SubscriptionLog.create({
       restaurantId: restaurant._id,
       planId: plan._id,
@@ -564,29 +564,29 @@ const createRestaurantAdmin = async (req, res) => {
       });
     }
 
-    // Check Active Staff Limit
-    // Note: Restaurant Admin is usually exempt or counts as 1.
-    // If we count them, we should check limit here.
-    // subscriptionService assumes Role != RESTAURANT_ADMIN does not count?
-    // Let's check subscriptionService logic: "role: { $ne: 'RESTAURANT_ADMIN' }"
-    // So creating a Restaurant Admin should NOT check the staff limit if they are the admin.
-    // BUT `createRestaurantAdmin` creates the *first* admin usually.
-    // Plan limits usually apply to *staff* created BY the admin.
-    // So we can skip limit check here OR check it but expect it to be allowed.
-    // "Plan limit reached (5). Please upgrade." -> usually regarding waiters/kitchen staff.
-    // So I will SKIP the active limit check for RESTAURANT_ADMIN to ensure they can always be created to manage the restaurant.
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
 
-    // However, the original code had:
-    // if (currentStaffCount >= staffLimit) ...
-    // So it WAS enforcing limit.
-    // But `subscriptionService.checkActiveLimit` excludes RESTAURANT_ADMIN.
-    // So if I call it, it will return count of OTHER staff.
-    // Since this user IS a RESTAURANT_ADMIN, adding them won't increase the "Staff" count as per `subscriptionService`.
-    // So we are good to proceed without check, or check just to be safe but the service says they don't count can be misleading if we want to limit Total Users.
-    // I'll stick to the pattern:
-    // const limitCheck = await subscriptionService.checkActiveLimit(restaurantId, 'maxStaff');
-    // But since this user won't count towards it, we can ignore it?
-    // actually, let's keep it valid.
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -597,7 +597,7 @@ const createRestaurantAdmin = async (req, res) => {
       phone,
       role: 'RESTAURANT_ADMIN',
       restaurantId,
-      isActive: true, // Admin should be active by default? Yes.
+      isActive: true, 
     });
 
     return res.status(201).json({

@@ -50,7 +50,7 @@ export default function PettyCashTab() {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      {/* Refined Header */}
+      {}
       <div className="card-premium p-6 flex items-center justify-between">
          <div>
             <h3 className="text-xl font-black text-slate-900 tracking-tight leading-none mb-1">Petty Cash Log</h3>
@@ -62,7 +62,7 @@ export default function PettyCashTab() {
          </div>
       </div>
 
-      {/* Standardized Table */}
+      {}
       <div className="card-premium overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">

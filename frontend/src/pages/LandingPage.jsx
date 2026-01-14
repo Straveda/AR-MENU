@@ -6,21 +6,21 @@ const LandingPage = () => {
 
   return (
     <div className="h-screen w-screen bg-slate-50 font-sans text-slate-900 selection:bg-indigo-100 selection:text-indigo-900 relative overflow-hidden flex flex-col">
-      {/* Background Polish: Subtle Noise & Radial Gradients */}
+      {}
       <div className="absolute inset-0 pointer-events-none">
-        {/* Subtle Canvas Texture Emulation */}
+        {}
         <div className="absolute inset-0 opacity-[0.03] bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
         
-        {/* Sophisticated Glow Effects */}
+        {}
         <div className="absolute -top-[20%] -left-[10%] w-[70vw] h-[70vw] rounded-full bg-indigo-50/40 blur-[120px]"></div>
         <div className="absolute top-[10%] -right-[10%] w-[50vw] h-[50vw] rounded-full bg-blue-50/30 blur-[100px]"></div>
         <div className="absolute bottom-[-10%] left-[20%] w-[40vw] h-[40vw] rounded-full bg-slate-100/50 blur-[80px]"></div>
       </div>
 
-      {/* Content Layer - Fixed height container with flex distribution */}
+      {}
       <main className="relative z-10 flex-grow flex flex-col items-center justify-center px-6 sm:px-8 lg:px-12 max-h-screen">
         
-        {/* Hero Section */}
+        {}
         <div className="text-center max-w-4xl mb-8 md:mb-12 space-y-4 md:space-y-6">
           <div className="inline-flex items-center px-3 py-1.5 rounded-full bg-white/50 backdrop-blur-md border border-slate-200 text-slate-600 text-[10px] md:text-xs font-semibold shadow-sm animate-in fade-in slide-in-from-bottom-4 duration-700">
             <span className="flex h-1.5 w-1.5 rounded-full bg-indigo-500 mr-2"></span>
@@ -36,9 +36,9 @@ const LandingPage = () => {
           </p>
         </div>
 
-        {/* Role Information Cards */}
+        {}
         <div className="grid md:grid-cols-2 gap-4 lg:gap-8 w-full max-w-5xl mb-8 md:mb-12">
-          {/* Platform Owners Card */}
+          {}
           <div className="group bg-white/80 backdrop-blur-xl border border-slate-200/60 rounded-2xl md:rounded-3xl p-6 md:p-8 shadow-[0_4px_20px_rgb(0,0,0,0.03)] hover:shadow-[0_15px_40px_rgb(0,0,0,0.08)] transition-all duration-500 flex flex-col items-start hover:-translate-y-1">
             <div className="w-10 h-10 md:w-12 md:h-12 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center mb-4 md:mb-6 border border-indigo-100/50 group-hover:bg-indigo-600 group-hover:text-white transition-colors duration-500">
               <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -51,7 +51,7 @@ const LandingPage = () => {
             </p>
           </div>
 
-          {/* Restaurant Owners Card */}
+          {}
           <div className="group bg-white/80 backdrop-blur-xl border border-slate-200/60 rounded-2xl md:rounded-3xl p-6 md:p-8 shadow-[0_4px_20px_rgb(0,0,0,0.03)] hover:shadow-[0_15px_40px_rgb(0,0,0,0.08)] transition-all duration-500 flex flex-col items-start hover:-translate-y-1">
             <div className="w-10 h-10 md:w-12 md:h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center mb-4 md:mb-6 border border-blue-100/50 group-hover:bg-blue-600 group-hover:text-white transition-colors duration-500">
               <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -65,7 +65,7 @@ const LandingPage = () => {
           </div>
         </div>
 
-        {/* Call to Action Section */}
+        {}
         <div className="text-center space-y-4 md:space-y-6">
           <button
             onClick={() => navigate('/login')}
@@ -80,7 +80,7 @@ const LandingPage = () => {
         </div>
       </main>
 
-      {/* Minimal Enterprise Footer - Sticky at bottom */}
+      {}
       <footer className="relative z-10 py-6 md:py-8 border-t border-slate-200 bg-white/30 backdrop-blur-sm mt-auto">
         <div className="max-w-7xl mx-auto px-8">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0 text-[10px] md:text-xs">

@@ -31,6 +31,21 @@ const restaurantSchema = new mongoose.Schema(
       trim: true,
     },
 
+    logo: {
+      type: String,
+      trim: true,
+    },
+
+    openingTime: {
+      type: String,
+      trim: true,
+    },
+
+    closingTime: {
+      type: String,
+      trim: true,
+    },
+
     subscriptionType: {
       type: String,
       enum: ['MONTHLY', 'YEARLY'],
