@@ -1,12 +1,14 @@
 import { useState } from "react";
 import { Link, useLocation, useNavigate, Outlet } from "react-router-dom";
 import { useAuth } from "../../context/AuthProvider";
+import { useToast } from "../common/Toast/ToastContext";
 
 export default function AdminLayout() {
   const { logout, user } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { showInfo } = useToast();
 
   const restaurantName = user?.restaurantId?.name || "Restaurant";
   
@@ -21,6 +23,7 @@ export default function AdminLayout() {
   ];
 
   const handleLogout = () => {
+    showInfo("Signed out successfully");
     logout();
     navigate("/login");
   };
@@ -42,7 +45,7 @@ export default function AdminLayout() {
       `}>
         <div className="h-16 flex items-center justify-between px-6 border-b border-slate-800">
           <div className="flex items-center gap-2">
-            <span className="text-xl font-bold text-white tracking-tight">Straveda</span>
+            <span className="text-xl font-bold text-white tracking-tight">{restaurantName}</span>
             <span className="text-[10px] font-black tracking-widest px-2 py-0.5 rounded bg-amber-500 text-slate-900">ADMIN</span>
           </div>
           <button 

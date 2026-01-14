@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import Modal from '../common/Modal';
 import axiosClient from '../../api/axiosClient';
-import Loading from '../common/Loading';
 import { useToast } from '../common/Toast/ToastContext';
 
 export default function ChangePasswordModal({ isOpen, onClose, user, onSuccess }) {
@@ -95,9 +94,14 @@ export default function ChangePasswordModal({ isOpen, onClose, user, onSuccess }
           <button
             type="submit"
             disabled={loading}
-            className="btn-primary bg-amber-600 hover:bg-amber-700 border-amber-600"
+            className="btn-primary bg-amber-600 hover:bg-amber-700 border-amber-600 min-w-[180px] flex items-center justify-center gap-2"
           >
-            {loading ? <Loading size="small" light /> : "Change Password"}
+            {loading ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-2 border-white/30 border-t-white"></div>
+                <span>Updating...</span>
+              </>
+            ) : "Change Password"}
           </button>
         </div>
       </form>

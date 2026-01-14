@@ -294,7 +294,7 @@ export default function Settings() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="px-6 py-2 bg-amber-500 hover:bg-amber-600 text-white font-semibold rounded-lg transition-colors shadow-sm disabled:opacity-50"
+                  className="px-6 py-2 bg-amber-500 hover:bg-amber-600 text-white font-semibold rounded-lg transition-colors shadow-sm disabled:opacity-50 min-w-[140px]"
                 >
                   {loading ? "Saving..." : "Save Changes"}
                 </button>
@@ -340,7 +340,7 @@ export default function Settings() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="px-6 py-2 bg-amber-500 hover:bg-amber-600 text-white font-semibold rounded-lg transition-colors shadow-sm disabled:opacity-50"
+                  className="px-6 py-2 bg-amber-500 hover:bg-amber-600 text-white font-semibold rounded-lg transition-colors shadow-sm disabled:opacity-50 min-w-[140px]"
                 >
                   {loading ? "Saving..." : "Save Changes"}
                 </button>
@@ -437,9 +437,9 @@ export default function Settings() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="px-6 py-2 bg-amber-500 hover:bg-amber-600 text-white font-semibold rounded-lg transition-colors shadow-sm disabled:opacity-50"
+                  className="px-6 py-2 bg-amber-500 hover:bg-amber-600 text-white font-semibold rounded-lg transition-colors shadow-sm disabled:opacity-50 min-w-[180px]"
                 >
-                  {loading ? "Change Password" : "Change Password"}
+                  {loading ? "Updating..." : "Change Password"}
                 </button>
               </div>
             </form>

@@ -372,9 +372,14 @@ export default function StaffManagement() {
               <button 
                 type="submit" 
                 disabled={addLoading}
-                className="btn-primary"
+                className="btn-primary min-w-[200px] flex items-center justify-center gap-2"
               >
-                {addLoading ? <Loading size="small" light /> : "Create Personnel Account"}
+                {addLoading ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-white/30 border-t-white"></div>
+                    <span>Creating...</span>
+                  </>
+                ) : "Create Personnel Account"}
               </button>
             </div>
           </form>

@@ -367,7 +367,7 @@ export default function AddDish() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-amber-500 hover:bg-amber-600 text-white py-3 rounded-lg font-semibold transition"
+            className="w-full bg-amber-500 hover:bg-amber-600 text-white py-3 rounded-lg font-semibold transition min-w-[120px]"
           >
             {loading ? "Adding Dish..." : "Add Dish"}
           </button>
