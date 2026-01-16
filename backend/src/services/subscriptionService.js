@@ -3,7 +3,6 @@ import { Dish } from '../models/dish.models.js';
 import { User } from '../models/user.models.js';
 
 class SubscriptionService {
-  
   async checkActiveLimit(restaurantId, feature) {
     const restaurant = await this._getRestaurantPlan(restaurantId);
     if (!restaurant) throw new Error('Restaurant or Plan not found');
@@ -23,13 +22,7 @@ class SubscriptionService {
       currentActive = await User.countDocuments({
         restaurantId: restaurant._id,
         isActive: true,
-        role: { $ne: 'RESTAURANT_ADMIN' }, 
-        
-        
-        
-        
-        
-        
+        role: { $ne: 'RESTAURANT_ADMIN' },
       });
     } else {
       throw new Error(`Unknown feature limit: ${feature}`);
@@ -43,7 +36,6 @@ class SubscriptionService {
     };
   }
 
-  
   async validateActivation(restaurantId, feature) {
     const { allowed, limit, currentActive } = await this.checkActiveLimit(restaurantId, feature);
     if (!allowed) {
@@ -58,11 +50,6 @@ class SubscriptionService {
   }
 
   async _getRestaurantPlan(restaurantId) {
-    
-    
-    
-    
-    
     const { Restaurant } = await import('../models/restaurant.models.js');
     return Restaurant.findById(restaurantId).populate('planId');
   }

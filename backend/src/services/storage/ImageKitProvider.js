@@ -11,11 +11,10 @@ export class ImageKitProvider extends StorageProvider {
     });
   }
 
-  
   async uploadFile(fileBuffer, fileName, folder = 'menu-ar/dishes') {
     try {
       const response = await this.imagekit.upload({
-        file: fileBuffer, 
+        file: fileBuffer,
         fileName: fileName,
         folder: folder,
         useUniqueFileName: true,
@@ -31,7 +30,6 @@ export class ImageKitProvider extends StorageProvider {
     }
   }
 
-  
   async deleteFile(fileId) {
     try {
       await this.imagekit.deleteFile(fileId);

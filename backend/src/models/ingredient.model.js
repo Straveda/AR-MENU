@@ -15,7 +15,7 @@ const ingredientSchema = new mongoose.Schema(
     category: {
       type: String,
       trim: true,
-      default: 'General'
+      default: 'General',
     },
     currentStock: {
       type: Number,
@@ -45,9 +45,8 @@ const ingredientSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
-
 
 ingredientSchema.index({ restaurantId: 1, name: 1 }, { unique: true });
 

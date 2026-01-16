@@ -108,9 +108,9 @@ import { resolveRestaurantFromUser } from '../middlewares/resolveRestaurantFromU
 platformRouter.post(
   '/create-user',
   requireAuth,
-  requireRole('SUPER_ADMIN', 'PLATFORM_ADMIN', 'RESTAURANT_ADMIN'), 
-  resolveRestaurantFromUser, 
-  
+  requireRole('SUPER_ADMIN', 'PLATFORM_ADMIN', 'RESTAURANT_ADMIN'),
+  resolveRestaurantFromUser,
+
   createPlatformUser,
 );
 

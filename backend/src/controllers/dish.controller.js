@@ -15,8 +15,6 @@ const streamPipeline = promisify(pipeline);
 const addDish = async (req, res) => {
   try {
     const restaurantId = req.restaurant._id;
-    
-
 
     let {
       name,
@@ -617,13 +615,11 @@ const proxyModel = async (req, res) => {
       throw new Error(`Failed to fetch model: ${response.statusText}`);
     }
 
-    
     const contentTypes = {
       glb: 'model/gltf-binary',
       usdz: 'model/vnd.usdz+zip',
     };
 
-    
     const contentType = contentTypes[format] || response.headers.get('content-type');
     res.setHeader('Content-Type', contentType);
     res.setHeader('Content-Length', response.headers.get('content-length'));

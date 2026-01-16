@@ -59,8 +59,6 @@ const dishSchema = new mongoose.Schema(
       sugar: { type: Number, default: 0 },
     },
 
-
-
     orderCount: {
       type: Number,
       default: 0,

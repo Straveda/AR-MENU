@@ -175,23 +175,28 @@ const createPlatformUser = async (req, res) => {
       });
     }
 
-    const validRoles = ['SUPER_ADMIN', 'PLATFORM_ADMIN', 'RESTAURANT_ADMIN', 'KDS', 'CUSTOMER'];
+    const validRoles = ['SUPER_ADMIN', 'RESTAURANT_ADMIN', 'KDS'];
     if (!validRoles.includes(role)) {
       return res.status(400).json({
         success: false,
-        message: 'Invalid role. Must be one of: ' + validRoles.join(', '),
+        message: 'Invalid role provided',
       });
     }
 
-    
+    // Role-based access control for creating users
+    // Only Super Admin can create other Super Admins
     if (role === 'SUPER_ADMIN' && req.user.role !== 'SUPER_ADMIN') {
-        return res.status(403).json({ success: false, message: 'Only Super Admins can create Super Admins' });
+      return res.status(403).json({
+        success: false,
+        message: 'Only Super Admin can create system roles',
+      });
     }
-    if (role === 'PLATFORM_ADMIN' && req.user.role !== 'SUPER_ADMIN') {
-        return res.status(403).json({ success: false, message: 'Only Super Admins can create Platform Admins' });
-    }
-    if (req.user.role === 'RESTAURANT_ADMIN' && ['SUPER_ADMIN', 'PLATFORM_ADMIN'].includes(role)) {
-        return res.status(403).json({ success: false, message: 'Restaurant Admins cannot create platform roles' });
+
+    const isPlatformRole = role === 'SUPER_ADMIN';
+    if (req.user.role === 'RESTAURANT_ADMIN' && ['SUPER_ADMIN'].includes(role)) {
+      return res
+        .status(403)
+        .json({ success: false, message: 'Restaurant Admins cannot create platform roles' });
     }
 
     const existingUser = await User.findOne({ email });
@@ -202,7 +207,6 @@ const createPlatformUser = async (req, res) => {
       });
     }
 
-    const isPlatformRole = ['SUPER_ADMIN', 'PLATFORM_ADMIN'].includes(role);
     if (!isPlatformRole && !restaurantId) {
       return res.status(400).json({
         success: false,
@@ -228,6 +232,8 @@ const createPlatformUser = async (req, res) => {
       username,
       phone,
       role,
+      department: req.body.department || null,
+      roleTitle: req.body.roleTitle || null,
       restaurantId: isPlatformRole ? null : restaurantId,
       isActive: true,
     });
@@ -252,7 +258,7 @@ const createPlatformUser = async (req, res) => {
 const updateUser = async (req, res) => {
   try {
     const { userId } = req.params;
-    const { username, phone, role, restaurantId } = req.body;
+    const { username, phone, role, restaurantId, department, roleTitle } = req.body;
 
     const user = await User.findById(userId);
     if (!user) {
@@ -270,9 +276,11 @@ const updateUser = async (req, res) => {
     }
 
     if (username) user.username = username;
+    if (department !== undefined) user.department = department;
+    if (roleTitle !== undefined) user.roleTitle = roleTitle;
     if (phone) user.phone = phone;
     if (role) {
-      const validRoles = ['SUPER_ADMIN', 'PLATFORM_ADMIN', 'RESTAURANT_ADMIN', 'KDS', 'CUSTOMER'];
+      const validRoles = ['SUPER_ADMIN', 'RESTAURANT_ADMIN', 'KDS'];
       if (!validRoles.includes(role)) {
         return res.status(400).json({
           success: false,
@@ -280,9 +288,13 @@ const updateUser = async (req, res) => {
         });
       }
 
-      
-      if ((role === 'SUPER_ADMIN' || role === 'PLATFORM_ADMIN') && req.user.role !== 'SUPER_ADMIN') {
-         return res.status(403).json({ success: false, message: 'Insufficient permissions to assign this role' });
+      if (
+        (role === 'SUPER_ADMIN' || role === 'PLATFORM_ADMIN') &&
+        req.user.role !== 'SUPER_ADMIN'
+      ) {
+        return res
+          .status(403)
+          .json({ success: false, message: 'Insufficient permissions to assign this role' });
       }
 
       user.role = role;
@@ -344,7 +356,6 @@ const toggleUserStatus = async (req, res) => {
       });
     }
 
-    
     if (!user.isActive) {
       if (user.restaurantId) {
         await subscriptionService.validateActivation(user.restaurantId, 'maxStaff');
@@ -379,7 +390,6 @@ const createRestaurant = async (req, res) => {
       });
     }
 
-    
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       return res.status(400).json({
@@ -405,8 +415,7 @@ const createRestaurant = async (req, res) => {
 
     const isActive = status === 'Active';
     const hasPaidPlan = plan.price > 0;
-    
-    
+
     let subscriptionEndsAt = new Date();
     if (subscriptionType === 'YEARLY') {
       subscriptionEndsAt.setFullYear(subscriptionEndsAt.getFullYear() + 1);
@@ -426,10 +435,9 @@ const createRestaurant = async (req, res) => {
       subscriptionStatus: isActive ? 'ACTIVE' : 'SUSPENDED',
       subscriptionStartsAt: new Date(),
       subscriptionEndsAt: subscriptionEndsAt,
-      isActive: isActive 
+      isActive: isActive,
     });
 
-    
     await SubscriptionLog.create({
       restaurantId: restaurant._id,
       planId: plan._id,
@@ -564,30 +572,6 @@ const createRestaurantAdmin = async (req, res) => {
       });
     }
 
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const user = await User.create({
@@ -597,7 +581,7 @@ const createRestaurantAdmin = async (req, res) => {
       phone,
       role: 'RESTAURANT_ADMIN',
       restaurantId,
-      isActive: true, 
+      isActive: true,
     });
 
     return res.status(201).json({

@@ -27,8 +27,8 @@ const userSchema = new mongoose.Schema(
 
     role: {
       type: String,
-      enum: ['SUPER_ADMIN', 'PLATFORM_ADMIN', 'RESTAURANT_ADMIN', 'KDS', 'CUSTOMER'],
-      required: true,
+      enum: ['SUPER_ADMIN', 'RESTAURANT_ADMIN', 'KDS'],
+      default: 'KDS',
     },
 
     department: {
@@ -53,6 +53,21 @@ const userSchema = new mongoose.Schema(
     isActive: {
       type: Boolean,
       default: true,
+    },
+
+    otpHash: {
+      type: String,
+      default: null,
+    },
+
+    otpExpiresAt: {
+      type: Date,
+      default: null,
+    },
+
+    otpUsed: {
+      type: Boolean,
+      default: false,
     },
   },
   { timestamps: true },

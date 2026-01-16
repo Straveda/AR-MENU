@@ -7,6 +7,7 @@ import ErrorBoundary from '../components/common/ErrorBoundary';
 import RoleGuard from './RoleGuard';
 
 import Login from '../pages/admin/Login.jsx';
+import ForgotPassword from '../pages/admin/ForgotPassword.jsx';
 import AnalyticsDashboard from '../pages/admin/AnalyticsDashboard.jsx';
 import MenuManagement from '../pages/admin/MenuManagement.jsx';
 import AddDish from '../pages/admin/AddDish.jsx';
@@ -45,6 +46,7 @@ const AppRouter = () => {
                                 <Routes>
                                     {}
                                     <Route path="/login" element={<Login />} />
+                                    <Route path="/forgot-password" element={<ForgotPassword />} />
 
                                     {}
                                     <Route element={<RoleGuard allowedRoles={['SUPER_ADMIN']} />}>

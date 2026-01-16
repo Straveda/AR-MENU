@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import axiosClient from "../../api/axiosClient.js";
 import { useAuth } from "../../context/AuthProvider";
 import { useToast } from "../../components/common/Toast/ToastContext";
@@ -129,9 +129,9 @@ export default function Login() {
                 <label htmlFor="password" className="block text-sm font-semibold text-slate-700">
                   Password
                 </label>
-                <a href="#" className="text-xs font-medium text-indigo-600 hover:text-indigo-700">
+                <Link to="/forgot-password" className="text-xs font-medium text-indigo-600 hover:text-indigo-700">
                   Forgot password?
-                </a>
+                </Link>
               </div>
               <div className="relative">
                 <input

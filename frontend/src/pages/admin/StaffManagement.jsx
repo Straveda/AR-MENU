@@ -329,9 +329,9 @@ export default function StaffManagement() {
                     value={form.department} 
                     onChange={(e) => setForm({ ...form, department: e.target.value })}
                   >
-                    <option value="KDS">KDS (Kitchen)</option>
-                    <option value="Service">Service (Waiters)</option>
-                    <option value="Admin">Admin Oversight</option>
+                    <option value="KDS">KDS</option>
+                    <option value="Operations">Operations</option>
+                    <option value="Finance">Finance</option>
                   </select>
                 </div>
 

@@ -58,7 +58,7 @@ dishRoute.post(
   resolveRestaurantFromUser,
   requireRole('RESTAURANT_ADMIN', 'SUPER_ADMIN', 'PLATFORM_ADMIN'),
   checkSubscription,
-  
+
   upload.single('image'),
   addDish,
 );

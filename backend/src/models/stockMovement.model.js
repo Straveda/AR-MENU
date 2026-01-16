@@ -37,7 +37,7 @@ const stockMovementSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 stockMovementSchema.index({ createdAt: -1 });

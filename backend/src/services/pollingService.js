@@ -45,7 +45,6 @@ const pollDishTask = async (dishId, meshyTaskId, maxAttempts = 60) => {
         try {
           const newModelUrls = { glb: null, usdz: null };
 
-          
           if (taskStatus.modelUrls.glb) {
             console.log(`Downloading GLB: ${taskStatus.modelUrls.glb}`);
             const response = await fetch(taskStatus.modelUrls.glb);
@@ -62,7 +61,6 @@ const pollDishTask = async (dishId, meshyTaskId, maxAttempts = 60) => {
             console.log(`✅ Uploaded GLB to ImageKit: ${uploadResult.url}`);
           }
 
-          
           if (taskStatus.modelUrls.usdz) {
             console.log(`Downloading USDZ: ${taskStatus.modelUrls.usdz}`);
             const response = await fetch(taskStatus.modelUrls.usdz);
@@ -79,19 +77,13 @@ const pollDishTask = async (dishId, meshyTaskId, maxAttempts = 60) => {
             console.log(`✅ Uploaded USDZ to ImageKit: ${uploadResult.url}`);
           }
 
-          
           dish.modelUrls = newModelUrls;
           await dish.save();
           console.log(`✅ Dish "${dish.name}" updated with ImageKit model URLs`);
           return;
         } catch (uploadError) {
           console.error('❌ Error persisting models to ImageKit:', uploadError);
-          
-          
-          
-          
-          
-          
+
           throw uploadError;
         }
       }

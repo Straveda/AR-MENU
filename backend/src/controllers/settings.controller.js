@@ -6,7 +6,7 @@ export const getRestaurantProfile = async (req, res) => {
   try {
     const restaurantId = req.restaurant._id;
     const restaurant = await Restaurant.findById(restaurantId);
-    
+
     if (!restaurant) {
       return res.status(404).json({
         success: false,
@@ -49,14 +49,13 @@ export const updateRestaurantProfile = async (req, res) => {
     if (openingTime !== undefined) restaurant.openingTime = openingTime;
     if (closingTime !== undefined) restaurant.closingTime = closingTime;
 
-    
     if (restaurant.openingTime && restaurant.closingTime) {
-         if (restaurant.openingTime >= restaurant.closingTime) {
-             return res.status(400).json({
-                 success: false,
-                 message: "Opening time must be earlier than closing time"
-             });
-         }
+      if (restaurant.openingTime >= restaurant.closingTime) {
+        return res.status(400).json({
+          success: false,
+          message: 'Opening time must be earlier than closing time',
+        });
+      }
     }
 
     await restaurant.save();

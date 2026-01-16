@@ -64,7 +64,7 @@ adminRouter.post(
   requireAuth,
   resolveRestaurantFromUser,
   requireRole('RESTAURANT_ADMIN', 'SUPER_ADMIN', 'PLATFORM_ADMIN'),
-  changeStaffPassword
+  changeStaffPassword,
 );
 
 export default adminRouter;
