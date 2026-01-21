@@ -13,10 +13,10 @@ export default function SubscriptionsManagement() {
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
-  
+
   const [modal, setModal] = useState({ type: null, restaurant: null });
   const [confirmModal, setConfirmModal] = useState({ isOpen: false, title: "", message: "", onConfirm: null, isDangerous: false });
-  
+
   const [extendDays, setExtendDays] = useState(30);
   const [changePlanId, setChangePlanId] = useState("");
 
@@ -140,9 +140,9 @@ export default function SubscriptionsManagement() {
   const now = new Date();
   // Sort by expiry but put active ones first, or close to expiry first
   const sortedRestaurants = Array.isArray(restaurants) ? [...restaurants].sort((a, b) => {
-     if (!a?.subscriptionEndsAt) return 1;
-     if (!b?.subscriptionEndsAt) return -1;
-     return new Date(a.subscriptionEndsAt) - new Date(b.subscriptionEndsAt);
+    if (!a?.subscriptionEndsAt) return 1;
+    if (!b?.subscriptionEndsAt) return -1;
+    return new Date(a.subscriptionEndsAt) - new Date(b.subscriptionEndsAt);
   }) : [];
 
   return (
@@ -152,34 +152,34 @@ export default function SubscriptionsManagement() {
         <p className="text-sm text-gray-500">Monitor platform revenue and expiration timelines</p>
       </div>
 
-      {}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <RevenueCard 
-          label="Estimated MRR" 
-          value={`₹${(stats?.totalMRR || 0).toLocaleString()}`} 
-          desc="Monthly Recurring Revenue" 
+      { }
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <RevenueCard
+          label="Estimated MRR"
+          value={`₹${(stats?.totalMRR || 0).toLocaleString()}`}
+          desc="Monthly Recurring Revenue"
         />
-        <RevenueCard 
-          label="Active Subs" 
-          value={stats?.activeSubscriptions || 0} 
-          desc="Non-suspended restaurants" 
+        <RevenueCard
+          label="Active Subs"
+          value={stats?.activeSubscriptions || 0}
+          desc="Non-suspended restaurants"
         />
-        <RevenueCard 
-          label="Expiring (7d)" 
-          value={stats?.expiringSoon || 0} 
+        <RevenueCard
+          label="Expiring (7d)"
+          value={stats?.expiringSoon || 0}
           color="text-amber-600"
-          desc="Critical renewals" 
+          desc="Critical renewals"
         />
-        <RevenueCard 
-          label="Expired" 
-          value={stats?.expired || 0} 
+        <RevenueCard
+          label="Expired"
+          value={stats?.expired || 0}
           color="text-red-600"
-          desc="Immediate attention" 
+          desc="Immediate attention"
         />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {}
+        { }
         <div className="lg:col-span-2 space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold text-gray-900">Active Subscriptions</h2>
@@ -201,7 +201,7 @@ export default function SubscriptionsManagement() {
                   const expiry = r.subscriptionEndsAt ? new Date(r.subscriptionEndsAt) : null;
                   const diffDays = expiry ? Math.ceil((expiry - now) / (1000 * 60 * 60 * 24)) : null;
                   const isExpired = diffDays !== null && diffDays < 0;
-                  
+
                   return (
                     <tr key={r._id} className="hover:bg-slate-50 transition-colors">
                       <td className="px-4 py-3">
@@ -216,31 +216,30 @@ export default function SubscriptionsManagement() {
                       </td>
                       <td className="px-4 py-3">
                         {expiry ? (
-                            <div>
-                                <div className={`text-sm ${isExpired ? 'text-red-600 font-medium' : 'text-slate-600'}`}>
-                                    {expiry.toLocaleDateString()}
-                                </div>
-                                <div className="text-xs text-slate-400">
-                                    {isExpired ? 'Expired' : `${diffDays} days left`}
-                                </div>
+                          <div>
+                            <div className={`text-sm ${isExpired ? 'text-red-600 font-medium' : 'text-slate-600'}`}>
+                              {expiry.toLocaleDateString()}
                             </div>
+                            <div className="text-xs text-slate-400">
+                              {isExpired ? 'Expired' : `${diffDays} days left`}
+                            </div>
+                          </div>
                         ) : (
-                            <span className="text-slate-400 text-xs">N/A</span>
+                          <span className="text-slate-400 text-xs">N/A</span>
                         )}
                       </td>
                       <td className="px-4 py-3">
-                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
-                          r.subscriptionStatus === "ACTIVE" 
-                            ? "bg-emerald-100 text-emerald-700" 
-                            : r.subscriptionStatus === "SUSPENDED" 
-                                ? "bg-amber-100 text-amber-700" 
-                                : "bg-red-100 text-red-700"
-                        }`}>
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${r.subscriptionStatus === "ACTIVE"
+                            ? "bg-emerald-100 text-emerald-700"
+                            : r.subscriptionStatus === "SUSPENDED"
+                              ? "bg-amber-100 text-amber-700"
+                              : "bg-red-100 text-red-700"
+                          }`}>
                           {r.subscriptionStatus}
                         </span>
                       </td>
                       <td className="px-4 py-3 text-right">
-                        <ActionDropdown 
+                        <ActionDropdown
                           restaurant={r}
                           onExtend={() => setModal({ type: 'extend', restaurant: r })}
                           onChangePlan={() => setModal({ type: 'changePlan', restaurant: r })}
@@ -256,72 +255,72 @@ export default function SubscriptionsManagement() {
           </div>
         </div>
 
-      {modal.type === "extend" && (
-        <Modal title={`Extend ${modal.restaurant.name}`} onClose={closeModal}>
-          <div className="space-y-4">
-             <div>
+        {modal.type === "extend" && (
+          <Modal title={`Extend ${modal.restaurant.name}`} onClose={closeModal}>
+            <div className="space-y-4">
+              <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Extend By (Days)</label>
-                <select 
-                   value={extendDays}
-                   onChange={(e) => setExtendDays(e.target.value)}
-                   className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm"
+                <select
+                  value={extendDays}
+                  onChange={(e) => setExtendDays(e.target.value)}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm"
                 >
-                   <option value={7}>7 Days</option>
-                   <option value={15}>15 Days</option>
-                   <option value={30}>30 Days (1 Month)</option>
-                   <option value={90}>90 Days (3 Months)</option>
-                   <option value={365}>365 Days (1 Year)</option>
+                  <option value={7}>7 Days</option>
+                  <option value={15}>15 Days</option>
+                  <option value={30}>30 Days (1 Month)</option>
+                  <option value={90}>90 Days (3 Months)</option>
+                  <option value={365}>365 Days (1 Year)</option>
                 </select>
-             </div>
-             <button
-               onClick={handleExtend}
-               disabled={actionLoading}
-               className="w-full py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 disabled:opacity-50"
-             >
-               {actionLoading ? "Processing..." : "Confirm Extension"}
-             </button>
-          </div>
-        </Modal>
-      )}
+              </div>
+              <button
+                onClick={handleExtend}
+                disabled={actionLoading}
+                className="w-full py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 disabled:opacity-50"
+              >
+                {actionLoading ? "Processing..." : "Confirm Extension"}
+              </button>
+            </div>
+          </Modal>
+        )}
 
-      {modal.type === "changePlan" && (
-        <Modal title={`Change Plan for ${modal.restaurant.name}`} onClose={closeModal}>
-          <div className="space-y-4">
-             <div>
+        {modal.type === "changePlan" && (
+          <Modal title={`Change Plan for ${modal.restaurant.name}`} onClose={closeModal}>
+            <div className="space-y-4">
+              <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Select New Plan</label>
-                <select 
-                   value={changePlanId}
-                   onChange={(e) => setChangePlanId(e.target.value)}
-                   className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm"
+                <select
+                  value={changePlanId}
+                  onChange={(e) => setChangePlanId(e.target.value)}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm"
                 >
-                   <option value="">Select Plan...</option>
-                   {plans.map(p => (
-                      <option key={p._id} value={p._id}>{p.name} (₹{p.price}/{p.interval})</option>
-                   ))}
+                  <option value="">Select Plan...</option>
+                  {plans.map(p => (
+                    <option key={p._id} value={p._id}>{p.name} (₹{p.price}/{p.interval})</option>
+                  ))}
                 </select>
-             </div>
-             <button
-               onClick={handleChangePlan}
-               disabled={actionLoading}
-               className="w-full py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 disabled:opacity-50"
-             >
-               {actionLoading ? "Processing..." : "Update Plan"}
-             </button>
-          </div>
-        </Modal>
-      )}
+              </div>
+              <button
+                onClick={handleChangePlan}
+                disabled={actionLoading}
+                className="w-full py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 disabled:opacity-50"
+              >
+                {actionLoading ? "Processing..." : "Update Plan"}
+              </button>
+            </div>
+          </Modal>
+        )}
 
-      <ConfirmationModal
-        isOpen={confirmModal.isOpen}
-        title={confirmModal.title}
-        message={confirmModal.message}
-        confirmLabel={confirmModal.confirmLabel}
-        onConfirm={confirmModal.onConfirm}
-        onCancel={closeConfirmModal}
-        isDangerous={confirmModal.isDangerous}
-      />
+        <ConfirmationModal
+          isOpen={confirmModal.isOpen}
+          title={confirmModal.title}
+          message={confirmModal.message}
+          confirmLabel={confirmModal.confirmLabel}
+          onConfirm={confirmModal.onConfirm}
+          onCancel={closeConfirmModal}
+          isDangerous={confirmModal.isDangerous}
+        />
 
-        {}
+        { }
         <div className="space-y-4">
           <h2 className="text-lg font-semibold text-gray-900">Recent Activity</h2>
           <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm space-y-6">
@@ -331,28 +330,29 @@ export default function SubscriptionsManagement() {
               logs.map((log) => {
                 if (!log) return null;
                 return (
-                <div key={log._id || Math.random()} className="relative pl-6 pb-6 border-l border-gray-100 last:pb-0">
-                  <div className="absolute left-[-5px] top-1 w-2 h-2 rounded-full bg-indigo-500" />
-                  <div className="text-xs text-gray-400 mb-1">
-                    {log.createdAt ? new Date(log.createdAt).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' }) : '-'}
-                  </div>
-                  <div className="text-sm">
-                    <span className="font-medium text-gray-900">{log.restaurantId?.name || "Unknown Rest."}</span>{' '}
-                    <ActionText action={log.action} />{' '}
-                    <span className="font-medium text-indigo-600">{log.planId?.name || "Unknown Plan"}</span>
-                  </div>
-                  {log.durationInDays && (
-                    <div className="text-xs text-gray-500 mt-1">
-                      Duration: {log.durationInDays} days
+                  <div key={log._id || Math.random()} className="relative pl-6 pb-6 border-l border-gray-100 last:pb-0">
+                    <div className="absolute left-[-5px] top-1 w-2 h-2 rounded-full bg-indigo-500" />
+                    <div className="text-xs text-gray-400 mb-1">
+                      {log.createdAt ? new Date(log.createdAt).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' }) : '-'}
                     </div>
-                  )}
-                  {log.performedBy && (
-                    <div className="text-[10px] text-gray-400 mt-1 uppercase tracking-wider">
-                      By {log.performedBy.username || "Unknown"}
+                    <div className="text-sm">
+                      <span className="font-medium text-gray-900">{log.restaurantId?.name || "Unknown Rest."}</span>{' '}
+                      <ActionText action={log.action} />{' '}
+                      <span className="font-medium text-indigo-600">{log.planId?.name || "Unknown Plan"}</span>
                     </div>
-                  )}
-                </div>
-              )})
+                    {log.durationInDays && (
+                      <div className="text-xs text-gray-500 mt-1">
+                        Duration: {log.durationInDays} days
+                      </div>
+                    )}
+                    {log.performedBy && (
+                      <div className="text-[10px] text-gray-400 mt-1 uppercase tracking-wider">
+                        By {log.performedBy.username || "Unknown"}
+                      </div>
+                    )}
+                  </div>
+                )
+              })
             )}
           </div>
         </div>
@@ -388,7 +388,7 @@ function ActionDropdown({ restaurant, onExtend, onChangePlan, onSuspend, onResum
       const rect = buttonRef.current.getBoundingClientRect();
       const screenHeight = window.innerHeight;
       const menuHeightEstimate = 200;
-      
+
       const spaceBelow = screenHeight - rect.bottom;
       const shouldOpenUpwards = spaceBelow < menuHeightEstimate;
 
@@ -414,15 +414,15 @@ function ActionDropdown({ restaurant, onExtend, onChangePlan, onSuspend, onResum
     <>
       <div className="py-2">
         <div className="px-4 py-1 text-xs font-bold text-slate-400 uppercase tracking-wider">Subscription</div>
-        <MenuItem 
+        <MenuItem
           icon={<svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>}
-          label="Extend Subscription" 
-          onClick={() => { onExtend(); setOpen(false); }} 
+          label="Extend Subscription"
+          onClick={() => { onExtend(); setOpen(false); }}
         />
-        <MenuItem 
+        <MenuItem
           icon={<svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" /></svg>}
-          label="Change Plan" 
-          onClick={() => { onChangePlan(); setOpen(false); }} 
+          label="Change Plan"
+          onClick={() => { onChangePlan(); setOpen(false); }}
         />
       </div>
 
@@ -431,18 +431,18 @@ function ActionDropdown({ restaurant, onExtend, onChangePlan, onSuspend, onResum
       <div className="py-2">
         <div className="px-4 py-1 text-xs font-bold text-slate-400 uppercase tracking-wider">Status</div>
         {restaurant.subscriptionStatus === "SUSPENDED" ? (
-          <MenuItem 
-             icon={<svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>}
-             label="Resume Access"
-             onClick={() => { onResume(); setOpen(false); }}
-             variant="success"
+          <MenuItem
+            icon={<svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>}
+            label="Resume Access"
+            onClick={() => { onResume(); setOpen(false); }}
+            variant="success"
           />
         ) : (
-          <MenuItem 
-             icon={<svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>}
-             label="Pause Subscription"
-             onClick={() => { onSuspend(); setOpen(false); }}
-             variant="warning"
+          <MenuItem
+            icon={<svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>}
+            label="Pause Subscription"
+            onClick={() => { onSuspend(); setOpen(false); }}
+            variant="warning"
           />
         )}
       </div>
@@ -466,19 +466,19 @@ function ActionDropdown({ restaurant, onExtend, onChangePlan, onSuspend, onResum
         <>
           <div className="fixed inset-0 z-40 bg-slate-900/10 backdrop-blur-[1px]" onClick={() => setOpen(false)} />
           {isMobile ? (
-             <div className="fixed bottom-0 left-0 right-0 z-50 bg-white rounded-t-2xl shadow-2xl border-t border-slate-200 animate-in slide-in-from-bottom duration-200">
-                <div className="flex justify-center pt-3 pb-1">
-                   <div className="w-12 h-1.5 bg-slate-200 rounded-full" />
+            <div className="fixed bottom-0 left-0 right-0 z-50 bg-white rounded-t-2xl shadow-2xl border-t border-slate-200 animate-in slide-in-from-bottom duration-200">
+              <div className="flex justify-center pt-3 pb-1">
+                <div className="w-12 h-1.5 bg-slate-200 rounded-full" />
+              </div>
+              <div className="pb-6">
+                <div className="px-4 py-2 border-b border-slate-100 mb-2">
+                  <h3 className="font-semibold text-slate-900">Manage Subscription</h3>
                 </div>
-                <div className="pb-6">
-                  <div className="px-4 py-2 border-b border-slate-100 mb-2">
-                     <h3 className="font-semibold text-slate-900">Manage Subscription</h3>
-                  </div>
-                  <MenuContent />
-                </div>
-             </div>
+                <MenuContent />
+              </div>
+            </div>
           ) : (
-            <div 
+            <div
               style={menuStyle}
               className="z-50 w-56 bg-white border border-slate-200 rounded-xl shadow-xl shadow-slate-200/50 py-1 overflow-hidden animate-in fade-in zoom-in-95 duration-100"
             >
@@ -504,9 +504,8 @@ function MenuItem({ label, onClick, icon, variant = 'default', disabled = false 
     <button
       onClick={onClick}
       disabled={disabled}
-      className={`w-full text-left px-4 py-2.5 text-sm flex items-center gap-3 transition-colors ${
-         disabled ? 'opacity-50 cursor-not-allowed bg-slate-50 text-slate-400' : styles[variant]
-      }`}
+      className={`w-full text-left px-4 py-2.5 text-sm flex items-center gap-3 transition-colors ${disabled ? 'opacity-50 cursor-not-allowed bg-slate-50 text-slate-400' : styles[variant]
+        }`}
     >
       {icon && <span className={disabled ? '' : "opacity-75"}>{icon}</span>}
       <span className="font-medium">{label}</span>
