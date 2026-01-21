@@ -47,7 +47,7 @@ const expenseSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 expenseSchema.index({ restaurantId: 1, expenseDate: -1 });

@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { deleteDish, getAllDishes, retryModelGeneration, updateDishAvailability, updateDishActiveStatus } from "../../api/dishApi.js";
+import { deleteDish, getAllDishes, retryModelGeneration, updateDishAvailability } from "../../api/dishApi.js";
 import { QRCodeSVG } from "qrcode.react";
 import { useAuth } from "../../context/AuthProvider";
 import Loading from "../../components/common/Loading";
@@ -205,29 +205,7 @@ export default function MenuManagement() {
     }
   };
 
-  const handleToggleActive = async (id, isActive) => {
-    setToggleLoading(id);
-    try {
-      await updateDishActiveStatus(id, isActive);
-      setDishes((prev) =>
-        prev.map((dish) =>
-          dish._id === id ? { ...dish, isActive } : dish
-        )
-      );
-      showSuccess(`Dish ${isActive ? 'Activated' : 'Deactivated'} successfully`);
-    } catch (error) {
-      console.error("Toggle active error:", error);
-      if (error.response?.status === 403 && error.response?.data?.message?.includes("limit")) {
-         showWarning(error.response.data.message, 5000);
-      } else if (error.response?.status === 423) {
-          showError("Action Blocked: Restaurant is Suspended.");
-      } else {
-          showError("Failed to update active status");
-      }
-    } finally {
-      setToggleLoading(null);
-    }
-  };
+
 
   return (
     <div className="space-y-6">
@@ -458,17 +436,7 @@ export default function MenuManagement() {
                     </div>
 
                     <div className="pt-4 border-t border-slate-50 space-y-3">
-                      <div className="flex items-center justify-between">
-                        <span className="type-label">Plan Visibility</span>
-                         <button
-                          onClick={() => handleToggleActive(dish._id, !dish.isActive)}
-                          disabled={toggleLoading === dish._id}
-                          className={`relative inline-flex h-5 w-10 items-center rounded-full transition-all ${dish.isActive ? 'bg-indigo-500' : 'bg-slate-200'
-                            }`}
-                        >
-                          <span className={`inline-block h-3 w-3 transform rounded-full bg-white shadow-sm transition-transform ${dish.isActive ? 'translate-x-6' : 'translate-x-1'}`} />
-                        </button>
-                      </div>
+
 
                       <div className="flex items-center justify-between">
                         <span className="type-label">Availability</span>

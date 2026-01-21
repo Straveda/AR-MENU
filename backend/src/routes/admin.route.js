@@ -11,6 +11,7 @@ import {
   toggleStaffStatus,
   deleteStaff,
 } from '../controllers/platform.controller.js';
+import { changeStaffPassword } from '../controllers/adminKeyActions.controller.js';
 
 const adminRouter = express.Router();
 
@@ -56,6 +57,14 @@ adminRouter.delete(
   requireRole('RESTAURANT_ADMIN', 'SUPER_ADMIN', 'PLATFORM_ADMIN'),
   checkSubscription,
   deleteStaff,
+);
+
+adminRouter.post(
+  '/change-staff-password/:userId',
+  requireAuth,
+  resolveRestaurantFromUser,
+  requireRole('RESTAURANT_ADMIN', 'SUPER_ADMIN', 'PLATFORM_ADMIN'),
+  changeStaffPassword,
 );
 
 export default adminRouter;

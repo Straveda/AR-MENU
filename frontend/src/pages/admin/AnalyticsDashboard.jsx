@@ -31,13 +31,13 @@ export default function AnalyticsDashboard() {
 
   return (
     <div className="space-y-10 animate-fade-in pb-12">
-      {/* Refined Header */}
+      {}
       <div>
         <h1 className="text-2xl font-semibold text-slate-900 tracking-tight">Operational Ledger</h1>
         <p className="text-slate-500 mt-1 text-sm font-medium">Real-time performance & asset tracking</p>
       </div>
 
-      {/* Primary KPI Grid */}
+      {}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard 
           label="Orders Today" 
@@ -70,7 +70,7 @@ export default function AnalyticsDashboard() {
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
-        {/* Operations & Inventory row */}
+        {}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <SummaryList 
                 title="Service Status" 
@@ -92,7 +92,7 @@ export default function AnalyticsDashboard() {
             />
         </div>
 
-        {/* Expenses & Menu Insights row */}
+        {}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <SummaryList 
                 title="Financial Flux" 

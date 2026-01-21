@@ -130,61 +130,68 @@ export default function PlansManagement() {
 
       {}
       <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
-        <table className="min-w-full text-sm">
-          <thead className="bg-slate-50 border-b border-slate-200">
-            <tr>
-              <th className="text-left px-4 py-3 font-medium text-slate-600">Name</th>
-              <th className="text-left px-4 py-3 font-medium text-slate-600">Price</th>
-              <th className="text-left px-4 py-3 font-medium text-slate-600">Interval</th>
-              <th className="text-left px-4 py-3 font-medium text-slate-600">Features</th>
-              <th className="text-left px-4 py-3 font-medium text-slate-600">Limits</th>
-              <th className="text-right px-4 py-3 font-medium text-slate-600">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100">
-            {plans.map((p) => (
-              <tr key={p._id} className="hover:bg-slate-50 transition-colors">
-                <td className="px-4 py-3 text-slate-900 border-none">
-                  <div className="font-medium">{p.name}</div>
-                  {p.description && <div className="text-xs text-slate-500 max-w-[200px] truncate">{p.description}</div>}
-                </td>
-                <td className="px-4 py-3 text-slate-600 font-mono">₹{p.price || 0}</td>
-                <td className="px-4 py-3">
-                   <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-slate-100 text-slate-700">
-                      {p.interval || "MONTHLY"}
-                   </span>
-                </td>
-                <td className="px-4 py-3">
-                  <div className="flex gap-1.5 flex-wrap">
-                    <FeatureIndicator label="AR" enabled={p.features?.arModels} />
-                    <FeatureIndicator label="KDS" enabled={p.features?.kds} />
-                    <FeatureIndicator label="Analytics" enabled={p.features?.analytics} />
-                  </div>
-                </td>
-                <td className="px-4 py-3 text-xs text-slate-600">
-                   <div className="flex flex-col">
-                      <span><span className="font-semibold text-slate-700">{p.limits?.maxDishes || 0}</span> dishes</span>
-                      <span><span className="font-semibold text-slate-700">{p.limits?.maxStaff || 0}</span> staff</span>
-                   </div>
-                </td>
-                <td className="px-4 py-3 text-right">
-                   <ActionDropdown 
-                      plan={p}
-                      onEdit={() => openEdit(p)}
-                      onDelete={() => initiateDelete(p)}
-                   />
-                </td>
-              </tr>
-            ))}
-            {plans.length === 0 && (
+        <div className="overflow-x-auto">
+          <table className="min-w-full text-sm">
+            <thead className="bg-slate-50 border-b border-slate-200">
               <tr>
-                <td colSpan={6} className="px-4 py-8 text-center text-slate-500">
-                  No plans configured
-                </td>
+                <th className="text-left px-4 py-3 font-medium text-slate-600 whitespace-nowrap">Name</th>
+                <th className="text-left px-4 py-3 font-medium text-slate-600 whitespace-nowrap">Price</th>
+                <th className="text-left px-4 py-3 font-medium text-slate-600 whitespace-nowrap">Interval</th>
+                <th className="text-left px-4 py-3 font-medium text-slate-600 whitespace-nowrap">Features</th>
+                <th className="text-left px-4 py-3 font-medium text-slate-600 whitespace-nowrap">Limits</th>
+                <th className="text-right px-4 py-3 font-medium text-slate-600 whitespace-nowrap">Actions</th>
               </tr>
-            )}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {plans.map((p) => (
+                <tr key={p._id} className="hover:bg-slate-50 transition-colors">
+                  <td className="px-4 py-3 text-slate-900 border-none whitespace-nowrap">
+                    <div className="font-medium">{p.name}</div>
+                    {p.description && <div className="text-xs text-slate-500 max-w-[200px] truncate">{p.description}</div>}
+                  </td>
+                  <td className="px-4 py-3 text-slate-600 font-mono whitespace-nowrap">₹{p.price || 0}</td>
+                  <td className="px-4 py-3 whitespace-nowrap">
+                     <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-slate-100 text-slate-700">
+                        {p.interval || "MONTHLY"}
+                     </span>
+                  </td>
+                  <td className="px-4 py-3 whitespace-nowrap">
+                    <div className="flex gap-1.5 flex-wrap">
+                      <FeatureIndicator label="AR" enabled={p.features?.arModels} />
+                      <FeatureIndicator label="KDS" enabled={p.features?.kds} />
+                      <FeatureIndicator label="Analytics" enabled={p.features?.analytics} />
+                    </div>
+                  </td>
+                  <td className="px-4 py-3 text-xs text-slate-600 whitespace-nowrap">
+                     <div className="flex flex-col">
+                        <span><span className="font-semibold text-slate-700">{p.limits?.maxDishes || 0}</span> dishes</span>
+                        <span><span className="font-semibold text-slate-700">{p.limits?.maxStaff || 0}</span> staff</span>
+                     </div>
+                  </td>
+                  <td className="px-4 py-3 text-right whitespace-nowrap">
+                     <ActionDropdown 
+                        plan={p}
+                        onEdit={() => openEdit(p)}
+                        onDelete={() => initiateDelete(p)}
+                     />
+                  </td>
+                </tr>
+              ))}
+              {plans.length === 0 && (
+                <tr>
+                  <td colSpan={6} className="px-4 py-8 text-center text-slate-500">
+                    No plans configured
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+        {plans.length > 0 && (
+          <div className="block sm:hidden bg-slate-50 px-4 py-2 text-xs text-slate-500 text-center border-t border-slate-200">
+            ← Scroll horizontally to see Limits & Actions →
+          </div>
+        )}
       </div>
 
       {}
@@ -376,7 +383,7 @@ function ActionDropdown({ plan, onEdit, onDelete }) {
     if (open && buttonRef.current && !isMobile) {
       const rect = buttonRef.current.getBoundingClientRect();
       const screenHeight = window.innerHeight;
-      const menuHeightEstimate = 100; // Small menu here
+      const menuHeightEstimate = 100; 
       
       const spaceBelow = screenHeight - rect.bottom;
       const shouldOpenUpwards = spaceBelow < menuHeightEstimate;

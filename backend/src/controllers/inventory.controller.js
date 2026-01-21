@@ -5,7 +5,6 @@ import { ApiResponse } from '../utils/ApiResponse.js';
 import { ApiError } from '../utils/ApiError.js';
 import mongoose from 'mongoose';
 
-
 export const createIngredient = asyncHandler(async (req, res) => {
   const { name, unit, minStockLevel, costPerUnit, supplier } = req.body;
   const restaurantId = req.restaurant?._id;
@@ -32,7 +31,6 @@ export const createIngredient = asyncHandler(async (req, res) => {
   return res.status(201).json(new ApiResponse(201, ingredient, 'Ingredient created successfully'));
 });
 
-
 export const getIngredients = asyncHandler(async (req, res) => {
   const restaurantId = req.restaurant?._id;
   const page = parseInt(req.query.page) || 1;
@@ -49,7 +47,13 @@ export const getIngredients = asyncHandler(async (req, res) => {
   const allIngredients = await Ingredient.find({ restaurantId });
 
   const topConsumedRes = await StockMovement.aggregate([
-    { $match: { restaurantId: new mongoose.Types.ObjectId(restaurantId), action: 'DEDUCT', reason: 'ORDER' } },
+    {
+      $match: {
+        restaurantId: new mongoose.Types.ObjectId(restaurantId),
+        action: 'DEDUCT',
+        reason: 'ORDER',
+      },
+    },
     { $group: { _id: '$ingredientId', total: { $sum: '$quantity' } } },
     { $sort: { total: -1 } },
     { $limit: 1 },
@@ -57,13 +61,20 @@ export const getIngredients = asyncHandler(async (req, res) => {
 
   let topConsumed = 'N/A';
   if (topConsumedRes.length > 0) {
-    const topIng = allIngredients.find((i) => i._id.toString() === topConsumedRes[0]._id.toString());
+    const topIng = allIngredients.find(
+      (i) => i._id.toString() === topConsumedRes[0]._id.toString(),
+    );
     if (topIng) topConsumed = topIng.name;
   }
 
   const summary = {
-    totalStockValue: allIngredients.reduce((acc, curr) => acc + curr.currentStock * curr.costPerUnit, 0),
-    lowStockCount: allIngredients.filter((i) => i.currentStock <= i.minStockLevel && i.currentStock > 0).length,
+    totalStockValue: allIngredients.reduce(
+      (acc, curr) => acc + curr.currentStock * curr.costPerUnit,
+      0,
+    ),
+    lowStockCount: allIngredients.filter(
+      (i) => i.currentStock <= i.minStockLevel && i.currentStock > 0,
+    ).length,
     deadStockCount: allIngredients.filter((i) => i.currentStock === 0).length,
     topConsumed,
   };
@@ -81,11 +92,10 @@ export const getIngredients = asyncHandler(async (req, res) => {
           totalPages,
         },
       },
-      'Ingredients fetched successfully'
-    )
+      'Ingredients fetched successfully',
+    ),
   );
 });
-
 
 export const updateIngredient = asyncHandler(async (req, res) => {
   const { id } = req.params;
@@ -95,7 +105,7 @@ export const updateIngredient = asyncHandler(async (req, res) => {
   const ingredient = await Ingredient.findOneAndUpdate(
     { _id: id, restaurantId },
     { name, unit, minStockLevel, costPerUnit, supplier },
-    { new: true, runValidators: true }
+    { new: true, runValidators: true },
   );
 
   if (!ingredient) {
@@ -104,7 +114,6 @@ export const updateIngredient = asyncHandler(async (req, res) => {
 
   return res.status(200).json(new ApiResponse(200, ingredient, 'Ingredient updated successfully'));
 });
-
 
 export const adjustStock = asyncHandler(async (req, res) => {
   const { id } = req.params;
@@ -149,9 +158,8 @@ export const adjustStock = asyncHandler(async (req, res) => {
           restaurantId,
         },
       ],
-      { session }
+      { session },
     );
-
 
     ingredient.currentStock = newStock;
     await ingredient.save({ session });
@@ -197,7 +205,7 @@ export const getStockMovements = asyncHandler(async (req, res) => {
           totalPages,
         },
       },
-      'Stock movements fetched successfully'
-    )
+      'Stock movements fetched successfully',
+    ),
   );
 });

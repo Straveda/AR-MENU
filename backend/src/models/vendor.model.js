@@ -35,7 +35,7 @@ const vendorSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 vendorSchema.index({ restaurantId: 1, name: 1 }, { unique: true });

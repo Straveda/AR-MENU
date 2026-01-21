@@ -111,18 +111,12 @@ export default function AddDish() {
       });
 
       if (res.status === 201) {
-        if (res.data.warning) {
-          showWarning("Dish created successfully, but marked as INACTIVE due to plan limits. Upgrade your plan to activate it.", 5000);
-        } else {
-          showSuccess("Dish added successfully!");
-        }
+        showSuccess("Dish added successfully!");
         navigate("/admin/dashboard");
       }
     } catch (error) {
       console.error("Error adding dish:", error);
-      if (error.response?.status === 400 && error.response?.data?.message?.toLowerCase().includes("limit")) {
-          showError("Dish Limit Reached: You have reached the maximum number of dishes for your current plan. Please upgrade to add more.", 5000);
-      } else if (error.response?.status === 423) {
+      if (error.response?.status === 423) {
           showError("Action Blocked: Restaurant is Suspended.");
       } else {
           showError(error.response?.data?.message || "Failed to add dish. Please try again.");
@@ -373,7 +367,7 @@ export default function AddDish() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-amber-500 hover:bg-amber-600 text-white py-3 rounded-lg font-semibold transition"
+            className="w-full bg-amber-500 hover:bg-amber-600 text-white py-3 rounded-lg font-semibold transition min-w-[120px]"
           >
             {loading ? "Adding Dish..." : "Add Dish"}
           </button>

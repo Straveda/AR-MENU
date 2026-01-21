@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import axiosClient from "../../api/axiosClient.js";
 import { useAuth } from "../../context/AuthProvider";
+import { useToast } from "../../components/common/Toast/ToastContext";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -12,6 +13,7 @@ export default function Login() {
 
   const navigate = useNavigate();
   const { login } = useAuth();
+  const { showSuccess } = useToast();
 
   const handleLogin = async (event) => {
     event.preventDefault();
@@ -27,6 +29,9 @@ export default function Login() {
       if (res.status === 200 && res.data.success) {
         const token = res.data.token;
         login(token);
+
+        // Show success toast
+        showSuccess("Signed in successfully");
 
         const user = res.data.user;
         if (user && ["SUPER_ADMIN", "PLATFORM_ADMIN"].includes(user.role)) {
@@ -124,9 +129,9 @@ export default function Login() {
                 <label htmlFor="password" className="block text-sm font-semibold text-slate-700">
                   Password
                 </label>
-                <a href="#" className="text-xs font-medium text-indigo-600 hover:text-indigo-700">
+                <Link to="/forgot-password" className="text-xs font-medium text-indigo-600 hover:text-indigo-700">
                   Forgot password?
-                </a>
+                </Link>
               </div>
               <div className="relative">
                 <input

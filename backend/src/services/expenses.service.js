@@ -12,11 +12,7 @@ export const getVendors = async (restaurantId, query = {}) => {
 };
 
 export const updateVendor = async (vendorId, restaurantId, updateData) => {
-  return await Vendor.findOneAndUpdate(
-    { _id: vendorId, restaurantId },
-    updateData,
-    { new: true }
-  );
+  return await Vendor.findOneAndUpdate({ _id: vendorId, restaurantId }, updateData, { new: true });
 };
 
 export const createExpense = async (expenseData) => {
@@ -63,15 +59,15 @@ export const getMonthlyTotal = async (restaurantId) => {
     {
       $match: {
         restaurantId: new mongoose.Types.ObjectId(restaurantId),
-        expenseDate: { $gte: startOfMonth, $lte: endOfMonth }
-      }
+        expenseDate: { $gte: startOfMonth, $lte: endOfMonth },
+      },
     },
     {
       $group: {
         _id: null,
-        total: { $sum: '$amount' }
-      }
-    }
+        total: { $sum: '$amount' },
+      },
+    },
   ]);
 
   return result.length > 0 ? result[0].total : 0;

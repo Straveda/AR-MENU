@@ -42,7 +42,9 @@ export default function UsersManagement() {
     password: "",
     phone: "",
     role: "RESTAURANT_ADMIN",
-    restaurantId: ""
+    restaurantId: "",
+    department: "",
+    roleTitle: ""
   });
 
   const [showPassword, setShowPassword] = useState(false);
@@ -86,7 +88,9 @@ export default function UsersManagement() {
       password: "",
       phone: "",
       role: "RESTAURANT_ADMIN",
-      restaurantId: ""
+      restaurantId: "",
+      department: "",
+      roleTitle: ""
     });
     setShowPassword(false);
   };
@@ -99,12 +103,29 @@ export default function UsersManagement() {
     showError(err.response?.data?.message || "Operation failed");
   };
 
+  const getPayload = () => {
+    let payload = { ...userForm };
+    if (["FINANCE", "OPERATIONS"].includes(payload.role)) {
+      payload.department = payload.role === "FINANCE" ? "Finance" : "Operations";
+      payload.role = "KDS";
+    } else if (payload.role === "KDS") {
+      payload.department = "KDS";
+    }
+    
+    // Clear restaurantId if platform role
+    if (["SUPER_ADMIN"].includes(userForm.role)) {
+       payload.restaurantId = null;
+    }
+    return payload;
+  };
+
   const handleCreateUser = async (e) => {
     e.preventDefault();
     setActionLoading(true);
     setError("");
     try {
-      const res = await axiosClient.post("/platform/create-user", userForm);
+      const payload = getPayload();
+      const res = await axiosClient.post("/platform/create-user", payload);
       if (res.data.warning) {
           showWarning("User created successfully, but marked as INACTIVE due to plan limits. Upgrade plan to activate.", 5000);
       } else {
@@ -124,11 +145,14 @@ export default function UsersManagement() {
     setActionLoading(true);
     setError("");
     try {
+      const payload = getPayload();
       await axiosClient.put(`/platform/update-user/${modal.user._id}`, {
-        username: userForm.username,
-        phone: userForm.phone,
-        role: userForm.role,
-        restaurantId: userForm.restaurantId
+        username: payload.username,
+        phone: payload.phone,
+        role: payload.role,
+        restaurantId: payload.restaurantId,
+        department: payload.department,
+        roleTitle: payload.roleTitle
       });
       showSuccess("User updated successfully");
       await fetchData();
@@ -191,13 +215,22 @@ export default function UsersManagement() {
   };
 
   const openEditModal = (user) => {
+    let uiRole = user.role || "RESTAURANT_ADMIN";
+    if (user.role === 'KDS') {
+        if (user.department === 'Finance') uiRole = 'FINANCE';
+        else if (user.department === 'Operations') uiRole = 'OPERATIONS';
+        else uiRole = 'KDS';
+    }
+
     setUserForm({
       username: user.username || "",
       email: user.email || "",
       password: "", 
       phone: user.phone || "",
-      role: user.role || "RESTAURANT_ADMIN",
-      restaurantId: user.restaurantId?._id || user.restaurantId || ""
+      role: uiRole,
+      restaurantId: user.restaurantId?._id || user.restaurantId || "",
+      department: user.department || "",
+      roleTitle: user.roleTitle || ""
     });
     setModal({ type: "edit", user });
   };
@@ -213,10 +246,8 @@ export default function UsersManagement() {
 
   const roleStats = {
     SUPER_ADMIN: users.filter((u) => u.role === "SUPER_ADMIN").length,
-    PLATFORM_ADMIN: users.filter((u) => u.role === "PLATFORM_ADMIN").length,
     RESTAURANT_ADMIN: users.filter((u) => u.role === "RESTAURANT_ADMIN").length,
     KDS: users.filter((u) => u.role === "KDS").length,
-    CUSTOMER: users.filter((u) => u.role === "CUSTOMER").length,
   };
 
   if (loading && users.length === 0) {
@@ -250,10 +281,8 @@ export default function UsersManagement() {
       {}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 mb-6">
         <StatBadge label="Super Admins" count={roleStats.SUPER_ADMIN} color="purple" />
-        <StatBadge label="Platform Admins" count={roleStats.PLATFORM_ADMIN} color="blue" />
         <StatBadge label="Restaurant Admins" count={roleStats.RESTAURANT_ADMIN} color="indigo" />
-        <StatBadge label="KDS" count={roleStats.KDS} color="emerald" />
-        <StatBadge label="Customers" count={roleStats.CUSTOMER} color="amber" />
+        <StatBadge label="KDS & Staff" count={roleStats.KDS} color="emerald" />
       </div>
 
       {}
@@ -267,10 +296,8 @@ export default function UsersManagement() {
           >
             <option value="">All roles</option>
             <option value="SUPER_ADMIN">Super Admin</option>
-            <option value="PLATFORM_ADMIN">Platform Admin</option>
             <option value="RESTAURANT_ADMIN">Restaurant Admin</option>
-            <option value="KDS">KDS</option>
-            <option value="CUSTOMER">Customer</option>
+            <option value="KDS">KDS (Includes Finance/Ops)</option>
           </select>
         </div>
         <div className="flex items-center gap-2">
@@ -325,7 +352,7 @@ export default function UsersManagement() {
                     </div>
                   </td>
                   <td className="px-4 py-4 whitespace-nowrap">
-                    <RoleBadge role={user.role} />
+                    <RoleBadge role={user.role} department={user.department} />
                   </td>
                   <td className="px-4 py-4 text-gray-600 whitespace-nowrap">
                     {user.restaurantId?.name || (
@@ -426,27 +453,40 @@ export default function UsersManagement() {
                   required
                 >
                   <option value="SUPER_ADMIN">Super Admin</option>
-                  <option value="PLATFORM_ADMIN">Platform Admin</option>
                   <option value="RESTAURANT_ADMIN">Restaurant Admin</option>
                   <option value="KDS">KDS</option>
-                  <option value="CUSTOMER">Customer</option>
+                  <option value="OPERATIONS">Operations</option>
+                  <option value="FINANCE">Finance</option>
                 </select>
               </div>
+
+              {['KDS', 'FINANCE', 'OPERATIONS'].includes(userForm.role) && (
+                <div>
+                  <InputField 
+                    label="Role Title" 
+                    value={userForm.roleTitle} 
+                    onChange={(v) => setUserForm({ ...userForm, roleTitle: v })} 
+                    placeholder="e.g. Head Chef, Accountant"
+                  />
+                </div>
+              )}
               
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Restaurant</label>
-                <select
-                  value={userForm.restaurantId}
-                  onChange={(e) => setUserForm({ ...userForm, restaurantId: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500"
-                  required
-                >
-                  <option value="">Select a restaurant...</option>
-                  {restaurants.map((r) => (
-                    <option key={r._id} value={r._id}>{r.name}</option>
-                  ))}
-                </select>
-              </div>
+              {!['SUPER_ADMIN'].includes(userForm.role) && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Restaurant</label>
+                  <select
+                    value={userForm.restaurantId}
+                    onChange={(e) => setUserForm({ ...userForm, restaurantId: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500"
+                    required
+                  >
+                    <option value="">Select a restaurant...</option>
+                    {restaurants.map((r) => (
+                      <option key={r._id} value={r._id}>{r.name}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
             </div>
             
             <div className="mt-6">
@@ -490,26 +530,32 @@ function StatBadge({ label, count, color }) {
   );
 }
 
-function RoleBadge({ role }) {
+function RoleBadge({ role, department }) {
   const styles = {
     SUPER_ADMIN: "bg-purple-100 text-purple-700",
-    PLATFORM_ADMIN: "bg-blue-100 text-blue-700",
     RESTAURANT_ADMIN: "bg-indigo-100 text-indigo-700",
     KDS: "bg-emerald-100 text-emerald-700",
-    CUSTOMER: "bg-amber-100 text-amber-700",
+    OPERATIONS: "bg-orange-100 text-orange-700",
+    FINANCE: "bg-pink-100 text-pink-700",
   };
 
   const labels = {
     SUPER_ADMIN: "Super Admin",
-    PLATFORM_ADMIN: "Platform Admin",
     RESTAURANT_ADMIN: "Restaurant Admin",
     KDS: "KDS",
-    CUSTOMER: "Customer",
+    OPERATIONS: "Operations",
+    FINANCE: "Finance",
   };
 
+  let displayRole = role;
+  if (role === 'KDS') {
+    if (department === 'Finance') displayRole = 'FINANCE';
+    else if (department === 'Operations') displayRole = 'OPERATIONS';
+  }
+
   return (
-    <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${styles[role] || "bg-gray-100 text-gray-700"}`}>
-      {labels[role] || role}
+    <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${styles[displayRole] || "bg-gray-100 text-gray-700"}`}>
+      {labels[displayRole] || displayRole}
     </span>
   );
 }

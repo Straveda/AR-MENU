@@ -11,18 +11,10 @@ export class ImageKitProvider extends StorageProvider {
     });
   }
 
-  /**
-   * Uploads a file to ImageKit.
-   * @param {Buffer} fileBuffer - The file content as a buffer.
-   * @param {string} fileName - The name of the file.
-   * @param {string} mimeType - The MIME type of the file.
-   * @param {string} folder - The folder path to upload to.
-   * @returns {Promise<{ url: string, fileId: string }>}
-   */
   async uploadFile(fileBuffer, fileName, folder = 'menu-ar/dishes') {
     try {
       const response = await this.imagekit.upload({
-        file: fileBuffer, // ImageKit accepts Buffer directly
+        file: fileBuffer,
         fileName: fileName,
         folder: folder,
         useUniqueFileName: true,
@@ -38,11 +30,6 @@ export class ImageKitProvider extends StorageProvider {
     }
   }
 
-  /**
-   * Deletes a file from ImageKit.
-   * @param {string} fileId - The ID of the file to delete.
-   * @returns {Promise<void>}
-   */
   async deleteFile(fileId) {
     try {
       await this.imagekit.deleteFile(fileId);

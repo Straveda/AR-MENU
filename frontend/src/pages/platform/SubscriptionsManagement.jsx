@@ -138,7 +138,7 @@ export default function SubscriptionsManagement() {
   }
 
   const now = new Date();
-  // Sort by expiry but put active ones first, or close to expiry first
+
   const sortedRestaurants = Array.isArray(restaurants) ? [...restaurants].sort((a, b) => {
     if (!a?.subscriptionEndsAt) return 1;
     if (!b?.subscriptionEndsAt) return -1;
@@ -230,10 +230,10 @@ export default function SubscriptionsManagement() {
                       </td>
                       <td className="px-4 py-3">
                         <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${r.subscriptionStatus === "ACTIVE"
-                            ? "bg-emerald-100 text-emerald-700"
-                            : r.subscriptionStatus === "SUSPENDED"
-                              ? "bg-amber-100 text-amber-700"
-                              : "bg-red-100 text-red-700"
+                          ? "bg-emerald-100 text-emerald-700"
+                          : r.subscriptionStatus === "SUSPENDED"
+                            ? "bg-amber-100 text-amber-700"
+                            : "bg-red-100 text-red-700"
                           }`}>
                           {r.subscriptionStatus}
                         </span>

@@ -14,7 +14,7 @@ export default function ExpensesPage() {
 
   return (
     <div className="space-y-10 animate-fade-in pb-12">
-      {/* Header section */}
+      {}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h1 className="type-h1">Financial Oversight</h1>
@@ -22,7 +22,7 @@ export default function ExpensesPage() {
         </div>
       </div>
 
-      {/* Navigation Tabs */}
+      {}
       <div className="flex gap-8 border-b border-slate-200">
         {tabs.map((tab) => (
           <button

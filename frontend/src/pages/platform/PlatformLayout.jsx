@@ -1,12 +1,14 @@
 import { Outlet, Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthProvider";
 import { useState } from "react";
+import { useToast } from "../../components/common/Toast/ToastContext";
 
 export default function PlatformLayout() {
   const { logout, user } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { showInfo } = useToast();
 
   const navItems = [
     { label: "Dashboard", path: "/platform/dashboard", icon: "grid" },
@@ -17,6 +19,7 @@ export default function PlatformLayout() {
   ];
 
   const handleLogout = () => {
+    showInfo("Signed out successfully");
     logout();
     navigate("/login");
   };

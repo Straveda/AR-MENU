@@ -64,7 +64,7 @@ export default function OrderCart() {
 
     return (
         <div className="min-h-screen bg-amber-50 pb-24">
-            {/* Header */}
+            {}
             <div className="bg-white border-b border-amber-200 sticky top-0 z-10 shadow-sm">
                 <div className="max-w-3xl mx-auto px-4 py-4 flex items-center justify-between">
                     <button
@@ -76,16 +76,16 @@ export default function OrderCart() {
                         </svg>
                     </button>
                     <h1 className="type-h1 text-gray-800">Your Order</h1>
-                    <div className="w-8"></div> {/* Spacer for centering */}
+                    <div className="w-8"></div> {}
                 </div>
             </div>
 
             <div className="max-w-3xl mx-auto px-4 py-6">
-                {/* Order Items */}
+                {}
                 <div className="space-y-4 mb-8">
                     {items.map((item) => (
                         <div key={item.dishId} className="card-premium p-4 border-amber-100/50 flex gap-4 animate-fade-in">
-                            {/* Image Thumbnail */}
+                            {}
                             <div className="w-20 h-20 bg-gray-100 rounded-lg overflow-hidden shrink-0">
                                 {item.image ? (
                                     <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
@@ -94,7 +94,7 @@ export default function OrderCart() {
                                 )}
                             </div>
 
-                            {/* Details */}
+                            {}
                             <div className="flex-1 flex flex-col justify-between">
                                 <div className="flex justify-between items-start">
                                     <h3 className="type-h3 text-gray-800 line-clamp-2">{item.name}</h3>
@@ -131,7 +131,7 @@ export default function OrderCart() {
                     ))}
                 </div>
 
-                {/* Bill Details */}
+                {}
                 <div className="card-premium p-6 border-amber-100/50 mb-8">
                     <h3 className="type-label mb-4 opacity-70">Bill Summary</h3>
                     <div className="space-y-2 type-body-sm">
@@ -139,10 +139,7 @@ export default function OrderCart() {
                             <span>Item Total</span>
                             <span>₹{subtotal}</span>
                         </div>
-                        {/* <div className="flex justify-between text-gray-600">
-              <span>Taxes & Charges</span>
-              <span>₹0</span>
-            </div> */}
+                        {}
                         <div className="border-t border-dashed border-gray-200 my-3 pt-3 flex justify-between items-center">
                             <span className="type-h3 text-gray-800">To Pay</span>
                             <span className="type-metric text-amber-600">₹{total}</span>
@@ -150,7 +147,7 @@ export default function OrderCart() {
                     </div>
                 </div>
 
-                {/* Table Number Input */}
+                {}
                 <div className="card-premium p-6 border-amber-100/50 mb-8">
                     <label className="block type-label mb-2">
                         Table Number <span className="text-red-500">*</span>
@@ -173,7 +170,7 @@ export default function OrderCart() {
                 </div>
             </div>
 
-            {/* Fixed Bottom Action */}
+            {}
             <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 p-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-20">
                 <div className="max-w-3xl mx-auto flex gap-4 items-center">
                     <div className="flex-1">

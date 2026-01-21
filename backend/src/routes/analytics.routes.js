@@ -6,7 +6,6 @@ import { requireRole } from '../middlewares/requireRole.middleware.js';
 
 const router = Router();
 
-// All analytics routes require authentication and restaurant admin role
 router.use(requireAuth);
 router.use(resolveRestaurantFromUser);
 router.use(requireRole('RESTAURANT_ADMIN'));

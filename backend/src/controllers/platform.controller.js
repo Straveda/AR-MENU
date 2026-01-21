@@ -175,23 +175,28 @@ const createPlatformUser = async (req, res) => {
       });
     }
 
-    const validRoles = ['SUPER_ADMIN', 'PLATFORM_ADMIN', 'RESTAURANT_ADMIN', 'KDS', 'CUSTOMER'];
+    const validRoles = ['SUPER_ADMIN', 'RESTAURANT_ADMIN', 'KDS'];
     if (!validRoles.includes(role)) {
       return res.status(400).json({
         success: false,
-        message: 'Invalid role. Must be one of: ' + validRoles.join(', '),
+        message: 'Invalid role provided',
       });
     }
 
-    // Security: Prevent privilege escalation
+    // Role-based access control for creating users
+    // Only Super Admin can create other Super Admins
     if (role === 'SUPER_ADMIN' && req.user.role !== 'SUPER_ADMIN') {
-        return res.status(403).json({ success: false, message: 'Only Super Admins can create Super Admins' });
+      return res.status(403).json({
+        success: false,
+        message: 'Only Super Admin can create system roles',
+      });
     }
-    if (role === 'PLATFORM_ADMIN' && req.user.role !== 'SUPER_ADMIN') {
-        return res.status(403).json({ success: false, message: 'Only Super Admins can create Platform Admins' });
-    }
-    if (req.user.role === 'RESTAURANT_ADMIN' && ['SUPER_ADMIN', 'PLATFORM_ADMIN'].includes(role)) {
-        return res.status(403).json({ success: false, message: 'Restaurant Admins cannot create platform roles' });
+
+    const isPlatformRole = role === 'SUPER_ADMIN';
+    if (req.user.role === 'RESTAURANT_ADMIN' && ['SUPER_ADMIN'].includes(role)) {
+      return res
+        .status(403)
+        .json({ success: false, message: 'Restaurant Admins cannot create platform roles' });
     }
 
     const existingUser = await User.findOne({ email });
@@ -202,7 +207,6 @@ const createPlatformUser = async (req, res) => {
       });
     }
 
-    const isPlatformRole = ['SUPER_ADMIN', 'PLATFORM_ADMIN'].includes(role);
     if (!isPlatformRole && !restaurantId) {
       return res.status(400).json({
         success: false,
@@ -228,6 +232,8 @@ const createPlatformUser = async (req, res) => {
       username,
       phone,
       role,
+      department: req.body.department || null,
+      roleTitle: req.body.roleTitle || null,
       restaurantId: isPlatformRole ? null : restaurantId,
       isActive: true,
     });
@@ -252,7 +258,7 @@ const createPlatformUser = async (req, res) => {
 const updateUser = async (req, res) => {
   try {
     const { userId } = req.params;
-    const { username, phone, role, restaurantId } = req.body;
+    const { username, phone, role, restaurantId, department, roleTitle } = req.body;
 
     const user = await User.findById(userId);
     if (!user) {
@@ -270,9 +276,11 @@ const updateUser = async (req, res) => {
     }
 
     if (username) user.username = username;
+    if (department !== undefined) user.department = department;
+    if (roleTitle !== undefined) user.roleTitle = roleTitle;
     if (phone) user.phone = phone;
     if (role) {
-      const validRoles = ['SUPER_ADMIN', 'PLATFORM_ADMIN', 'RESTAURANT_ADMIN', 'KDS', 'CUSTOMER'];
+      const validRoles = ['SUPER_ADMIN', 'RESTAURANT_ADMIN', 'KDS'];
       if (!validRoles.includes(role)) {
         return res.status(400).json({
           success: false,
@@ -280,9 +288,13 @@ const updateUser = async (req, res) => {
         });
       }
 
-      // Security: Prevent privilege escalation during update
-      if ((role === 'SUPER_ADMIN' || role === 'PLATFORM_ADMIN') && req.user.role !== 'SUPER_ADMIN') {
-         return res.status(403).json({ success: false, message: 'Insufficient permissions to assign this role' });
+      if (
+        (role === 'SUPER_ADMIN' || role === 'PLATFORM_ADMIN') &&
+        req.user.role !== 'SUPER_ADMIN'
+      ) {
+        return res
+          .status(403)
+          .json({ success: false, message: 'Insufficient permissions to assign this role' });
       }
 
       user.role = role;
@@ -344,7 +356,6 @@ const toggleUserStatus = async (req, res) => {
       });
     }
 
-    // If activating, check limit
     if (!user.isActive) {
       if (user.restaurantId) {
         await subscriptionService.validateActivation(user.restaurantId, 'maxStaff');
@@ -379,7 +390,6 @@ const createRestaurant = async (req, res) => {
       });
     }
 
-    // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       return res.status(400).json({
@@ -405,8 +415,7 @@ const createRestaurant = async (req, res) => {
 
     const isActive = status === 'Active';
     const hasPaidPlan = plan.price > 0;
-    
-    // Calculate subscription end date based on type
+
     let subscriptionEndsAt = new Date();
     if (subscriptionType === 'YEARLY') {
       subscriptionEndsAt.setFullYear(subscriptionEndsAt.getFullYear() + 1);
@@ -426,10 +435,9 @@ const createRestaurant = async (req, res) => {
       subscriptionStatus: isActive ? 'ACTIVE' : 'SUSPENDED',
       subscriptionStartsAt: new Date(),
       subscriptionEndsAt: subscriptionEndsAt,
-      isActive: isActive // Assuming isActive flag on model is used for login checks
+      isActive: isActive,
     });
 
-    // Log subscription creation
     await SubscriptionLog.create({
       restaurantId: restaurant._id,
       planId: plan._id,
@@ -564,30 +572,6 @@ const createRestaurantAdmin = async (req, res) => {
       });
     }
 
-    // Check Active Staff Limit
-    // Note: Restaurant Admin is usually exempt or counts as 1.
-    // If we count them, we should check limit here.
-    // subscriptionService assumes Role != RESTAURANT_ADMIN does not count?
-    // Let's check subscriptionService logic: "role: { $ne: 'RESTAURANT_ADMIN' }"
-    // So creating a Restaurant Admin should NOT check the staff limit if they are the admin.
-    // BUT `createRestaurantAdmin` creates the *first* admin usually.
-    // Plan limits usually apply to *staff* created BY the admin.
-    // So we can skip limit check here OR check it but expect it to be allowed.
-    // "Plan limit reached (5). Please upgrade." -> usually regarding waiters/kitchen staff.
-    // So I will SKIP the active limit check for RESTAURANT_ADMIN to ensure they can always be created to manage the restaurant.
-
-    // However, the original code had:
-    // if (currentStaffCount >= staffLimit) ...
-    // So it WAS enforcing limit.
-    // But `subscriptionService.checkActiveLimit` excludes RESTAURANT_ADMIN.
-    // So if I call it, it will return count of OTHER staff.
-    // Since this user IS a RESTAURANT_ADMIN, adding them won't increase the "Staff" count as per `subscriptionService`.
-    // So we are good to proceed without check, or check just to be safe but the service says they don't count can be misleading if we want to limit Total Users.
-    // I'll stick to the pattern:
-    // const limitCheck = await subscriptionService.checkActiveLimit(restaurantId, 'maxStaff');
-    // But since this user won't count towards it, we can ignore it?
-    // actually, let's keep it valid.
-
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const user = await User.create({
@@ -597,7 +581,7 @@ const createRestaurantAdmin = async (req, res) => {
       phone,
       role: 'RESTAURANT_ADMIN',
       restaurantId,
-      isActive: true, // Admin should be active by default? Yes.
+      isActive: true,
     });
 
     return res.status(201).json({

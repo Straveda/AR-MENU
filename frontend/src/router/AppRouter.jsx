@@ -7,6 +7,7 @@ import ErrorBoundary from '../components/common/ErrorBoundary';
 import RoleGuard from './RoleGuard';
 
 import Login from '../pages/admin/Login.jsx';
+import ForgotPassword from '../pages/admin/ForgotPassword.jsx';
 import AnalyticsDashboard from '../pages/admin/AnalyticsDashboard.jsx';
 import MenuManagement from '../pages/admin/MenuManagement.jsx';
 import AddDish from '../pages/admin/AddDish.jsx';
@@ -32,6 +33,7 @@ import LandingPage from '../pages/LandingPage.jsx';
 
 import AdminLayout from '../components/layout/AdminLayout.jsx';
 import ExpensesPage from '../pages/admin/ExpensesPage.jsx';
+import Settings from '../pages/admin/Settings.jsx';
 
 const AppRouter = () => {
     return (
@@ -44,6 +46,7 @@ const AppRouter = () => {
                                 <Routes>
                                     {}
                                     <Route path="/login" element={<Login />} />
+                                    <Route path="/forgot-password" element={<ForgotPassword />} />
 
                                     {}
                                     <Route element={<RoleGuard allowedRoles={['SUPER_ADMIN']} />}>
@@ -69,6 +72,7 @@ const AppRouter = () => {
                                             <Route path="/admin/staff" element={<StaffManagement />} />
                                             <Route path="/admin/inventory" element={<Inventory />} />
                                             <Route path="/admin/expenses" element={<ExpensesPage />} />
+                                            <Route path="/admin/settings" element={<Settings />} />
                                         </Route>
                                     </Route>
 

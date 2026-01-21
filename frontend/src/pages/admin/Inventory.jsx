@@ -103,7 +103,7 @@ export default function Inventory() {
 
   return (
     <div className="space-y-10 animate-fade-in pb-12">
-      {/* Header section */}
+      {}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h1 className="type-h1">Inventory Management</h1>
@@ -118,7 +118,7 @@ export default function Inventory() {
         </button>
       </div>
 
-      {/* Summary Cards */}
+      {}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         <SummaryCard 
           label="Total Value" 
@@ -146,8 +146,8 @@ export default function Inventory() {
         />
       </div>
 
-      {/* Tabs */}
-      {/* Navigation Tabs */}
+      {}
+      {}
       <div className="flex gap-8 border-b border-slate-200 mt-2">
         <button
           onClick={() => { setActiveTab("ingredients"); handlePageChange(1); }}

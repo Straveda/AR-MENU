@@ -81,7 +81,7 @@ const LandingPage = () => {
         </div>
       </main>
 
-      {/* Minimal Enterprise Footer - Sticky at bottom */}
+      { }
       <footer className="relative z-10 py-6 md:py-8 border-t border-slate-200 bg-white/30 backdrop-blur-sm mt-auto">
         <div className="max-w-7xl mx-auto px-8">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0 text-[10px] md:text-xs">
