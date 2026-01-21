@@ -145,6 +145,13 @@ export default function SubscriptionsManagement() {
     return new Date(a.subscriptionEndsAt) - new Date(b.subscriptionEndsAt);
   }) : [];
 
+  const getPlanName = (r) => {
+    if (r.planId?.name) return r.planId.name;
+    const pId = typeof r.planId === 'object' ? r.planId?._id : r.planId;
+    const plan = plans.find(p => p._id === pId);
+    return plan?.name || "No Plan";
+  };
+
   return (
     <div className="space-y-8">
       <div>
@@ -184,74 +191,76 @@ export default function SubscriptionsManagement() {
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold text-gray-900">Active Subscriptions</h2>
           </div>
-          <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
-            <table className="min-w-full text-sm">
-              <thead className="bg-slate-50 border-b border-slate-200">
-                <tr>
-                  <th className="text-left px-4 py-3 font-medium text-slate-600">Restaurant</th>
-                  <th className="text-left px-4 py-3 font-medium text-slate-600">Plan</th>
-                  <th className="text-left px-4 py-3 font-medium text-slate-600">Cycle</th>
-                  <th className="text-left px-4 py-3 font-medium text-slate-600">Expiry</th>
-                  <th className="text-left px-4 py-3 font-medium text-slate-600">Status</th>
-                  <th className="text-right px-4 py-3 font-medium text-slate-600">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {sortedRestaurants.map((r) => {
-                  const expiry = r.subscriptionEndsAt ? new Date(r.subscriptionEndsAt) : null;
-                  const diffDays = expiry ? Math.ceil((expiry - now) / (1000 * 60 * 60 * 24)) : null;
-                  const isExpired = diffDays !== null && diffDays < 0;
+          <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm flex flex-col max-h-[260px]">
+            <div className="overflow-y-auto">
+              <table className="min-w-full text-sm relative">
+                <thead className="bg-slate-50 border-b border-slate-200 sticky top-0 z-10 shadow-sm">
+                  <tr>
+                    <th className="text-left px-4 py-3 font-medium text-slate-600 bg-slate-50">Restaurant</th>
+                    <th className="text-left px-4 py-3 font-medium text-slate-600 bg-slate-50">Plan</th>
+                    <th className="text-left px-4 py-3 font-medium text-slate-600 bg-slate-50">Cycle</th>
+                    <th className="text-left px-4 py-3 font-medium text-slate-600 bg-slate-50">Expiry</th>
+                    <th className="text-left px-4 py-3 font-medium text-slate-600 bg-slate-50">Status</th>
+                    <th className="text-right px-4 py-3 font-medium text-slate-600 bg-slate-50">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {sortedRestaurants.map((r) => {
+                    const expiry = r.subscriptionEndsAt ? new Date(r.subscriptionEndsAt) : null;
+                    const diffDays = expiry ? Math.ceil((expiry - now) / (1000 * 60 * 60 * 24)) : null;
+                    const isExpired = diffDays !== null && diffDays < 0;
 
-                  return (
-                    <tr key={r._id} className="hover:bg-slate-50 transition-colors">
-                      <td className="px-4 py-3">
-                        <div className="font-medium text-slate-900">{r.name}</div>
-                        <div className="text-xs text-slate-500 font-mono">/r/{r.slug}</div>
-                      </td>
-                      <td className="px-4 py-3 text-slate-600">
-                        {r.planId?.name || "No Plan"}
-                      </td>
-                      <td className="px-4 py-3 text-slate-600 text-xs">
-                        {r.subscriptionType || "MONTHLY"}
-                      </td>
-                      <td className="px-4 py-3">
-                        {expiry ? (
-                          <div>
-                            <div className={`text-sm ${isExpired ? 'text-red-600 font-medium' : 'text-slate-600'}`}>
-                              {expiry.toLocaleDateString()}
+                    return (
+                      <tr key={r._id} className="hover:bg-slate-50 transition-colors">
+                        <td className="px-4 py-3">
+                          <div className="font-medium text-slate-900">{r.name}</div>
+                          <div className="text-xs text-slate-500 font-mono">/r/{r.slug}</div>
+                        </td>
+                        <td className="px-4 py-3 text-slate-600">
+                          {getPlanName(r)}
+                        </td>
+                        <td className="px-4 py-3 text-slate-600 text-xs">
+                          {r.subscriptionType || "MONTHLY"}
+                        </td>
+                        <td className="px-4 py-3">
+                          {expiry ? (
+                            <div>
+                              <div className={`text-sm ${isExpired ? 'text-red-600 font-medium' : 'text-slate-600'}`}>
+                                {expiry.toLocaleDateString()}
+                              </div>
+                              <div className="text-xs text-slate-400">
+                                {isExpired ? 'Expired' : `${diffDays} days left`}
+                              </div>
                             </div>
-                            <div className="text-xs text-slate-400">
-                              {isExpired ? 'Expired' : `${diffDays} days left`}
-                            </div>
-                          </div>
-                        ) : (
-                          <span className="text-slate-400 text-xs">N/A</span>
-                        )}
-                      </td>
-                      <td className="px-4 py-3">
-                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${r.subscriptionStatus === "ACTIVE"
-                          ? "bg-emerald-100 text-emerald-700"
-                          : r.subscriptionStatus === "SUSPENDED"
-                            ? "bg-amber-100 text-amber-700"
-                            : "bg-red-100 text-red-700"
-                          }`}>
-                          {r.subscriptionStatus}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 text-right">
-                        <ActionDropdown
-                          restaurant={r}
-                          onExtend={() => setModal({ type: 'extend', restaurant: r })}
-                          onChangePlan={() => setModal({ type: 'changePlan', restaurant: r })}
-                          onSuspend={() => initiateSuspend(r)}
-                          onResume={() => initiateResume(r)}
-                        />
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                          ) : (
+                            <span className="text-slate-400 text-xs">N/A</span>
+                          )}
+                        </td>
+                        <td className="px-4 py-3">
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${r.subscriptionStatus === "ACTIVE"
+                            ? "bg-emerald-100 text-emerald-700"
+                            : r.subscriptionStatus === "SUSPENDED"
+                              ? "bg-amber-100 text-amber-700"
+                              : "bg-red-100 text-red-700"
+                            }`}>
+                            {r.subscriptionStatus}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 text-right">
+                          <ActionDropdown
+                            restaurant={r}
+                            onExtend={() => setModal({ type: 'extend', restaurant: r })}
+                            onChangePlan={() => setModal({ type: 'changePlan', restaurant: r })}
+                            onSuspend={() => initiateSuspend(r)}
+                            onResume={() => initiateResume(r)}
+                          />
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
 
@@ -323,7 +332,7 @@ export default function SubscriptionsManagement() {
         { }
         <div className="space-y-4">
           <h2 className="text-lg font-semibold text-gray-900">Recent Activity</h2>
-          <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm space-y-6">
+          <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm space-y-6 max-h-[300px] overflow-y-auto">
             {logs.length === 0 ? (
               <p className="text-sm text-gray-500 text-center py-4">No activity yet</p>
             ) : (
@@ -338,7 +347,7 @@ export default function SubscriptionsManagement() {
                     <div className="text-sm">
                       <span className="font-medium text-gray-900">{log.restaurantId?.name || "Unknown Rest."}</span>{' '}
                       <ActionText action={log.action} />{' '}
-                      <span className="font-medium text-indigo-600">{log.planId?.name || "Unknown Plan"}</span>
+                      <span className="font-medium text-indigo-600">{getPlanName(log) === "No Plan" ? "Unknown Plan" : getPlanName(log)}</span>
                     </div>
                     {log.durationInDays && (
                       <div className="text-xs text-gray-500 mt-1">
