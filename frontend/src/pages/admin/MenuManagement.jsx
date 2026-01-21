@@ -10,6 +10,7 @@ import ConfirmationModal from "../../components/common/ConfirmationModal";
 
 export default function MenuManagement() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const { showSuccess, showError, showInfo, showWarning } = useToast();
   const [dishes, setDishes] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -22,12 +23,12 @@ export default function MenuManagement() {
 
   const [showQRModal, setShowQRModal] = useState(false);
   const [homepageUrl, setHomepageUrl] = useState("");
-  
-  const [confirmModal, setConfirmModal] = useState({ 
-    isOpen: false, 
-    title: "", 
-    message: "", 
-    onConfirm: null, 
+
+  const [confirmModal, setConfirmModal] = useState({
+    isOpen: false,
+    title: "",
+    message: "",
+    onConfirm: null,
     isDangerous: false,
     confirmLabel: "Confirm"
   });
@@ -50,8 +51,12 @@ export default function MenuManagement() {
 
   useEffect(() => {
     fetchDishes();
-    setHomepageUrl(`${window.location.origin}`);
-  }, []);
+    if (user?.restaurantId?.slug) {
+      setHomepageUrl(`${window.location.origin}/r/${user.restaurantId.slug}/menu`);
+    } else {
+      setHomepageUrl(`${window.location.origin}`);
+    }
+  }, [user]);
 
   const initiateDelete = (id, name) => {
     setConfirmModal({
@@ -74,9 +79,9 @@ export default function MenuManagement() {
     } catch (error) {
       console.error("Delete error:", error);
       if (error.response?.status === 423) {
-          showError("Action Blocked: Restaurant is Suspended.");
+        showError("Action Blocked: Restaurant is Suspended.");
       } else {
-          showError("Failed to delete dish");
+        showError("Failed to delete dish");
       }
     } finally {
       setDeleteLoading(null);
@@ -141,11 +146,11 @@ export default function MenuManagement() {
     } catch (error) {
       console.error("Retry error:", error);
       if (error.response?.status === 403) {
-           showWarning("Plan Upgrade Required: AR Models feature is not included in your current plan.", 5000);
+        showWarning("Plan Upgrade Required: AR Models feature is not included in your current plan.", 5000);
       } else if (error.response?.status === 423) {
-           showError("Action Blocked: Restaurant is Suspended.");
+        showError("Action Blocked: Restaurant is Suspended.");
       } else {
-           showError("Failed to retry model generation");
+        showError("Failed to retry model generation");
       }
     } finally {
       setRetryLoading(null);
@@ -196,9 +201,9 @@ export default function MenuManagement() {
     } catch (error) {
       console.error("Toggle error:", error);
       if (error.response?.status === 423) {
-          showError("Action Blocked: Restaurant is Suspended.");
+        showError("Action Blocked: Restaurant is Suspended.");
       } else {
-          showError("Failed to update availability");
+        showError("Failed to update availability");
       }
     } finally {
       setToggleLoading(null);
@@ -209,7 +214,7 @@ export default function MenuManagement() {
 
   return (
     <div className="space-y-6">
-      {}
+      { }
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div>
           <h1 className="type-h1">Menu Overview</h1>
@@ -219,7 +224,7 @@ export default function MenuManagement() {
         <div className="flex flex-col sm:flex-row gap-3">
           <button
             onClick={generateQRCode}
-            className="bg-green-500 hover:bg-green-600 text-white type-btn px-6 py-3 rounded-xl transition-all duration-200 flex items-center gap-2 shadow-lg hover:shadow-xl group"
+            className="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 type-btn px-6 py-3 rounded-xl transition-all duration-200 flex items-center gap-2 shadow-sm hover:shadow-md group"
           >
             <svg className="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
@@ -239,7 +244,7 @@ export default function MenuManagement() {
         </div>
       </div>
 
-      {}
+      { }
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
           { label: "Total Dishes", value: stats.total, color: "blue", icon: "📋" },
@@ -261,7 +266,7 @@ export default function MenuManagement() {
         ))}
       </div>
 
-      {}
+      { }
       <div className="card-premium p-6 border-amber-100/50">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
@@ -321,7 +326,7 @@ export default function MenuManagement() {
         )}
       </div>
 
-      {}
+      { }
       <div className="card-premium overflow-hidden border-amber-100/50">
         <div className="px-6 py-4 border-b border-amber-100 bg-amber-50/20">
           <h2 className="type-h2">
@@ -333,23 +338,23 @@ export default function MenuManagement() {
           {loading ? (
             <Loading message="Loading dishes..." />
           ) : filteredDishes.length === 0 ? (
-             dishes.length === 0 ? (
-                <EmptyState 
-                  title="No dishes yet" 
-                  message="Get started by adding your first dish to the menu." 
-                  icon="📋"
-                  actionLabel="Add Your First Dish"
-                  onAction={() => navigate("/admin/add-dish")}
-                />
-             ) : (
-                <EmptyState 
-                  title="No dishes found" 
-                  message="Try adjusting your search or filter criteria." 
-                  icon="🔍"
-                  actionLabel="Clear Filters"
-                  onAction={clearFilters}
-                />
-             )
+            dishes.length === 0 ? (
+              <EmptyState
+                title="No dishes yet"
+                message="Get started by adding your first dish to the menu."
+                icon="📋"
+                actionLabel="Add Your First Dish"
+                onAction={() => navigate("/admin/add-dish")}
+              />
+            ) : (
+              <EmptyState
+                title="No dishes found"
+                message="Try adjusting your search or filter criteria."
+                icon="🔍"
+                actionLabel="Clear Filters"
+                onAction={clearFilters}
+              />
+            )
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {filteredDishes.map((dish) => (
@@ -376,16 +381,16 @@ export default function MenuManagement() {
                       </div>
                     )}
 
-                      <div className="absolute top-3 left-3">
-                        <span className={`px-2 py-1 rounded-lg type-caption font-medium shadow-sm ${dish.modelStatus === "completed"
-                          ? "bg-emerald-500 text-white"
-                          : dish.modelStatus === "processing"
-                            ? "bg-amber-500 text-slate-900"
-                            : "bg-slate-200 text-slate-600"
-                          }`}>
-                          {dish.modelStatus || "pending"}
-                        </span>
-                      </div>
+                    <div className="absolute top-3 left-3">
+                      <span className={`px-2 py-1 rounded-lg type-caption font-medium shadow-sm ${dish.modelStatus === "completed"
+                        ? "bg-emerald-500 text-white"
+                        : dish.modelStatus === "processing"
+                          ? "bg-amber-500 text-slate-900"
+                          : "bg-slate-200 text-slate-600"
+                        }`}>
+                        {dish.modelStatus || "pending"}
+                      </span>
+                    </div>
 
                     <div className="absolute top-3 right-3 bg-slate-900 text-white px-3 py-1.5 rounded-lg text-sm font-bold shadow-lg">
                       ₹{dish.price}
@@ -413,7 +418,7 @@ export default function MenuManagement() {
                       {dish.ingredients?.length > 0 && (
                         <div>
                           <p className="type-label mb-1.5 flex items-center gap-1">
-                             <span className="w-1 h-1 rounded-full bg-amber-500"></span> Ingredients
+                            <span className="w-1 h-1 rounded-full bg-amber-500"></span> Ingredients
                           </p>
                           <p className="type-body-sm text-slate-600 leading-relaxed line-clamp-2 font-medium">
                             {dish.ingredients.join(", ")}
@@ -526,8 +531,8 @@ export default function MenuManagement() {
             </div>
 
             <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 mb-8 overflow-hidden group">
-               <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Direct Link</p>
-               <p className="text-xs text-slate-600 font-bold break-all group-hover:text-amber-600 transition-colors">
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Direct Link</p>
+              <p className="text-xs text-slate-600 font-bold break-all group-hover:text-amber-600 transition-colors">
                 {homepageUrl}
               </p>
             </div>
