@@ -18,6 +18,7 @@ export default function KDS() {
     });
     const [loading, setLoading] = useState(true);
     const [processing, setProcessing] = useState(null);
+    const [activeTab, setActiveTab] = useState('pending'); // Mobile tab state
 
     const restaurant = useMemo(() => user?.restaurantId, [user]);
     const restaurantName = restaurant?.name || "";
@@ -204,40 +205,74 @@ export default function KDS() {
 
     return (
         <div className="min-h-screen bg-amber-50 flex flex-col">
-            { }
-            <div className="bg-white border-b border-amber-100 px-6 py-4 shadow-sm flex justify-between items-center z-10">
-                <div className="flex items-center gap-4">
-                    <h1 className="type-h1">👨‍🍳 Kitchen Display</h1>
-                    {restaurantName && <span className="type-secondary border-l border-gray-300 pl-4">{restaurantName}</span>}
+            {/* Header */}
+            <div className="bg-white border-b border-amber-100 px-4 md:px-6 py-4 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4 z-10">
+                <div className="flex items-center gap-4 w-full md:w-auto">
+                    <h1 className="type-h1 text-lg md:text-2xl">👨‍🍳 Kitchen Display</h1>
+                    {restaurantName && <span className="type-secondary border-l border-gray-300 pl-4 hidden sm:inline">{restaurantName}</span>}
                 </div>
 
-                <div className="flex items-center gap-6">
-                    <div className="hidden md:flex gap-4 text-sm font-medium">
-                        <div className="flex items-center gap-2 px-3 py-1 bg-yellow-50 text-yellow-800 rounded-full border border-yellow-200">
-                            <span className="w-2 h-2 rounded-full bg-yellow-500"></span> Pending: {orders.pending.length}
+                <div className="flex items-center justify-between md:justify-end gap-4 w-full md:w-auto">
+                    <div className="flex gap-2 md:gap-4 text-xs md:text-sm font-medium">
+                        <div className="flex items-center gap-1.5 md:gap-2 px-2 md:px-3 py-1 bg-yellow-50 text-yellow-800 rounded-full border border-yellow-200">
+                            <span className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-yellow-500"></span>
+                            <span className="hidden sm:inline">Pending:</span> {orders.pending.length}
                         </div>
-                        <div className="flex items-center gap-2 px-3 py-1 bg-orange-50 text-orange-800 rounded-full border border-orange-200">
-                            <span className="w-2 h-2 rounded-full bg-orange-500"></span> Preparing: {orders.preparing.length}
+                        <div className="flex items-center gap-1.5 md:gap-2 px-2 md:px-3 py-1 bg-orange-50 text-orange-800 rounded-full border border-orange-200">
+                            <span className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-orange-500"></span>
+                            <span className="hidden sm:inline">Preparing:</span> {orders.preparing.length}
                         </div>
-                        <div className="flex items-center gap-2 px-3 py-1 bg-green-50 text-green-800 rounded-full border border-green-200">
-                            <span className="w-2 h-2 rounded-full bg-green-500"></span> Ready: {orders.ready.length}
+                        <div className="flex items-center gap-1.5 md:gap-2 px-2 md:px-3 py-1 bg-green-50 text-green-800 rounded-full border border-green-200">
+                            <span className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-green-500"></span>
+                            <span className="hidden sm:inline">Ready:</span> {orders.ready.length}
                         </div>
                     </div>
 
                     <button
                         onClick={handleLogout}
-                        className="text-sm bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-lg transition-colors font-medium shadow-sm hover:shadow"
+                        className="text-xs md:text-sm bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 px-3 md:px-4 py-2 rounded-lg transition-colors font-medium shadow-sm hover:shadow"
                     >
                         Logout
                     </button>
                 </div>
             </div>
 
-            { }
-            <div className="flex-1 overflow-hidden p-4">
-                <div className="flex gap-4 h-full overflow-x-auto pb-2">
+            {/* Mobile Tab Navigation */}
+            <div className="md:hidden bg-white border-b border-gray-200 px-4 flex gap-2 overflow-x-auto">
+                <button
+                    onClick={() => setActiveTab('pending')}
+                    className={`flex-1 min-w-[100px] py-3 px-4 font-semibold text-sm border-b-2 transition-colors ${activeTab === 'pending'
+                        ? 'border-yellow-500 text-yellow-700 bg-yellow-50'
+                        : 'border-transparent text-gray-500 hover:text-gray-700'
+                        }`}
+                >
+                    Pending ({orders.pending.length})
+                </button>
+                <button
+                    onClick={() => setActiveTab('preparing')}
+                    className={`flex-1 min-w-[100px] py-3 px-4 font-semibold text-sm border-b-2 transition-colors ${activeTab === 'preparing'
+                        ? 'border-orange-500 text-orange-700 bg-orange-50'
+                        : 'border-transparent text-gray-500 hover:text-gray-700'
+                        }`}
+                >
+                    Preparing ({orders.preparing.length})
+                </button>
+                <button
+                    onClick={() => setActiveTab('ready')}
+                    className={`flex-1 min-w-[100px] py-3 px-4 font-semibold text-sm border-b-2 transition-colors ${activeTab === 'ready'
+                        ? 'border-green-500 text-green-700 bg-green-50'
+                        : 'border-transparent text-gray-500 hover:text-gray-700'
+                        }`}
+                >
+                    Ready ({orders.ready.length})
+                </button>
+            </div>
 
-                    { }
+            {/* Orders Container */}
+            <div className="flex-1 overflow-hidden p-4">
+                {/* Desktop: Show all 3 columns */}
+                <div className="hidden md:flex gap-4 h-full overflow-x-auto pb-2">
+                    {/* Pending Column */}
                     <div className="flex-1 min-w-[320px] flex flex-col bg-gray-50 rounded-xl overflow-hidden shadow-sm border border-amber-200/50">
                         <div className="bg-white p-3 border-b border-yellow-100 sticky top-0 z-10 flex justify-between items-center px-4 shadow-sm">
                             <h2 className="type-h3 flex items-center gap-2">
@@ -270,7 +305,7 @@ export default function KDS() {
                         </div>
                     </div>
 
-                    { }
+                    {/* Preparing Column */}
                     <div className="flex-1 min-w-[320px] flex flex-col bg-gray-50 rounded-xl overflow-hidden shadow-sm border border-amber-200/50">
                         <div className="bg-white p-3 border-b border-orange-100 sticky top-0 z-10 flex justify-between items-center px-4 shadow-sm">
                             <h2 className="type-h3 flex items-center gap-2">
@@ -303,7 +338,7 @@ export default function KDS() {
                         </div>
                     </div>
 
-                    { }
+                    {/* Ready Column */}
                     <div className="flex-1 min-w-[320px] flex flex-col bg-gray-50 rounded-xl overflow-hidden shadow-sm border border-amber-200/50">
                         <div className="bg-white p-3 border-b border-green-100 sticky top-0 z-10 flex justify-between items-center px-4 shadow-sm">
                             <h2 className="type-h3 flex items-center gap-2">
@@ -335,7 +370,78 @@ export default function KDS() {
                             )}
                         </div>
                     </div>
+                </div>
 
+                {/* Mobile: Show only active tab's column */}
+                <div className="md:hidden h-full overflow-y-auto">
+                    {activeTab === 'pending' && (
+                        <div className="space-y-4">
+                            {orders.pending.length === 0 ? (
+                                <div className="h-64 flex flex-col items-center justify-center text-gray-400 italic">
+                                    <svg className="w-12 h-12 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                    No pending orders
+                                </div>
+                            ) : (
+                                orders.pending.map((order) => (
+                                    <OrderCard
+                                        key={order.orderId}
+                                        order={order}
+                                        status="Pending"
+                                        buttonText="Start Preparing →"
+                                        nextStatus="Preparing"
+                                        accentColor="border-yellow-400"
+                                        btnColor="bg-yellow-500 hover:bg-yellow-600"
+                                    />
+                                ))
+                            )}
+                        </div>
+                    )}
+
+                    {activeTab === 'preparing' && (
+                        <div className="space-y-4">
+                            {orders.preparing.length === 0 ? (
+                                <div className="h-64 flex flex-col items-center justify-center text-gray-400 italic">
+                                    <svg className="w-12 h-12 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z" /></svg>
+                                    Kitchen is clear
+                                </div>
+                            ) : (
+                                orders.preparing.map((order) => (
+                                    <OrderCard
+                                        key={order.orderId}
+                                        order={order}
+                                        status="Preparing"
+                                        buttonText="Mark Ready →"
+                                        nextStatus="Ready"
+                                        accentColor="border-orange-500"
+                                        btnColor="bg-orange-500 hover:bg-orange-600"
+                                    />
+                                ))
+                            )}
+                        </div>
+                    )}
+
+                    {activeTab === 'ready' && (
+                        <div className="space-y-4">
+                            {orders.ready.length === 0 ? (
+                                <div className="h-64 flex flex-col items-center justify-center text-gray-400 italic">
+                                    <svg className="w-12 h-12 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                    No orders ready
+                                </div>
+                            ) : (
+                                orders.ready.map((order) => (
+                                    <OrderCard
+                                        key={order.orderId}
+                                        order={order}
+                                        status="Ready"
+                                        buttonText="Complete Order ✓"
+                                        nextStatus="Completed"
+                                        accentColor="border-green-500"
+                                        btnColor="bg-green-600 hover:bg-green-700"
+                                    />
+                                ))
+                            )}
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

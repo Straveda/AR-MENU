@@ -103,7 +103,7 @@ export default function Inventory() {
 
   return (
     <div className="space-y-10 animate-fade-in pb-12">
-      {}
+      { }
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h1 className="type-h1">Inventory Management</h1>
@@ -118,92 +118,90 @@ export default function Inventory() {
         </button>
       </div>
 
-      {}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <SummaryCard 
-          label="Total Value" 
-          value={`₹${summary.totalStockValue.toLocaleString()}`} 
-          accent="blue" 
-          icon="💰" 
+      { }
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <SummaryCard
+          label="Total Value"
+          value={`₹${summary.totalStockValue.toLocaleString()}`}
+          accent="blue"
+          icon="💰"
         />
-        <SummaryCard 
-          label="Low Stock Items" 
-          value={summary.lowStockCount} 
-          accent="rose" 
-          icon="⚠️" 
+        <SummaryCard
+          label="Low Stock Items"
+          value={summary.lowStockCount}
+          accent="rose"
+          icon="⚠️"
         />
-        <SummaryCard 
-          label="Top Category" 
-          value={summary.topConsumed || "N/A"} 
-          accent="emerald" 
-          icon="📦" 
+        <SummaryCard
+          label="Top Category"
+          value={summary.topConsumed || "N/A"}
+          accent="emerald"
+          icon="📦"
         />
-        <SummaryCard 
-          label="Dead Stock" 
-          value={summary.deadStockCount} 
-          accent="slate" 
-          icon="🧊" 
+        <SummaryCard
+          label="Dead Stock"
+          value={summary.deadStockCount}
+          accent="slate"
+          icon="🧊"
         />
       </div>
 
-      {}
-      {}
+      { }
+      { }
       <div className="flex gap-8 border-b border-slate-200 mt-2">
         <button
           onClick={() => { setActiveTab("ingredients"); handlePageChange(1); }}
-          className={`pb-4 type-label transition-all relative ${
-            activeTab === "ingredients" 
-              ? "text-slate-900" 
-              : "text-slate-400 hover:text-slate-600"
-          }`}
+          className={`pb-4 type-label transition-all relative ${activeTab === "ingredients"
+            ? "text-slate-900"
+            : "text-slate-400 hover:text-slate-600"
+            }`}
         >
           Ingredients
           {activeTab === "ingredients" && <span className="absolute bottom-0 left-0 w-full h-0.5 bg-slate-900 rounded-full"></span>}
         </button>
         <button
           onClick={() => { setActiveTab("movements"); handlePageChange(1); }}
-          className={`pb-4 type-label transition-all relative ${
-            activeTab === "movements" 
-              ? "text-slate-900" 
-              : "text-slate-400 hover:text-slate-600"
-          }`}
+          className={`pb-4 type-label transition-all relative ${activeTab === "movements"
+            ? "text-slate-900"
+            : "text-slate-400 hover:text-slate-600"
+            }`}
         >
           Stock Movements
           {activeTab === "movements" && <span className="absolute bottom-0 left-0 w-full h-0.5 bg-slate-900 rounded-full"></span>}
         </button>
       </div>
 
-        <div className="p-6">
-          {activeTab === "ingredients" ? (
-            <IngredientsTable 
-              ingredients={ingredients} 
-              onEdit={(ing) => { setSelectedIngredient(ing); setShowAddModal(true); }}
-              onAdjust={(ing) => { setSelectedIngredient(ing); setShowAdjustModal(true); }}
-            />
-          ) : (
-            <MovementsTable movements={movements} />
-          )}
+      <div className="p-6">
+        {activeTab === "ingredients" ? (
+          <IngredientsTable
+            ingredients={ingredients}
+            onEdit={(ing) => { setSelectedIngredient(ing); setShowAddModal(true); }}
+            onAdjust={(ing) => { setSelectedIngredient(ing); setShowAdjustModal(true); }}
+          />
+        ) : (
+          <MovementsTable movements={movements} />
+        )}
 
-          {paginationMeta.totalPages > 1 && (
-            <div className="mt-8 border-t border-amber-50 pt-6">
-                <Pagination
-                    currentPage={page}
-                    totalPages={paginationMeta.totalPages}
-                    onPageChange={handlePageChange}
-                    limit={limit}
-                    totalItems={paginationMeta?.totalItems || 0}
-                    onPageSizeChange={handleLimitChange}
-                />
-            </div>
-          )}
-        </div>
+        {paginationMeta.totalPages > 1 && (
+          <div className="mt-8 border-t border-amber-50 pt-6">
+            <Pagination
+              currentPage={page}
+              totalPages={paginationMeta.totalPages}
+              onPageChange={handlePageChange}
+              limit={limit}
+              totalItems={paginationMeta?.totalItems || 0}
+              onPageSizeChange={handleLimitChange}
+            />
+          </div>
+        )}
+      </div>
 
       {showAddModal && (
         <Modal
           onClose={() => { setShowAddModal(false); setSelectedIngredient(null); }}
           title={selectedIngredient ? "Edit Ingredient" : "Add New Ingredient"}
         >
-          <IngredientForm 
+          <IngredientForm
             initialData={selectedIngredient}
             onSubmit={selectedIngredient ? (data) => handleUpdateIngredient(selectedIngredient._id, data) : handleAddIngredient}
             onCancel={() => { setShowAddModal(false); setSelectedIngredient(null); }}
@@ -216,7 +214,7 @@ export default function Inventory() {
           onClose={() => { setShowAdjustModal(false); setSelectedIngredient(null); }}
           title="Adjust Stock Level"
         >
-          <AdjustmentForm 
+          <AdjustmentForm
             ingredient={selectedIngredient}
             onSubmit={handleAdjustStock}
             onCancel={() => { setShowAdjustModal(false); setSelectedIngredient(null); }}
@@ -278,7 +276,7 @@ function IngredientsTable({ ingredients, onEdit, onAdjust }) {
               </td>
               <td className="px-6 py-4">
                 <span className="badge-standard bg-slate-100 text-slate-600 border border-slate-200">
-                   {ing.category || 'General'}
+                  {ing.category || 'General'}
                 </span>
               </td>
               <td className="px-6 py-4 text-right">
@@ -290,23 +288,23 @@ function IngredientsTable({ ingredients, onEdit, onAdjust }) {
               </td>
               <td className="px-6 py-4">
                 <div className="flex justify-center">
-                    {ing.currentStock <= ing.minStockLevel ? (
-                      <span className="badge-standard bg-rose-50 text-rose-600 border border-rose-100">Low Stock</span>
-                    ) : (
-                      <span className="badge-standard bg-emerald-50 text-emerald-600 border border-emerald-100">Optimal</span>
-                    )}
+                  {ing.currentStock <= ing.minStockLevel ? (
+                    <span className="badge-standard bg-rose-50 text-rose-600 border border-rose-100">Low Stock</span>
+                  ) : (
+                    <span className="badge-standard bg-emerald-50 text-emerald-600 border border-emerald-100">Optimal</span>
+                  )}
                 </div>
               </td>
               <td className="px-6 py-4 text-right">
                 <div className="flex justify-end gap-2">
-                  <button 
+                  <button
                     onClick={() => onAdjust(ing)}
                     className="p-2 text-slate-400 hover:text-amber-500 transition-colors"
                     title="Adjust Stock"
                   >
                     <svg className="w-5 h-5 font-bold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
                   </button>
-                  <button 
+                  <button
                     onClick={() => onEdit(ing)}
                     className="p-2 text-slate-400 hover:text-blue-500 transition-colors"
                     title="Edit Details"
@@ -350,13 +348,12 @@ function MovementsTable({ movements }) {
                 <span className="type-cell-value">{m.ingredientId?.name || 'Deleted Ingredient'}</span>
               </td>
               <td className="px-6 py-4">
-                 <div className="flex">
-                    <span className={`badge-standard border ${
-                    m.action === 'ADD' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-rose-50 text-rose-600 border-rose-100'
+                <div className="flex">
+                  <span className={`badge-standard border ${m.action === 'ADD' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-rose-50 text-rose-600 border-rose-100'
                     }`}>
                     {m.action === 'ADD' ? 'Stock In' : 'Stock Out'}
-                    </span>
-                 </div>
+                  </span>
+                </div>
               </td>
               <td className="px-6 py-4 text-right">
                 <span className={`type-cell-value ${m.action === 'ADD' ? 'text-emerald-600' : 'text-rose-600'}`}>
@@ -507,59 +504,57 @@ function AdjustmentForm({ ingredient, onSubmit, onCancel }) {
         <p className="type-label mb-1">Adjusting Stock For</p>
         <p className="type-metric">{ingredient?.name}</p>
         <div className="mt-2 flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
-            <span className="type-body-sm font-bold text-slate-600">{ingredient?.currentStock} {ingredient?.unit} currently available</span>
+          <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+          <span className="type-body-sm font-bold text-slate-600">{ingredient?.currentStock} {ingredient?.unit} currently available</span>
         </div>
       </div>
 
       <div>
         <label className="block type-label mb-2 ml-1">Select Action</label>
         <div className="flex p-1 bg-slate-100 rounded-xl">
-            <button
+          <button
             onClick={() => setFormData({ ...formData, action: "ADD" })}
-            className={`flex-1 py-3 text-xs font-semibold rounded-lg transition-all ${
-                formData.action === "ADD" ? "bg-white text-emerald-600 shadow-sm ring-1 ring-slate-200" : "text-slate-500 hover:text-slate-700"
-            }`}
-            >
+            className={`flex-1 py-3 text-xs font-semibold rounded-lg transition-all ${formData.action === "ADD" ? "bg-white text-emerald-600 shadow-sm ring-1 ring-slate-200" : "text-slate-500 hover:text-slate-700"
+              }`}
+          >
             Restock
-            </button>
-            <button
+          </button>
+          <button
             onClick={() => setFormData({ ...formData, action: "DEDUCT" })}
-            className={`flex-1 py-3 text-xs font-semibold rounded-lg transition-all ${
-                formData.action === "DEDUCT" ? "bg-white text-rose-600 shadow-sm ring-1 ring-slate-200" : "text-slate-500 hover:text-slate-700"
-            }`}
-            >
+            className={`flex-1 py-3 text-xs font-semibold rounded-lg transition-all ${formData.action === "DEDUCT" ? "bg-white text-rose-600 shadow-sm ring-1 ring-slate-200" : "text-slate-500 hover:text-slate-700"
+              }`}
+          >
             Remove
-            </button>
+          </button>
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
-            <label className="block type-label mb-2 ml-1">Quantity ({ingredient?.unit})</label>
-            <input
+          <label className="block type-label mb-2 ml-1">Quantity ({ingredient?.unit})</label>
+          <input
             type="number"
             className="input-standard w-full type-metric"
             value={formData.quantity}
             onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
             autoFocus
-            />
+          />
         </div>
         <div>
-            <label className="block type-label mb-2 ml-1">Reason</label>
-            <select
+          <label className="block type-label mb-2 ml-1">Reason</label>
+          <select
             className="input-standard w-full appearance-none"
             value={formData.reason}
             onChange={(e) => setFormData({ ...formData, reason: e.target.value })}
             required
-            >
+          >
             <option value="">Select Reason</option>
             <option value="PURCHASE">Regular Purchase</option>
             <option value="WASTAGE">Operational Waste</option>
             <option value="CORRECTION">Inventory Audit</option>
             <option value="MANUAL_ADJUSTMENT">Manual Override</option>
             <option value="ORDER">Kitchen Order Sync</option>
-            </select>
+          </select>
         </div>
       </div>
 

@@ -49,15 +49,6 @@ export const updateRestaurantProfile = async (req, res) => {
     if (openingTime !== undefined) restaurant.openingTime = openingTime;
     if (closingTime !== undefined) restaurant.closingTime = closingTime;
 
-    if (restaurant.openingTime && restaurant.closingTime) {
-      if (restaurant.openingTime >= restaurant.closingTime) {
-        return res.status(400).json({
-          success: false,
-          message: 'Opening time must be earlier than closing time',
-        });
-      }
-    }
-
     await restaurant.save();
 
     return res.status(200).json({
