@@ -81,7 +81,7 @@ export default function AddDish() {
     try {
       const data = new FormData();
       data.append("name", form.name);
-      
+
       data.append("description", form.description);
       data.append("price", form.price);
       data.append("category", form.category);
@@ -117,9 +117,9 @@ export default function AddDish() {
     } catch (error) {
       console.error("Error adding dish:", error);
       if (error.response?.status === 423) {
-          showError("Action Blocked: Restaurant is Suspended.");
+        showError("Action Blocked: Restaurant is Suspended.");
       } else {
-          showError(error.response?.data?.message || "Failed to add dish. Please try again.");
+        showError(error.response?.data?.message || "Failed to add dish. Please try again.");
       }
     } finally {
       setLoading(false);
@@ -130,10 +130,10 @@ export default function AddDish() {
     <div className="min-h-screen bg-amber-50 px-4 py-8">
       <div className="max-w-2xl mx-auto mb-6">
         <button
-          onClick={() => navigate("/admin/dashboard")}
+          onClick={() => navigate(-1)}
           className="flex items-center gap-2 text-amber-600 hover:text-amber-700 font-medium mb-6"
         >
-          ← Back to Dashboard
+          ← Back
         </button>
 
         <h1 className="text-3xl font-bold text-center text-gray-800 mb-2">
@@ -180,7 +180,7 @@ export default function AddDish() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {}
+            { }
             <div className="md:col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Ingredients (comma separated) *
@@ -195,7 +195,7 @@ export default function AddDish() {
               ></textarea>
             </div>
 
-            {}
+            { }
             <div className="md:col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Tags (comma separated)
@@ -283,7 +283,7 @@ export default function AddDish() {
             </div>
           </div>
 
-          {}
+          { }
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Nutritional Info (per serving)

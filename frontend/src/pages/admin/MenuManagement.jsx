@@ -221,10 +221,10 @@ export default function MenuManagement() {
           <p className="type-secondary mt-1">Manage your restaurant menu items and AR status</p>
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-3">
+        <div className="flex flex-row gap-3 w-full sm:w-auto">
           <button
             onClick={generateQRCode}
-            className="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 type-btn px-6 py-3 rounded-xl transition-all duration-200 flex items-center gap-2 shadow-sm hover:shadow-md group"
+            className="bg-indigo-500 hover:bg-indigo-600 text-white type-btn px-6 py-3 rounded-xl transition-all duration-200 flex flex-1 sm:flex-none justify-center items-center gap-2 shadow-lg hover:shadow-xl group"
           >
             <svg className="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
@@ -234,7 +234,7 @@ export default function MenuManagement() {
 
           <button
             onClick={() => navigate("/admin/add-dish")}
-            className="btn-primary shadow-lg hover:shadow-xl group px-6 py-3"
+            className="btn-primary shadow-lg hover:shadow-xl group px-6 py-3 flex-1 sm:flex-none justify-center flex items-center gap-2"
           >
             <svg className="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />

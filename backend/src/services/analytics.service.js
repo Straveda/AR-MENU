@@ -3,14 +3,17 @@ import { Ingredient } from '../models/ingredient.model.js';
 import Expense from '../models/expense.model.js';
 import { Dish } from '../models/dish.models.js';
 
+import mongoose from 'mongoose';
+
 export const getDashboardAnalytics = async (restaurantId) => {
+  const rId = new mongoose.Types.ObjectId(restaurantId);
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
   const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
 
   const salesMetrics = await Order.aggregate([
-    { $match: { restaurantId, createdAt: { $gte: startOfMonth } } },
+    { $match: { restaurantId: rId, createdAt: { $gte: startOfMonth } } },
     {
       $group: {
         _id: null,
@@ -51,7 +54,7 @@ export const getDashboardAnalytics = async (restaurantId) => {
       : 0;
 
   const operationsSnapshot = await Order.aggregate([
-    { $match: { restaurantId, createdAt: { $gte: today } } },
+    { $match: { restaurantId: rId, createdAt: { $gte: today } } },
     {
       $group: {
         _id: null,
@@ -74,7 +77,7 @@ export const getDashboardAnalytics = async (restaurantId) => {
   const ops = operationsSnapshot[0] || { completedToday: 0, cancelledToday: 0 };
 
   const inventoryMetrics = await Ingredient.aggregate([
-    { $match: { restaurantId } },
+    { $match: { restaurantId: rId } },
     {
       $group: {
         _id: null,
@@ -92,7 +95,7 @@ export const getDashboardAnalytics = async (restaurantId) => {
   const inv = inventoryMetrics[0] || { lowStockCount: 0, deadStockCount: 0, totalValue: 0 };
 
   const expenseMetrics = await Expense.aggregate([
-    { $match: { restaurantId, expenseDate: { $gte: startOfMonth } } },
+    { $match: { restaurantId: rId, expenseDate: { $gte: startOfMonth } } },
     {
       $group: {
         _id: '$expenseType',
@@ -113,7 +116,7 @@ export const getDashboardAnalytics = async (restaurantId) => {
     .select('name orderCount');
 
   const arStats = await Dish.aggregate([
-    { $match: { restaurantId } },
+    { $match: { restaurantId: rId } },
     {
       $group: {
         _id: null,

@@ -18,6 +18,7 @@ export default function Menu() {
   const [searchTerm, setSearchTerm] = useState("");
   const [suspended, setSuspended] = useState(false);
   const [notFound, setNotFound] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
 
   const cartItemCount = items.reduce((sum, item) => sum + item.quantity, 0);
 
@@ -44,7 +45,7 @@ export default function Menu() {
 
   const fetchDishes = async () => {
     if (!slug) return;
-    
+
     try {
       setLoading(true);
       const res = await axiosClient.get(`/dishes/r/${slug}/dishes`, {
@@ -57,9 +58,9 @@ export default function Menu() {
     } catch (error) {
       console.error("Error fetching dishes:", error);
       if (error.response?.status === 423) {
-          setSuspended(true);
+        setSuspended(true);
       } else if (error.response?.status === 404) {
-          setNotFound(true);
+        setNotFound(true);
       }
     } finally {
       setLoading(false);
@@ -86,33 +87,33 @@ export default function Menu() {
   }, {});
 
   if (notFound) {
-      return (
-          <div className="min-h-screen bg-amber-50 flex items-center justify-center p-4">
-              <div className="bg-white p-8 rounded-2xl shadow-lg border border-red-100 text-center max-w-md w-full">
-                  <div className="text-6xl mb-4">🏠</div>
-                  <h1 className="text-2xl font-bold text-gray-800 mb-2">Restaurant Not Found</h1>
-                  <p className="text-gray-600">The restaurant you are looking for does not exist or has closed.</p>
-              </div>
-          </div>
-      )
+    return (
+      <div className="min-h-screen bg-amber-50 flex items-center justify-center p-4">
+        <div className="bg-white p-8 rounded-2xl shadow-lg border border-red-100 text-center max-w-md w-full">
+          <div className="text-6xl mb-4">🏠</div>
+          <h1 className="text-2xl font-bold text-gray-800 mb-2">Restaurant Not Found</h1>
+          <p className="text-gray-600">The restaurant you are looking for does not exist or has closed.</p>
+        </div>
+      </div>
+    )
   }
 
   return (
     <div className="min-h-screen bg-amber-50 pb-20">
       {suspended && (
-          <div className="bg-red-600 text-white px-4 py-3 text-center shadow-md sticky top-0 z-50">
-              <p className="font-bold flex items-center justify-center gap-2">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" /></svg>
-                  Temporarily Closed
-              </p>
-              <p className="text-sm opacity-90">Ordering is currently unavailable. Please check back later.</p>
-          </div>
+        <div className="bg-red-600 text-white px-4 py-3 text-center shadow-md sticky top-0 z-50">
+          <p className="font-bold flex items-center justify-center gap-2">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" /></svg>
+            Temporarily Closed
+          </p>
+          <p className="text-sm opacity-90">Ordering is currently unavailable. Please check back later.</p>
+        </div>
       )}
-      
-      {}
+
+      { }
       <div className={`bg-white/80 backdrop-blur-md border-b border-amber-100 sticky ${suspended ? 'top-16' : 'top-0'} z-30 shadow-sm transition-all duration-300`}>
         <div className="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
-          {}
+          { }
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 bg-amber-600 rounded-lg flex items-center justify-center text-white font-bold text-lg shadow-sm">
               {restaurant?.name?.charAt(0) || "R"}
@@ -127,7 +128,7 @@ export default function Menu() {
           </div>
 
           <div className="flex items-center gap-4">
-            {}
+            { }
             <button
               onClick={() => navigate(`/r/${slug}/track-order`)}
               className="px-5 py-2 text-sm font-semibold text-amber-700 bg-orange-50 hover:bg-orange-100 rounded-full border border-orange-100 transition-all shadow-sm hidden sm:flex items-center gap-2"
@@ -138,7 +139,7 @@ export default function Menu() {
               Track Order
             </button>
 
-            {}
+            { }
             <button
               onClick={() => navigate(`/r/${slug}/track-order`)}
               className="p-2 text-amber-700 bg-orange-50 hover:bg-orange-100 rounded-full border border-orange-100 sm:hidden transition-colors"
@@ -148,7 +149,7 @@ export default function Menu() {
               </svg>
             </button>
 
-            {}
+            { }
             <button
               onClick={() => navigate(`/r/${slug}/cart`)}
               className="group relative p-2 text-gray-600 hover:text-amber-600 transition-colors bg-gray-50 hover:bg-amber-50 rounded-full border border-transparent hover:border-amber-100"
@@ -167,29 +168,26 @@ export default function Menu() {
       </div>
 
       <div className="px-4">
-        {}
+        {/* Header Section */}
         <div className="max-w-6xl mx-auto mb-6 text-center">
-          <h2 className="type-h1 text-amber-700 mb-2">
-            Our Menu
-          </h2>
+          <h2 className="type-h1 text-amber-700 mb-2 mt-2">Our Menu</h2>
           <div className="w-16 h-1 bg-amber-400 mx-auto mb-3 opacity-50"></div>
           <p className="type-secondary max-w-2xl mx-auto">
             Discover our carefully crafted dishes made with the finest ingredients
           </p>
         </div>
 
-        {}
-        <div className="max-w-4xl mx-auto mb-6 card-premium p-5 border-amber-100/50">
-          {}
-          <div className="flex flex-col md:flex-row gap-4 mb-4">
-            {}
-            <div className="relative grow">
+        {/* Search Bar with Filter Icon */}
+        <div className="max-w-4xl mx-auto mb-4">
+          <div className="flex gap-3">
+            {/* Search Bar */}
+            <div className="relative flex-1">
               <input
                 type="text"
                 placeholder="Search dishes..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 text-base border border-amber-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent bg-amber-50"
+                className="w-full pl-10 pr-4 py-3 text-base border border-amber-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent bg-white shadow-sm"
               />
               <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
                 <svg className="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -198,13 +196,36 @@ export default function Menu() {
               </div>
             </div>
 
-            {}
-            <div className="shrink-0">
+            {/* Filter Icon Button */}
+            <button
+              onClick={() => setShowFilters(!showFilters)}
+              className={`relative px-4 py-3 rounded-lg font-semibold transition-all shadow-sm flex items-center gap-2 ${showFilters
+                ? 'bg-amber-600 text-white'
+                : 'bg-white text-amber-600 border border-amber-200 hover:bg-amber-50'
+                }`}
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+              </svg>
+              <span className="hidden sm:inline">Filters</span>
+              {(activeCategory !== 'all' || sortOption !== 'recommended') && (
+                <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white"></span>
+              )}
+            </button>
+          </div>
+        </div>
+
+        {/* Collapsible Filter Card */}
+        {showFilters && (
+          <div className="max-w-4xl mx-auto mb-6 card-premium p-5 border-amber-100/50 animate-fade-in">
+            {/* Sort Dropdown */}
+            <div className="mb-4">
+              <label className="block text-sm font-semibold text-gray-700 mb-2">Sort By</label>
               <div className="relative">
                 <select
                   value={sortOption}
                   onChange={(e) => setSortOption(e.target.value)}
-                  className="appearance-none w-full md:w-48 pl-4 pr-10 py-2.5 bg-amber-50 border border-amber-200 rounded-lg text-gray-700 focus:outline-none focus:ring-2 focus:ring-amber-500 font-medium cursor-pointer"
+                  className="appearance-none w-full pl-4 pr-10 py-2.5 bg-amber-50 border border-amber-200 rounded-lg text-gray-700 focus:outline-none focus:ring-2 focus:ring-amber-500 font-medium cursor-pointer"
                 >
                   {sortOptions.map(option => (
                     <option key={option.value} value={option.value}>
@@ -219,42 +240,63 @@ export default function Menu() {
                 </div>
               </div>
             </div>
-          </div>
 
-          {}
-          <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-8 gap-2">
-            {categories.map(category => (
-              <button
-                key={category}
-                onClick={() => setActiveCategory(category)}
-                className={`px-3 py-2 rounded-lg type-label transition-all duration-200 whitespace-nowrap ${activeCategory === category
-                  ? "bg-amber-600 text-white shadow-md transform scale-105"
-                  : "bg-amber-100 text-amber-800 hover:bg-amber-200"
-                  }`}
-              >
-                {category === 'all' ? 'All' : category.charAt(0).toUpperCase() + category.slice(1)}
-              </button>
-            ))}
-          </div>
-        </div>
+            {/* Categories */}
+            <div className="mb-4">
+              <label className="block text-sm font-semibold text-gray-700 mb-2">Categories</label>
+              <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-8 gap-2">
+                {categories.map(category => (
+                  <button
+                    key={category}
+                    onClick={() => setActiveCategory(category)}
+                    className={`px-3 py-2 rounded-lg type-label transition-all duration-200 whitespace-nowrap ${activeCategory === category
+                      ? "bg-amber-600 text-white shadow-md transform scale-105"
+                      : "bg-amber-100 text-amber-800 hover:bg-amber-200"
+                      }`}
+                  >
+                    {category === 'all' ? 'All' : category.charAt(0).toUpperCase() + category.slice(1)}
+                  </button>
+                ))}
+              </div>
+            </div>
 
-        {}
+            {/* Clear Filters Button */}
+            {(activeCategory !== 'all' || sortOption !== 'recommended') && (
+              <div className="flex justify-end pt-2 border-t border-gray-100">
+                <button
+                  onClick={() => {
+                    setActiveCategory('all');
+                    setSortOption('recommended');
+                  }}
+                  className="text-sm text-amber-600 hover:text-amber-700 font-semibold flex items-center gap-1"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                  Clear All Filters
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
+        { }
         {loading ? (
           <Loading message="Loading our delicious menu..." />
         ) : filteredDishes.length === 0 ? (
-          <EmptyState 
-            title="No dishes found" 
-            message="Try adjusting your search or filter criteria" 
+          <EmptyState
+            title="No dishes found"
+            message="Try adjusting your search or filter criteria"
             icon="🍽️"
             actionLabel="Clear Filters"
             onAction={() => { setSearchTerm(""); setActiveCategory("all"); }}
           />
         ) : (
-          
+
           <div className="max-w-6xl mx-auto">
             {Object.entries(dishesByCategory).map(([category, categoryDishes]) => (
               <div key={category} className="mb-8">
-                {}
+                { }
                 <div className="flex items-center justify-between mb-4 pb-2 border-b-2 border-amber-200">
                   <h2 className="type-h2 text-gray-800">
                     {category.charAt(0).toUpperCase() + category.slice(1)}
@@ -264,7 +306,7 @@ export default function Menu() {
                   </span>
                 </div>
 
-                {}
+                { }
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {categoryDishes.map((dish) => (
                     <div
@@ -272,14 +314,14 @@ export default function Menu() {
                       onClick={() => navigate(`/r/${slug}/dish/${dish._id}`)}
                       className="card-premium hover:shadow-xl cursor-pointer overflow-hidden group border-amber-100 flex flex-col h-full"
                     >
-                      {}
+                      { }
                       <div className="relative overflow-hidden bg-white h-40 shrink-0">
                         <img
                           src={dish.imageUrl}
                           alt={dish.name}
                           className={`w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 bg-white ${!dish.available ? 'grayscale opacity-75' : ''}`}
                           onError={(e) => {
-                            
+
                             e.target.style.display = 'none';
                             const placeholder = e.target.parentElement.querySelector('.image-placeholder');
                             if (placeholder) {
@@ -287,7 +329,7 @@ export default function Menu() {
                             }
                           }}
                         />
-                        {}
+                        { }
                         {!dish.available && (
                           <div className="absolute inset-0 flex items-center justify-center bg-black/30 backdrop-blur-[1px] z-10">
                             <span className="bg-red-600 text-white px-3 py-1 rounded-full text-sm font-bold shadow-lg transform -rotate-6 border-2 border-white">
@@ -295,7 +337,7 @@ export default function Menu() {
                             </span>
                           </div>
                         )}
-                        {}
+                        { }
                         <div className="image-placeholder hidden w-full h-full items-center justify-center bg-amber-100">
                           <div className="text-center">
                             <svg className="w-10 h-10 text-amber-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -304,10 +346,10 @@ export default function Menu() {
                             <p className="text-amber-600 text-xs font-medium">No Image</p>
                           </div>
                         </div>
-                        {}
+                        { }
                       </div>
 
-                      {}
+                      { }
                       <div className="p-4 flex flex-col flex-1">
                         <div className="flex justify-between items-start mb-2">
                           <h3 className="type-h3 text-gray-900 group-hover:text-amber-700 transition-colors flex-1 mr-2 leading-tight">
@@ -315,14 +357,14 @@ export default function Menu() {
                           </h3>
                         </div>
 
-                        {}
+                        { }
                         <div className="mb-2">
                           <span className="inline-flex items-center gap-1 badge-standard bg-amber-100 text-amber-800">
                             🍽️ {dish.category.charAt(0).toUpperCase() + dish.category.slice(1)}
                           </span>
                         </div>
 
-                        {}
+                        { }
                         {dish.tags?.length > 0 && (
                           <div className="flex flex-wrap gap-1 mb-2">
                             {dish.tags.map((tag, idx) => (
@@ -370,7 +412,7 @@ export default function Menu() {
           </div>
         )}
 
-        {}
+        { }
         <div className="max-w-6xl mx-auto mt-8 mb-4 text-center bg-white rounded-lg p-4 border border-amber-100">
           <p className="text-sm text-gray-500">
             💫 All prices include taxes. Please inform us of any dietary restrictions.
@@ -381,8 +423,8 @@ export default function Menu() {
         </div>
       </div>
 
-      {}
-      {}
+      { }
+      { }
     </div>
   );
 }
