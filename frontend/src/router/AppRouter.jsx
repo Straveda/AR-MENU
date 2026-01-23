@@ -29,6 +29,7 @@ import RestaurantsManagement from '../pages/platform/RestaurantsManagement.jsx';
 import UsersManagement from '../pages/platform/UsersManagement.jsx';
 import SubscriptionsManagement from '../pages/platform/SubscriptionsManagement.jsx';
 import PlansManagement from '../pages/platform/PlansManagement.jsx';
+import PlatformSettings from '../pages/platform/PlatformSettings.jsx';
 import LandingPage from '../pages/LandingPage.jsx';
 
 import AdminLayout from '../components/layout/AdminLayout.jsx';
@@ -44,11 +45,11 @@ const AppRouter = () => {
                         <OrderProvider>
                             <ErrorBoundary>
                                 <Routes>
-                                    {}
+                                    { }
                                     <Route path="/login" element={<Login />} />
                                     <Route path="/forgot-password" element={<ForgotPassword />} />
 
-                                    {}
+                                    { }
                                     <Route element={<RoleGuard allowedRoles={['SUPER_ADMIN']} />}>
                                         <Route element={<PlatformLayout />}>
                                             <Route path="/platform" element={<Navigate to="/platform/dashboard" replace />} />
@@ -57,10 +58,11 @@ const AppRouter = () => {
                                             <Route path="/platform/users" element={<UsersManagement />} />
                                             <Route path="/platform/subscriptions" element={<SubscriptionsManagement />} />
                                             <Route path="/platform/plans" element={<PlansManagement />} />
+                                            <Route path="/platform/settings" element={<PlatformSettings />} />
                                         </Route>
                                     </Route>
 
-                                    {}
+                                    { }
                                     <Route element={<RoleGuard allowedRoles={['RESTAURANT_ADMIN']} />}>
                                         <Route element={<AdminLayout />}>
                                             <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
@@ -76,16 +78,16 @@ const AppRouter = () => {
                                         </Route>
                                     </Route>
 
-                                    {}
+                                    { }
                                     <Route element={<RoleGuard allowedRoles={['KDS', 'RESTAURANT_ADMIN']} />}>
                                         <Route path="/staff/kds" element={<KDS />} />
                                         <Route path="/staff/coming-soon" element={<ComingSoon />} />
-                                        {}
+                                        { }
                                         <Route path="/kds" element={<Navigate to="/staff/kds" replace />} />
                                     </Route>
 
-                                    {}
-                                    {}
+                                    { }
+                                    { }
                                     <Route path="/r/:slug" element={<Menu />} />
                                     <Route path="/r/:slug/menu" element={<Menu />} />
                                     <Route path="/r/:slug/dish/:id" element={<DishDetails />} />
@@ -93,7 +95,7 @@ const AppRouter = () => {
                                     <Route path="/r/:slug/track-order" element={<TrackOrderV2 />} />
                                     <Route path="/r/:slug/cart" element={<OrderCart />} />
 
-                                    {}
+                                    { }
                                     <Route path="/" element={<LandingPage />} />
                                 </Routes>
                             </ErrorBoundary>

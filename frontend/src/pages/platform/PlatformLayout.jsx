@@ -16,6 +16,7 @@ export default function PlatformLayout() {
     { label: "Users", path: "/platform/users", icon: "users" },
     { label: "Subscriptions", path: "/platform/subscriptions", icon: "credit-card" },
     { label: "Plans", path: "/platform/plans", icon: "layers" },
+    { label: "Settings", path: "/platform/settings", icon: "settings" },
   ];
 
   const handleLogout = () => {
@@ -26,15 +27,15 @@ export default function PlatformLayout() {
 
   return (
     <div className="flex h-screen bg-slate-50">
-      {}
+      { }
       {sidebarOpen && (
-        <div 
+        <div
           className="fixed inset-0 bg-black/50 z-40 md:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
 
-      {}
+      { }
       <aside className={`
         fixed inset-y-0 left-0 z-50 w-64 bg-slate-900 flex flex-col transition-transform duration-300 ease-in-out md:translate-x-0 md:static md:w-60
         ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
@@ -44,8 +45,8 @@ export default function PlatformLayout() {
             <span className="text-base font-semibold text-white">RestaurantAR</span>
             <span className="ml-1.5 text-xs font-medium text-indigo-400">Platform</span>
           </div>
-          {}
-          <button 
+          { }
+          <button
             onClick={() => setSidebarOpen(false)}
             className="md:hidden text-slate-400 hover:text-white"
           >
@@ -63,11 +64,10 @@ export default function PlatformLayout() {
                 key={item.path}
                 to={item.path}
                 onClick={() => setSidebarOpen(false)}
-                className={`flex items-center gap-3 px-3 py-2.5 text-sm rounded-lg mb-1 transition-colors ${
-                  isActive
-                    ? "bg-indigo-600 text-white font-medium"
-                    : "text-slate-400 hover:bg-slate-800 hover:text-white"
-                }`}
+                className={`flex items-center gap-3 px-3 py-2.5 text-sm rounded-lg mb-1 transition-colors ${isActive
+                  ? "bg-indigo-600 text-white font-medium"
+                  : "text-slate-400 hover:bg-slate-800 hover:text-white"
+                  }`}
               >
                 <NavIcon name={item.icon} />
                 {item.label}
@@ -95,12 +95,12 @@ export default function PlatformLayout() {
         </div>
       </aside>
 
-      {}
+      { }
       <main className="flex-1 flex flex-col h-screen overflow-hidden">
-        {}
+        { }
         <div className="md:hidden bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between">
           <div className="flex items-center">
-            <button 
+            <button
               onClick={() => setSidebarOpen(true)}
               className="text-gray-600 hover:text-gray-900 mr-3"
             >
@@ -150,6 +150,12 @@ function NavIcon({ name }) {
     layers: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+      </svg>
+    ),
+    settings: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
       </svg>
     ),
   };

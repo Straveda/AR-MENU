@@ -90,7 +90,7 @@ export default function PlansManagement() {
           showSuccess("Plan deleted successfully");
           await fetchPlans();
         } catch (err) {
-            showError(err.response?.data?.message || "Failed to delete plan");
+          showError(err.response?.data?.message || "Failed to delete plan");
         } finally {
           setActionLoading(false);
           closeConfirmModal();
@@ -117,7 +117,7 @@ export default function PlansManagement() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-lg font-semibold text-gray-900">Plans</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Plans</h1>
           <p className="text-sm text-gray-500">Configure subscription plans</p>
         </div>
         <button
@@ -128,7 +128,7 @@ export default function PlansManagement() {
         </button>
       </div>
 
-      {}
+      { }
       <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="min-w-full text-sm">
@@ -151,9 +151,9 @@ export default function PlansManagement() {
                   </td>
                   <td className="px-4 py-3 text-slate-600 font-mono whitespace-nowrap">₹{p.price || 0}</td>
                   <td className="px-4 py-3 whitespace-nowrap">
-                     <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-slate-100 text-slate-700">
-                        {p.interval || "MONTHLY"}
-                     </span>
+                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-slate-100 text-slate-700">
+                      {p.interval || "MONTHLY"}
+                    </span>
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap">
                     <div className="flex gap-1.5 flex-wrap">
@@ -163,17 +163,17 @@ export default function PlansManagement() {
                     </div>
                   </td>
                   <td className="px-4 py-3 text-xs text-slate-600 whitespace-nowrap">
-                     <div className="flex flex-col">
-                        <span><span className="font-semibold text-slate-700">{p.limits?.maxDishes || 0}</span> dishes</span>
-                        <span><span className="font-semibold text-slate-700">{p.limits?.maxStaff || 0}</span> staff</span>
-                     </div>
+                    <div className="flex flex-col">
+                      <span><span className="font-semibold text-slate-700">{p.limits?.maxDishes || 0}</span> dishes</span>
+                      <span><span className="font-semibold text-slate-700">{p.limits?.maxStaff || 0}</span> staff</span>
+                    </div>
                   </td>
                   <td className="px-4 py-3 text-right whitespace-nowrap">
-                     <ActionDropdown 
-                        plan={p}
-                        onEdit={() => openEdit(p)}
-                        onDelete={() => initiateDelete(p)}
-                     />
+                    <ActionDropdown
+                      plan={p}
+                      onEdit={() => openEdit(p)}
+                      onDelete={() => initiateDelete(p)}
+                    />
                   </td>
                 </tr>
               ))}
@@ -194,7 +194,7 @@ export default function PlansManagement() {
         )}
       </div>
 
-      {}
+      { }
       {modal.type === "create" && (
         <Modal title="Create plan" onClose={closeModal}>
           <PlanForm
@@ -208,7 +208,7 @@ export default function PlansManagement() {
         </Modal>
       )}
 
-      {}
+      { }
       {modal.type === "edit" && (
         <Modal title="Edit plan" onClose={closeModal}>
           <PlanForm
@@ -263,7 +263,7 @@ function PlanForm({ form, setForm, onSubmit, loading, error, submitLabel, isEdit
   return (
     <form onSubmit={onSubmit}>
       {error && <div className="mb-3 px-3 py-2 text-sm text-red-700 bg-red-50 rounded-md">{error}</div>}
-      
+
       <div className="space-y-3 mb-4">
         <div>
           <label className="block text-sm text-gray-700 mb-1">Name</label>
@@ -383,8 +383,8 @@ function ActionDropdown({ plan, onEdit, onDelete }) {
     if (open && buttonRef.current && !isMobile) {
       const rect = buttonRef.current.getBoundingClientRect();
       const screenHeight = window.innerHeight;
-      const menuHeightEstimate = 100; 
-      
+      const menuHeightEstimate = 100;
+
       const spaceBelow = screenHeight - rect.bottom;
       const shouldOpenUpwards = spaceBelow < menuHeightEstimate;
 
@@ -410,17 +410,17 @@ function ActionDropdown({ plan, onEdit, onDelete }) {
     <>
       <div className="py-2">
         <div className="px-4 py-1 text-xs font-bold text-slate-400 uppercase tracking-wider">Plan Management</div>
-        <MenuItem 
+        <MenuItem
           icon={<svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>}
-          label="Edit Plan Details" 
-          onClick={() => { onEdit(); setOpen(false); }} 
+          label="Edit Plan Details"
+          onClick={() => { onEdit(); setOpen(false); }}
         />
         <div className="border-t border-slate-100 my-1"></div>
-        <MenuItem 
-           icon={<svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>}
-           label="Delete Plan"
-           onClick={() => { onDelete(); setOpen(false); }}
-           variant="danger"
+        <MenuItem
+          icon={<svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>}
+          label="Delete Plan"
+          onClick={() => { onDelete(); setOpen(false); }}
+          variant="danger"
         />
       </div>
     </>
@@ -443,19 +443,19 @@ function ActionDropdown({ plan, onEdit, onDelete }) {
         <>
           <div className="fixed inset-0 z-40 bg-slate-900/10 backdrop-blur-[1px]" onClick={() => setOpen(false)} />
           {isMobile ? (
-             <div className="fixed bottom-0 left-0 right-0 z-50 bg-white rounded-t-2xl shadow-2xl border-t border-slate-200 animate-in slide-in-from-bottom duration-200">
-                <div className="flex justify-center pt-3 pb-1">
-                   <div className="w-12 h-1.5 bg-slate-200 rounded-full" />
+            <div className="fixed bottom-0 left-0 right-0 z-50 bg-white rounded-t-2xl shadow-2xl border-t border-slate-200 animate-in slide-in-from-bottom duration-200">
+              <div className="flex justify-center pt-3 pb-1">
+                <div className="w-12 h-1.5 bg-slate-200 rounded-full" />
+              </div>
+              <div className="pb-6">
+                <div className="px-4 py-2 border-b border-slate-100 mb-2">
+                  <h3 className="font-semibold text-slate-900">Manage {plan.name}</h3>
                 </div>
-                <div className="pb-6">
-                  <div className="px-4 py-2 border-b border-slate-100 mb-2">
-                     <h3 className="font-semibold text-slate-900">Manage {plan.name}</h3>
-                  </div>
-                  <MenuContent />
-                </div>
-             </div>
+                <MenuContent />
+              </div>
+            </div>
           ) : (
-            <div 
+            <div
               style={menuStyle}
               className="z-50 w-56 bg-white border border-slate-200 rounded-xl shadow-xl shadow-slate-200/50 py-1 overflow-hidden animate-in fade-in zoom-in-95 duration-100"
             >
@@ -481,9 +481,8 @@ function MenuItem({ label, onClick, icon, variant = 'default', disabled = false 
     <button
       onClick={onClick}
       disabled={disabled}
-      className={`w-full text-left px-4 py-2.5 text-sm flex items-center gap-3 transition-colors ${
-         disabled ? 'opacity-50 cursor-not-allowed bg-slate-50 text-slate-400' : styles[variant]
-      }`}
+      className={`w-full text-left px-4 py-2.5 text-sm flex items-center gap-3 transition-colors ${disabled ? 'opacity-50 cursor-not-allowed bg-slate-50 text-slate-400' : styles[variant]
+        }`}
     >
       {icon && <span className={disabled ? '' : "opacity-75"}>{icon}</span>}
       <span className="font-medium">{label}</span>

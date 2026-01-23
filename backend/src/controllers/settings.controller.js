@@ -4,6 +4,15 @@ import { User } from '../models/user.models.js';
 
 export const getRestaurantProfile = async (req, res) => {
   try {
+    if (req.user.role === 'SUPER_ADMIN') {
+      // For Super Admin, return the user profile directly
+      const user = await User.findById(req.user._id).select('-password');
+      return res.status(200).json({
+        success: true,
+        data: user,
+      });
+    }
+
     const restaurantId = req.restaurant._id;
     const restaurant = await Restaurant.findById(restaurantId);
 
@@ -30,6 +39,37 @@ export const getRestaurantProfile = async (req, res) => {
 
 export const updateRestaurantProfile = async (req, res) => {
   try {
+    if (req.user.role === 'SUPER_ADMIN') {
+      const { username, email, phone } = req.body;
+      const user = await User.findById(req.user._id);
+
+      if (!user) {
+        return res.status(404).json({
+          success: false,
+          message: 'User not found'
+        });
+      }
+
+      // Update allowed fields
+      if (username) user.username = username;
+      // Note: Changing email might require re-verification or check for uniqueness depending on system rules
+      // For now allowing direct update as per simple requirement
+      if (email) user.email = email;
+      if (phone) user.phone = phone;
+
+      await user.save();
+
+      // Return user without password
+      const userResponse = user.toObject();
+      delete userResponse.password;
+
+      return res.status(200).json({
+        success: true,
+        message: 'Profile updated successfully',
+        data: userResponse
+      });
+    }
+
     const { name, address, contactEmail, contactPhone, logo, openingTime, closingTime } = req.body;
     const restaurantId = req.restaurant._id;
 

@@ -1,6 +1,8 @@
 import { createContext, useState, useEffect, useContext } from "react";
 import { jwtDecode } from "jwt-decode";
 import axiosClient from "../api/axiosClient";
+import { useNavigate } from "react-router-dom";
+import { useToast } from "../components/common/Toast/ToastContext";
 
 export const AuthContext = createContext();
 
@@ -13,18 +15,21 @@ export default function AuthProvider({ children }) {
   const [restaurantId, setRestaurantId] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  const navigate = useNavigate();
+  const { showError } = useToast();
+
   useEffect(() => {
     if (token) {
       try {
         const decoded = jwtDecode(token);
-        
+
         const currentTime = Date.now() / 1000;
         if (decoded.exp < currentTime) {
           logout();
         } else {
           setRole(decoded.role);
           setRestaurantId(decoded.restaurantId);
-          
+
           fetchCurrentUser();
         }
       } catch (error) {
@@ -40,16 +45,16 @@ export default function AuthProvider({ children }) {
     try {
       setLoading(true);
       const { data } = await axiosClient.get("/users/auth/me");
-      
+
       if (data && data._id) {
         setUser(data);
-        
+
         setRole(data.role);
         setRestaurantId(data.restaurantId);
       }
     } catch (error) {
       console.error("Failed to fetch user:", error);
-      
+
       if (error.response?.status === 401) {
         logout();
       }
@@ -70,6 +75,23 @@ export default function AuthProvider({ children }) {
     setRole(null);
     setRestaurantId(null);
   };
+
+  // Listen for global auth:logout event (triggered by 401 interceptor)
+  useEffect(() => {
+    const handleAuthLogout = (event) => {
+      logout();
+      navigate("/login");
+      // Use a small timeout to ensure toast shows after navigation if needed,
+      // though typically ToastContext persists.
+      showError("Session expired. Please log in again.");
+    };
+
+    window.addEventListener("auth:logout", handleAuthLogout);
+
+    return () => {
+      window.removeEventListener("auth:logout", handleAuthLogout);
+    };
+  }, [logout, navigate, showError]);
 
   const value = {
     token,
