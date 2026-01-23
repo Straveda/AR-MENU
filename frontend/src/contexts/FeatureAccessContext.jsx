@@ -34,7 +34,16 @@ export const FeatureAccessProvider = ({ children }) => {
 
             if (token) {
                 // Authenticated check
-                data = await checkFeatureAccess();
+                try {
+                    data = await checkFeatureAccess();
+                } catch (err) {
+                    // If authenticated check fails, try public check as fallback
+                    if (err.response?.status === 401 && slug) {
+                        data = await checkPublicFeatureAccess(slug);
+                    } else {
+                        throw err;
+                    }
+                }
             } else if (slug) {
                 // Public check for guest users
                 data = await checkPublicFeatureAccess(slug);
