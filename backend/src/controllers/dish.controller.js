@@ -101,7 +101,6 @@ const addDish = async (req, res) => {
       ingredients,
       nutritionalInfo,
       portionSize,
-      portionSize,
       isChefSpecial,
     });
 
@@ -109,11 +108,8 @@ const addDish = async (req, res) => {
 
     try {
       if (req.restaurant.planId) {
-        // Fetch plan to check for arModels feature
-        const { Plan } = await import('../models/plan.models.js');
         const plan = await Plan.findById(req.restaurant.planId);
-
-        if (plan && plan.features.arModels) {
+        if (plan?.features?.arModels) {
           const { taskId } = await createImageTo3DTask(cloudImageUrl, name, dish._id);
 
           dish.meshyTaskId = taskId;
@@ -124,9 +120,7 @@ const addDish = async (req, res) => {
 
           console.log(`🚀 Started 3D model generation for "${name}" (task: ${taskId})`);
         } else {
-          console.log(`ℹ️ Skipping 3D model generation for "${name}" (AR Models feature not in plan)`);
-          dish.modelStatus = 'pending';
-          await dish.save();
+          console.log(`ℹ️ AR models skipped for "${name}" - Not included in plan.`);
         }
       }
     } catch (meshyError) {

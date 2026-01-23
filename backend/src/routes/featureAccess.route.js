@@ -4,11 +4,15 @@ import { resolveRestaurantFromUser } from '../middlewares/resolveRestaurantFromU
 import {
     checkFeatureAccess,
     getCurrentPlan,
+    checkPublicFeatureAccess,
 } from '../controllers/featureAccess.controller.js';
 
 const featureAccessRoute = express.Router();
 
-// All routes require authentication and restaurant resolution
+// Public route for guest users (menu page)
+featureAccessRoute.get('/public/:slug', checkPublicFeatureAccess);
+
+// All other routes require authentication and restaurant resolution
 featureAccessRoute.use(requireAuth);
 featureAccessRoute.use(resolveRestaurantFromUser);
 

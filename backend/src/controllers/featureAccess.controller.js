@@ -1,6 +1,7 @@
 import { Plan } from '../models/plan.models.js';
 import { Dish } from '../models/dish.models.js';
 import { User } from '../models/user.models.js';
+import { Restaurant } from '../models/restaurant.models.js';
 
 /**
  * Get current restaurant's plan with feature access and usage stats
@@ -127,6 +128,53 @@ export const getCurrentPlan = async (req, res) => {
         return res.status(500).json({
             success: false,
             message: 'Failed to get current plan',
+            error: error.message,
+        });
+    }
+};
+
+/**
+ * Get feature access status for public menu (no auth)
+ */
+export const checkPublicFeatureAccess = async (req, res) => {
+    try {
+        const { slug } = req.params;
+
+        const restaurant = await Restaurant.findOne({ slug, status: 'Active' });
+
+        if (!restaurant) {
+            return res.status(404).json({
+                success: false,
+                message: 'Restaurant not found or inactive.',
+            });
+        }
+
+        if (!restaurant.planId) {
+            return res.status(200).json({
+                success: true,
+                features: {
+                    arModels: false,
+                    kds: false,
+                    analytics: false,
+                },
+            });
+        }
+
+        const plan = await Plan.findById(restaurant.planId);
+
+        return res.status(200).json({
+            success: true,
+            features: plan?.features || {
+                arModels: false,
+                kds: false,
+                analytics: false,
+            },
+        });
+    } catch (error) {
+        console.error('Error checking public feature access:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Failed to check public feature access',
             error: error.message,
         });
     }

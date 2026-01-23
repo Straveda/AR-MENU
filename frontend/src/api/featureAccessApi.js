@@ -9,10 +9,15 @@ export const checkFeatureAccess = async () => {
     return response.data;
 };
 
-/**
- * Get current plan details
- */
 export const getCurrentPlan = async () => {
     const response = await axiosClient.get('/features/plan');
+    return response.data;
+};
+
+/**
+ * Check feature access for public menu (guest users)
+ */
+export const checkPublicFeatureAccess = async (slug) => {
+    const response = await axiosClient.get(`/features/public/${slug}`);
     return response.data;
 };
