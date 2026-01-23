@@ -11,5 +11,7 @@ router.use(resolveRestaurantFromUser);
 router.use(requireRole('RESTAURANT_ADMIN'));
 
 router.get('/dashboard', analyticsController.getDashboardAnalytics);
+router.get('/detailed', analyticsController.getDetailedAnalytics);
+
 
 export default router;

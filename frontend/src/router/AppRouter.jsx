@@ -9,6 +9,7 @@ import RoleGuard from './RoleGuard';
 import Login from '../pages/admin/Login.jsx';
 import ForgotPassword from '../pages/admin/ForgotPassword.jsx';
 import AnalyticsDashboard from '../pages/admin/AnalyticsDashboard.jsx';
+import Analytics from '../pages/admin/Analytics.jsx';
 import MenuManagement from '../pages/admin/MenuManagement.jsx';
 import AddDish from '../pages/admin/AddDish.jsx';
 import EditDish from '../pages/admin/EditDish.jsx';
@@ -67,6 +68,7 @@ const AppRouter = () => {
                                         <Route element={<AdminLayout />}>
                                             <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
                                             <Route path="/admin/dashboard" element={<AnalyticsDashboard />} />
+                                            <Route path="/admin/analytics" element={<Analytics />} />
                                             <Route path="/admin/menu" element={<MenuManagement />} />
 
                                             <Route path="/admin/add-dish" element={<AddDish />} />
