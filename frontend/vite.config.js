@@ -5,7 +5,8 @@
 
   // https://vite.dev/config/
   export default defineConfig({
-    plugins: [react(),tailwindcss(),],server: {
+    plugins: [react(),tailwindcss(),],
+    server: {
       host: "0.0.0.0"
     }
   })

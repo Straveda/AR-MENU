@@ -184,7 +184,26 @@ export default function ARViewer() {
                             </model-viewer>
                         </div>
 
-                        {}
+                        {/* Standalone AR Launch Button - Always visible fallback */}
+                        {modelLoaded && (
+                            <div className="mt-4 flex justify-center">
+                                <button
+                                    onClick={() => {
+                                        if (modelViewerRef.current) {
+                                            modelViewerRef.current.activateAR();
+                                        }
+                                    }}
+                                    className="bg-linear-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white px-8 py-4 rounded-xl font-bold text-lg shadow-lg transition-all transform hover:-translate-y-0.5 flex items-center gap-3"
+                                >
+                                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                    </svg>
+                                    View in AR
+                                </button>
+                            </div>
+                        )}
+
+                        {/* Instructions */}
                         <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="bg-amber-50 rounded-lg p-4 border border-amber-100">
                                 <h3 className="font-semibold text-gray-800 mb-2 flex items-center gap-2">
