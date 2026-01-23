@@ -32,8 +32,11 @@ export default function PlatformSettings() {
         setIsEditing(false);
     }, [activeTab]);
 
+    const [error, setError] = useState(null);
+
     const fetchProfile = async () => {
         setLoading(true);
+        setError(null);
         try {
             const data = await settingsApi.getProfile();
             if (data.success) {
@@ -48,7 +51,7 @@ export default function PlatformSettings() {
             }
         } catch (error) {
             console.error("Failed to load settings", error);
-            // Don't show error toast on load to avoid spamming if API differs
+            setError(error.response?.data?.message || "Failed to load profile settings");
         } finally {
             setLoading(false);
         }
@@ -124,6 +127,13 @@ export default function PlatformSettings() {
                 <h1 className="text-2xl font-bold text-gray-900">Platform Settings</h1>
                 <p className="text-slate-500 mt-2">Manage your profile and security preferences.</p>
             </div>
+
+            {error && (
+                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg flex items-center gap-2">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    {error}
+                </div>
+            )}
 
             <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
                 <div className="border-b border-slate-200">
