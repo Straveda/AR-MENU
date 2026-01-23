@@ -58,7 +58,7 @@ dishRoute.post(
   resolveRestaurantFromUser,
   requireRole('RESTAURANT_ADMIN', 'SUPER_ADMIN', 'PLATFORM_ADMIN'),
   checkSubscription,
-
+  enforcePlanFeature('maxDishes'),
   upload.single('image'),
   addDish,
 );
@@ -87,7 +87,7 @@ dishRoute.post(
   resolveRestaurantFromUser,
   requireRole('RESTAURANT_ADMIN', 'SUPER_ADMIN', 'PLATFORM_ADMIN'),
   checkSubscription,
-  enforcePlanFeature('aiModels'),
+  enforcePlanFeature('arModels'),
   generateModel,
 );
 
@@ -97,7 +97,7 @@ dishRoute.post(
   resolveRestaurantFromUser,
   requireRole('RESTAURANT_ADMIN', 'SUPER_ADMIN', 'PLATFORM_ADMIN'),
   checkSubscription,
-  enforcePlanFeature('aiModels'),
+  enforcePlanFeature('arModels'),
   retryModelGeneration,
 );
 

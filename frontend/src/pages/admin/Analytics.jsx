@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { getDetailedAnalytics } from "../../api/analyticsApi";
 import Loading from "../../components/common/Loading";
 import { useToast } from "../../components/common/Toast/ToastContext";
+import FeatureGate from "../../components/common/FeatureGate";
 import {
     Chart as ChartJS,
     CategoryScale,
@@ -31,7 +32,7 @@ ChartJS.register(
     Filler
 );
 
-export default function Analytics() {
+function AnalyticsContent() {
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [timeRange, setTimeRange] = useState('week');
@@ -518,5 +519,13 @@ function StatBox({ title, items }) {
                 ))}
             </div>
         </div>
+    );
+}
+
+export default function Analytics() {
+    return (
+        <FeatureGate feature="analytics" showUpgrade>
+            <AnalyticsContent />
+        </FeatureGate>
     );
 }

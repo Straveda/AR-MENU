@@ -5,6 +5,7 @@ import SocketProvider from '../context/SocketProvider';
 import { OrderProvider } from '../context/OrderContext';
 import ErrorBoundary from '../components/common/ErrorBoundary';
 import RoleGuard from './RoleGuard';
+import { FeatureAccessProvider } from '../contexts/FeatureAccessContext';
 
 import Login from '../pages/admin/Login.jsx';
 import ForgotPassword from '../pages/admin/ForgotPassword.jsx';
@@ -45,61 +46,63 @@ const AppRouter = () => {
                     <SocketProvider>
                         <OrderProvider>
                             <ErrorBoundary>
-                                <Routes>
-                                    { }
-                                    <Route path="/login" element={<Login />} />
-                                    <Route path="/forgot-password" element={<ForgotPassword />} />
-
-                                    { }
-                                    <Route element={<RoleGuard allowedRoles={['SUPER_ADMIN']} />}>
-                                        <Route element={<PlatformLayout />}>
-                                            <Route path="/platform" element={<Navigate to="/platform/dashboard" replace />} />
-                                            <Route path="/platform/dashboard" element={<PlatformDashboard />} />
-                                            <Route path="/platform/restaurants" element={<RestaurantsManagement />} />
-                                            <Route path="/platform/users" element={<UsersManagement />} />
-                                            <Route path="/platform/subscriptions" element={<SubscriptionsManagement />} />
-                                            <Route path="/platform/plans" element={<PlansManagement />} />
-                                            <Route path="/platform/settings" element={<PlatformSettings />} />
-                                        </Route>
-                                    </Route>
-
-                                    { }
-                                    <Route element={<RoleGuard allowedRoles={['RESTAURANT_ADMIN']} />}>
-                                        <Route element={<AdminLayout />}>
-                                            <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
-                                            <Route path="/admin/dashboard" element={<AnalyticsDashboard />} />
-                                            <Route path="/admin/analytics" element={<Analytics />} />
-                                            <Route path="/admin/menu" element={<MenuManagement />} />
-
-                                            <Route path="/admin/add-dish" element={<AddDish />} />
-                                            <Route path="/admin/edit-dish/:id" element={<EditDish />} />
-                                            <Route path="/admin/staff" element={<StaffManagement />} />
-                                            <Route path="/admin/inventory" element={<Inventory />} />
-                                            <Route path="/admin/expenses" element={<ExpensesPage />} />
-                                            <Route path="/admin/settings" element={<Settings />} />
-                                        </Route>
-                                    </Route>
-
-                                    { }
-                                    <Route element={<RoleGuard allowedRoles={['KDS', 'RESTAURANT_ADMIN']} />}>
-                                        <Route path="/staff/kds" element={<KDS />} />
-                                        <Route path="/staff/coming-soon" element={<ComingSoon />} />
+                                <FeatureAccessProvider>
+                                    <Routes>
                                         { }
-                                        <Route path="/kds" element={<Navigate to="/staff/kds" replace />} />
-                                    </Route>
+                                        <Route path="/login" element={<Login />} />
+                                        <Route path="/forgot-password" element={<ForgotPassword />} />
 
-                                    { }
-                                    { }
-                                    <Route path="/r/:slug" element={<Menu />} />
-                                    <Route path="/r/:slug/menu" element={<Menu />} />
-                                    <Route path="/r/:slug/dish/:id" element={<DishDetails />} />
-                                    <Route path="/r/:slug/ar/:id" element={<ARViewer />} />
-                                    <Route path="/r/:slug/track-order" element={<TrackOrderV2 />} />
-                                    <Route path="/r/:slug/cart" element={<OrderCart />} />
+                                        { }
+                                        <Route element={<RoleGuard allowedRoles={['SUPER_ADMIN']} />}>
+                                            <Route element={<PlatformLayout />}>
+                                                <Route path="/platform" element={<Navigate to="/platform/dashboard" replace />} />
+                                                <Route path="/platform/dashboard" element={<PlatformDashboard />} />
+                                                <Route path="/platform/restaurants" element={<RestaurantsManagement />} />
+                                                <Route path="/platform/users" element={<UsersManagement />} />
+                                                <Route path="/platform/subscriptions" element={<SubscriptionsManagement />} />
+                                                <Route path="/platform/plans" element={<PlansManagement />} />
+                                                <Route path="/platform/settings" element={<PlatformSettings />} />
+                                            </Route>
+                                        </Route>
 
-                                    { }
-                                    <Route path="/" element={<LandingPage />} />
-                                </Routes>
+                                        { }
+                                        <Route element={<RoleGuard allowedRoles={['RESTAURANT_ADMIN']} />}>
+                                            <Route element={<AdminLayout />}>
+                                                <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
+                                                <Route path="/admin/dashboard" element={<AnalyticsDashboard />} />
+                                                <Route path="/admin/analytics" element={<Analytics />} />
+                                                <Route path="/admin/menu" element={<MenuManagement />} />
+
+                                                <Route path="/admin/add-dish" element={<AddDish />} />
+                                                <Route path="/admin/edit-dish/:id" element={<EditDish />} />
+                                                <Route path="/admin/staff" element={<StaffManagement />} />
+                                                <Route path="/admin/inventory" element={<Inventory />} />
+                                                <Route path="/admin/expenses" element={<ExpensesPage />} />
+                                                <Route path="/admin/settings" element={<Settings />} />
+                                            </Route>
+                                        </Route>
+
+                                        { }
+                                        <Route element={<RoleGuard allowedRoles={['KDS', 'RESTAURANT_ADMIN']} />}>
+                                            <Route path="/staff/kds" element={<KDS />} />
+                                            <Route path="/staff/coming-soon" element={<ComingSoon />} />
+                                            { }
+                                            <Route path="/kds" element={<Navigate to="/staff/kds" replace />} />
+                                        </Route>
+
+                                        { }
+                                        { }
+                                        <Route path="/r/:slug" element={<Menu />} />
+                                        <Route path="/r/:slug/menu" element={<Menu />} />
+                                        <Route path="/r/:slug/dish/:id" element={<DishDetails />} />
+                                        <Route path="/r/:slug/ar/:id" element={<ARViewer />} />
+                                        <Route path="/r/:slug/track-order" element={<TrackOrderV2 />} />
+                                        <Route path="/r/:slug/cart" element={<OrderCart />} />
+
+                                        { }
+                                        <Route path="/" element={<LandingPage />} />
+                                    </Routes>
+                                </FeatureAccessProvider>
                             </ErrorBoundary>
                         </OrderProvider>
                     </SocketProvider>
