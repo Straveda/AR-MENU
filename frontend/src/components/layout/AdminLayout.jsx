@@ -11,9 +11,10 @@ export default function AdminLayout() {
   const { showInfo } = useToast();
 
   const restaurantName = user?.restaurantId?.name || "Restaurant";
-  
+
   const navItems = [
     { label: "Dashboard", path: "/admin/dashboard", icon: "dashboard" },
+    { label: "Analytics", path: "/admin/analytics", icon: "analytics" },
     { label: "Menu Management", path: "/admin/menu", icon: "menu" },
     { label: "Inventory", path: "/admin/inventory", icon: "inventory" },
     { label: "Staff", path: "/admin/staff", icon: "staff" },
@@ -30,15 +31,15 @@ export default function AdminLayout() {
 
   return (
     <div className="flex h-screen bg-slate-50">
-      {}
+      { }
       {sidebarOpen && (
-        <div 
+        <div
           className="fixed inset-0 bg-slate-900/40 z-40 lg:hidden backdrop-blur-sm transition-opacity"
           onClick={() => setSidebarOpen(false)}
         />
       )}
 
-      {}
+      { }
       <aside className={`
         fixed inset-y-0 left-0 z-50 w-64 bg-slate-900 flex flex-col transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:w-64
         ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
@@ -48,7 +49,7 @@ export default function AdminLayout() {
             <span className="text-xl font-bold text-white tracking-tight">{restaurantName}</span>
             <span className="text-[10px] font-black tracking-widest px-2 py-0.5 rounded bg-amber-500 text-slate-900">ADMIN</span>
           </div>
-          <button 
+          <button
             onClick={() => setSidebarOpen(false)}
             className="lg:hidden text-slate-400 hover:text-white transition-colors"
           >
@@ -69,11 +70,10 @@ export default function AdminLayout() {
                     key={item.path}
                     to={item.path}
                     onClick={() => setSidebarOpen(false)}
-                    className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 ${
-                      isActive
-                        ? "bg-slate-800 text-white shadow-sm ring-1 ring-slate-700"
-                        : "text-slate-400 hover:bg-slate-800/50 hover:text-slate-200"
-                    }`}
+                    className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 ${isActive
+                      ? "bg-slate-800 text-white shadow-sm ring-1 ring-slate-700"
+                      : "text-slate-400 hover:bg-slate-800/50 hover:text-slate-200"
+                      }`}
                   >
                     <NavIcon name={item.icon} className={isActive ? "text-amber-500" : "text-slate-500"} />
                     {item.label}
@@ -106,12 +106,12 @@ export default function AdminLayout() {
         </div>
       </aside>
 
-      {}
+      { }
       <main className="flex-1 flex flex-col overflow-hidden">
-        {}
+        { }
         <header className="h-16 bg-white border-b border-slate-200 px-4 lg:px-8 flex items-center justify-between shrink-0 shadow-[0_1px_2px_rgba(0,0,0,0.03)]">
           <div className="flex items-center">
-            <button 
+            <button
               onClick={() => setSidebarOpen(true)}
               className="lg:hidden p-2 -ml-2 text-slate-500 hover:text-slate-900 mr-2 transition-colors"
             >
@@ -125,21 +125,21 @@ export default function AdminLayout() {
               </h2>
             </div>
           </div>
-          
+
           <div className="flex items-center gap-4">
-             <div className="hidden sm:flex flex-col items-end">
-                <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest flex items-center gap-1.5">
-                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                   Live Session
-                </span>
-                <span className="text-[9px] text-slate-400 font-bold uppercase tracking-tight opacity-70">Cloud-Synced Environment</span>
-             </div>
+            <div className="hidden sm:flex flex-col items-end">
+              <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                Live Session
+              </span>
+              <span className="text-[9px] text-slate-400 font-bold uppercase tracking-tight opacity-70">Cloud-Synced Environment</span>
+            </div>
           </div>
         </header>
 
-        {}
+        { }
         <div className="flex-1 overflow-y-auto p-4 lg:p-8 bg-slate-50/50">
-           <Outlet />
+          <Outlet />
         </div>
       </main>
     </div>
@@ -152,6 +152,11 @@ function NavIcon({ name }) {
     dashboard: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+      </svg>
+    ),
+    analytics: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
       </svg>
     ),
     inventory: (
