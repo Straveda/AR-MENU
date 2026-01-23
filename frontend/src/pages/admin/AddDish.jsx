@@ -2,10 +2,12 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axiosClient from "../../api/axiosClient";
 import { useToast } from "../../components/common/Toast/ToastContext";
+import { useFeatureAccess } from "../../contexts/FeatureAccessContext";
 
 export default function AddDish() {
   const navigate = useNavigate();
   const { showSuccess, showError, showWarning } = useToast();
+  const { hasFeature } = useFeatureAccess();
 
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
@@ -143,6 +145,15 @@ export default function AddDish() {
       </div>
 
       <div className="max-w-2xl mx-auto bg-white shadow-lg rounded-xl p-6">
+        {!hasFeature('arModels') && (
+          <div className="mb-6 p-4 bg-indigo-50 border border-indigo-100 rounded-xl flex items-center gap-3">
+            <span className="text-xl">✨</span>
+            <div>
+              <p className="text-sm font-bold text-indigo-900">3D Models are Locked</p>
+              <p className="text-xs text-indigo-700">Upgrade to Pro to automatically generate immersive AR models for your dishes.</p>
+            </div>
+          </div>
+        )}
         <form onSubmit={handleSubmit} className="space-y-6">
 
           <div>

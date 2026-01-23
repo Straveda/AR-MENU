@@ -17,6 +17,7 @@ const planSchema = new mongoose.Schema(
     price: {
       type: Number,
       default: 0,
+      min: 0,
     },
 
     interval: {
@@ -44,10 +45,12 @@ const planSchema = new mongoose.Schema(
       maxDishes: {
         type: Number,
         default: 0,
+        min: 0,
       },
       maxStaff: {
         type: Number,
         default: 0,
+        min: 0,
       },
     },
 
@@ -58,5 +61,9 @@ const planSchema = new mongoose.Schema(
   },
   { timestamps: true },
 );
+
+// Indexes for performance
+planSchema.index({ name: 1 });
+planSchema.index({ isActive: 1 });
 
 export const Plan = mongoose.model('Plan', planSchema);

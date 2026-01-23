@@ -109,15 +109,25 @@ const addDish = async (req, res) => {
 
     try {
       if (req.restaurant.planId) {
-        const { taskId } = await createImageTo3DTask(cloudImageUrl, name, dish._id);
+        // Fetch plan to check for arModels feature
+        const { Plan } = await import('../models/plan.models.js');
+        const plan = await Plan.findById(req.restaurant.planId);
 
-        dish.meshyTaskId = taskId;
-        dish.modelStatus = 'processing';
-        await dish.save();
+        if (plan && plan.features.arModels) {
+          const { taskId } = await createImageTo3DTask(cloudImageUrl, name, dish._id);
 
-        startPollingForDish(dish._id.toString(), taskId);
+          dish.meshyTaskId = taskId;
+          dish.modelStatus = 'processing';
+          await dish.save();
 
-        console.log(`🚀 Started 3D model generation for "${name}" (task: ${taskId})`);
+          startPollingForDish(dish._id.toString(), taskId);
+
+          console.log(`🚀 Started 3D model generation for "${name}" (task: ${taskId})`);
+        } else {
+          console.log(`ℹ️ Skipping 3D model generation for "${name}" (AR Models feature not in plan)`);
+          dish.modelStatus = 'pending';
+          await dish.save();
+        }
       }
     } catch (meshyError) {
       console.error('Meshy generation error:', meshyError);
@@ -186,9 +196,9 @@ const getDishes = async (req, res) => {
         dishes,
         restaurant: restaurant
           ? {
-              name: restaurant.name,
-              slug: restaurant.slug,
-            }
+            name: restaurant.name,
+            slug: restaurant.slug,
+          }
           : null,
       },
     });

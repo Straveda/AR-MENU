@@ -17,6 +17,8 @@ kdsOrderRoute.get(
   '/getkdsorders',
   requireAuth,
   resolveRestaurantFromUser,
+  checkSubscription,
+  enforcePlanFeature('kds'),
   requireRole('KDS', 'RESTAURANT_ADMIN'),
   getKdsOrders,
 );
@@ -26,7 +28,7 @@ kdsOrderRoute.patch(
   resolveRestaurantFromUser,
   checkSubscription,
   requireRole('KDS', 'RESTAURANT_ADMIN'),
-  enforcePlanFeature('kdsAccess'),
+  enforcePlanFeature('kds'),
   updateKdsOrderStatus,
 );
 

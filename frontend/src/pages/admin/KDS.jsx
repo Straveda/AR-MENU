@@ -5,8 +5,9 @@ import { useSocket } from "../../context/SocketProvider";
 import { useAuth } from "../../context/AuthProvider";
 import { useToast } from "../../components/common/Toast/ToastContext";
 import notificationSound from "../../assets/notification.mp3";
+import FeatureGate from "../../components/common/FeatureGate";
 
-export default function KDS() {
+function KDSContent() {
     const navigate = useNavigate();
     const { isAuthenticated, user, logout, loading: authLoading } = useAuth();
     const { showError, showInfo } = useToast();
@@ -445,5 +446,13 @@ export default function KDS() {
                 </div>
             </div>
         </div>
+    );
+}
+
+export default function KDS() {
+    return (
+        <FeatureGate feature="kds" showUpgrade>
+            <KDSContent />
+        </FeatureGate>
     );
 }

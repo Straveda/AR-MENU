@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate, Outlet } from "react-router-dom";
 import { useAuth } from "../../context/AuthProvider";
 import { useToast } from "../common/Toast/ToastContext";
 
-export default function AdminLayout() {
+function AdminLayoutContent() {
   const { logout, user } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
@@ -143,9 +143,11 @@ export default function AdminLayout() {
         </div>
       </main>
     </div>
-
   );
 }
+
+export default AdminLayoutContent;
+
 
 function NavIcon({ name }) {
   const icons = {
