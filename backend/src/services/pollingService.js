@@ -1,5 +1,7 @@
 import { Dish } from '../models/dish.models.js';
-import { getTaskStatus } from './meshyService.js';
+import { Restaurant } from '../models/restaurant.models.js';
+import { Plan } from '../models/plan.models.js';
+import { getTaskStatus, createImageTo3DTask } from './meshyService.js';
 import { storageService } from './storage/StorageService.js';
 import fetch from 'node-fetch';
 
@@ -128,18 +130,44 @@ const pollDishTask = async (dishId, meshyTaskId, maxAttempts = 60) => {
 
 export const resumePendingPolls = async () => {
   try {
-    const pendingDishes = await Dish.find({
-      modelStatus: { $in: ['pending', 'processing'] },
+    // 1. Resume existing tasks
+    const activeDishes = await Dish.find({
+      modelStatus: 'processing',
       meshyTaskId: { $ne: null },
     });
 
-    console.log(`📥 Found ${pendingDishes.length} dishes with pending models`);
-
-    for (const dish of pendingDishes) {
+    console.log(`📥 Resuming polling for ${activeDishes.length} active Meshy tasks...`);
+    for (const dish of activeDishes) {
       startPollingForDish(dish._id.toString(), dish.meshyTaskId);
     }
+
+    // 2. Start new tasks for pending dishes that have AR access now
+    const pendingDishes = await Dish.find({
+      modelStatus: 'pending',
+      meshyTaskId: null,
+    }).populate({
+      path: 'restaurantId',
+      populate: { path: 'planId' },
+    });
+
+    const eligibleDishes = pendingDishes.filter((d) => d.restaurantId?.planId?.features?.arModels);
+
+    if (eligibleDishes.length > 0) {
+      console.log(`🚀 Starting 3D generation for ${eligibleDishes.length} newly eligible pending dishes...`);
+      for (const dish of eligibleDishes) {
+        try {
+          const { taskId } = await createImageTo3DTask(dish.imageUrl, dish.name, dish._id);
+          dish.meshyTaskId = taskId;
+          dish.modelStatus = 'processing';
+          await dish.save();
+          startPollingForDish(dish._id.toString(), taskId);
+        } catch (error) {
+          console.error(`Failed to start task for dish ${dish._id}:`, error.message);
+        }
+      }
+    }
   } catch (error) {
-    console.error('Error resuming pending polls:', error);
+    console.error('Error in resumePendingPolls:', error);
   }
 };
 
