@@ -14,7 +14,7 @@ settingsRouter.get(
   '/profile',
   requireAuth,
   resolveRestaurantFromUser,
-  requireRole('RESTAURANT_ADMIN'),
+  requireRole('RESTAURANT_ADMIN', 'SUPER_ADMIN'),
   getRestaurantProfile,
 );
 
@@ -22,7 +22,7 @@ settingsRouter.put(
   '/profile',
   requireAuth,
   resolveRestaurantFromUser,
-  requireRole('RESTAURANT_ADMIN'),
+  requireRole('RESTAURANT_ADMIN', 'SUPER_ADMIN'),
   updateRestaurantProfile,
 );
 

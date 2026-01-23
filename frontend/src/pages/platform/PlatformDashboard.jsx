@@ -65,7 +65,7 @@ export default function PlatformDashboard() {
         <p className="text-sm text-gray-500 mt-1">Welcome to your Super Admin dashboard</p>
       </div>
 
-      {}
+      { }
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
         <StatCard label="Total Restaurants" value={stats.total} color="indigo" icon="building" />
         <StatCard label="Active" value={stats.active} color="green" icon="check" />
@@ -74,7 +74,7 @@ export default function PlatformDashboard() {
         <StatCard label="Expired" value={stats.expired} color="gray" icon="archive" />
       </div>
 
-      {}
+      { }
       <div className="mb-8">
         <h2 className="text-sm font-semibold text-gray-900 mb-4">Quick Actions</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -100,7 +100,7 @@ export default function PlatformDashboard() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {}
+        { }
         <div className="bg-white border border-gray-200 rounded-xl p-5">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-sm font-semibold text-gray-900">Recent Restaurants</h2>
@@ -125,7 +125,7 @@ export default function PlatformDashboard() {
           )}
         </div>
 
-        {}
+        { }
         <div className="bg-white border border-gray-200 rounded-xl p-5">
           <h2 className="text-sm font-semibold text-gray-900 mb-4">System Health</h2>
           <div className="space-y-3">
@@ -149,7 +149,7 @@ export default function PlatformDashboard() {
         </div>
       </div>
 
-      {}
+      { }
       {(stats.suspended > 0 || stats.expiringSoon > 0 || stats.noPlan > 0) && (
         <div className="mt-8">
           <h2 className="text-sm font-semibold text-gray-900 mb-4">Needs Attention</h2>
@@ -196,39 +196,35 @@ function StatCard({ label, value, color, icon }) {
 
   const icons = {
     building: (
-      <svg className="w-6 h-6 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-      </svg>
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
     ),
     check: (
-      <svg className="w-6 h-6 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-      </svg>
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
     ),
     clock: (
-      <svg className="w-6 h-6 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-      </svg>
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
     ),
     ban: (
-      <svg className="w-6 h-6 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
-      </svg>
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
     ),
     archive: (
-      <svg className="w-6 h-6 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
-      </svg>
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
     ),
   };
 
   return (
-    <div className={`rounded-xl p-4 ${colorStyles[color]}`}>
-      <div className="flex items-center justify-between mb-2">
-        {icons[icon]}
+    <div className={`rounded-xl p-2.5 md:p-5 shadow-sm flex flex-col justify-between h-full ${colorStyles[color]}`}>
+      <div className="flex items-center justify-between mb-1.5 md:mb-2">
+        <span className="w-6 h-6 md:w-8 md:h-8 rounded-lg flex items-center justify-center bg-white/20 backdrop-blur-sm border border-white/10">
+          <svg className="w-3.5 h-3.5 md:w-5 md:h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            {icons[icon]}
+          </svg>
+        </span>
       </div>
-      <p className="text-3xl font-bold">{value}</p>
-      <p className="text-sm opacity-90">{label}</p>
+      <div>
+        <h3 className="text-lg md:text-2xl font-bold text-white">{value}</h3>
+        <p className="text-[10px] md:text-xs font-medium text-white/80 leading-tight">{label}</p>
+      </div>
     </div>
   );
 }
@@ -268,18 +264,16 @@ function StatusBadge({ status }) {
 function HealthItem({ label, status }) {
   const isOperational = status === "operational";
   const isUnconfigured = status === "unconfigured";
-  
+
   return (
     <div className="flex items-center justify-between">
       <span className="text-sm text-gray-700">{label}</span>
-      <span className={`flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider ${
-        isOperational ? "text-emerald-600" : 
+      <span className={`flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider ${isOperational ? "text-emerald-600" :
         isUnconfigured ? "text-amber-600" : "text-red-600"
-      }`}>
-        <span className={`w-1.5 h-1.5 rounded-full ${
-          isOperational ? "bg-emerald-500" : 
+        }`}>
+        <span className={`w-1.5 h-1.5 rounded-full ${isOperational ? "bg-emerald-500" :
           isUnconfigured ? "bg-amber-500" : "bg-red-500"
-        }`}></span>
+          }`}></span>
         {status}
       </span>
     </div>

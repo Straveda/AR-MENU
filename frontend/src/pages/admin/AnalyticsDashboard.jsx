@@ -38,7 +38,7 @@ export default function AnalyticsDashboard() {
       </div>
 
       { }
-      <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
         <StatCard
           label="Orders Today"
           value={sales.ordersToday}
@@ -125,17 +125,17 @@ function StatCard({ label, value, icon, accent, subValue }) {
   };
 
   return (
-    <div className="card-premium p-6 group hover:translate-y-[-2px] transition-all duration-300">
-      <div className="flex items-center justify-between mb-6">
-        <div className="w-10 h-10 rounded text-slate-400 flex items-center justify-center bg-slate-50 border border-slate-100 group-hover:bg-white group-hover:text-slate-900 group-hover:border-slate-200 transition-all">
+    <div className="card-premium p-4 md:p-6 group hover:translate-y-[-2px] transition-all duration-300">
+      <div className="flex items-center justify-between mb-4 md:mb-6">
+        <div className="w-8 h-8 md:w-10 md:h-10 rounded text-slate-400 flex items-center justify-center bg-slate-50 border border-slate-100 group-hover:bg-white group-hover:text-slate-900 group-hover:border-slate-200 transition-all">
           {icon}
         </div>
-        <div className={`w-1 h-4 rounded-full ${accents[accent] || 'bg-slate-300'}`}></div>
+        <div className={`w-1 h-3 md:h-4 rounded-full ${accents[accent] || 'bg-slate-300'}`}></div>
       </div>
       <div>
-        <p className="text-xs font-semibold text-slate-500 mb-1">{label}</p>
-        <h3 className="text-2xl font-semibold text-slate-900 tracking-tight leading-none mb-2">{value}</h3>
-        {subValue && <p className="text-[10px] text-slate-400 font-medium tracking-tight mb-0.5">{subValue}</p>}
+        <p className="text-[10px] md:text-xs font-semibold text-slate-500 mb-0.5 md:mb-1">{label}</p>
+        <h3 className="text-xl md:text-2xl font-semibold text-slate-900 tracking-tight leading-none mb-1 md:mb-2">{value}</h3>
+        {subValue && <p className="text-[9px] md:text-[10px] text-slate-400 font-medium tracking-tight mb-0.5">{subValue}</p>}
       </div>
     </div>
   );

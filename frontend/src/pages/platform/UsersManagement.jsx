@@ -17,23 +17,23 @@ export default function UsersManagement() {
   const [error, setError] = useState("");
   const [filter, setFilter] = useState({ role: "", restaurant: "" });
 
-  const { 
-    page, 
-    limit, 
-    paginationMeta, 
-    setPaginationMeta, 
-    handlePageChange, 
+  const {
+    page,
+    limit,
+    paginationMeta,
+    setPaginationMeta,
+    handlePageChange,
     handleLimitChange,
-    paginationParams 
+    paginationParams
   } = usePagination(10);
 
   const [modal, setModal] = useState({ type: null, user: null });
-  const [confirmModal, setConfirmModal] = useState({ 
-    isOpen: false, 
-    title: "", 
-    message: "", 
-    onConfirm: null, 
-    isDangerous: false 
+  const [confirmModal, setConfirmModal] = useState({
+    isOpen: false,
+    title: "",
+    message: "",
+    onConfirm: null,
+    isDangerous: false
   });
 
   const [userForm, setUserForm] = useState({
@@ -50,19 +50,19 @@ export default function UsersManagement() {
   const [showPassword, setShowPassword] = useState(false);
 
   const fetchData = async () => {
-    
-    if(users.length === 0) setLoading(true);
+
+    if (users.length === 0) setLoading(true);
 
     try {
       const [usersRes, restRes] = await Promise.all([
         axiosClient.get("/platform/get-all-users", { params: paginationParams }),
         axiosClient.get("/platform/get-all-restaurants"),
       ]);
-      
+
       if (usersRes.data.success) {
         setUsers(usersRes.data.data || []);
         if (usersRes.data.meta) {
-            setPaginationMeta(usersRes.data.meta);
+          setPaginationMeta(usersRes.data.meta);
         }
       }
       if (restRes.data.success) setRestaurants(restRes.data.data || []);
@@ -76,7 +76,7 @@ export default function UsersManagement() {
 
   useEffect(() => {
     fetchData();
-    
+
   }, [page, limit]);
 
   const closeModal = () => {
@@ -111,10 +111,10 @@ export default function UsersManagement() {
     } else if (payload.role === "KDS") {
       payload.department = "KDS";
     }
-    
+
     // Clear restaurantId if platform role
     if (["SUPER_ADMIN"].includes(userForm.role)) {
-       payload.restaurantId = null;
+      payload.restaurantId = null;
     }
     return payload;
   };
@@ -127,9 +127,9 @@ export default function UsersManagement() {
       const payload = getPayload();
       const res = await axiosClient.post("/platform/create-user", payload);
       if (res.data.warning) {
-          showWarning("User created successfully, but marked as INACTIVE due to plan limits. Upgrade plan to activate.", 5000);
+        showWarning("User created successfully, but marked as INACTIVE due to plan limits. Upgrade plan to activate.", 5000);
       } else {
-          showSuccess("User created successfully");
+        showSuccess("User created successfully");
       }
       await fetchData();
       closeModal();
@@ -217,15 +217,15 @@ export default function UsersManagement() {
   const openEditModal = (user) => {
     let uiRole = user.role || "RESTAURANT_ADMIN";
     if (user.role === 'KDS') {
-        if (user.department === 'Finance') uiRole = 'FINANCE';
-        else if (user.department === 'Operations') uiRole = 'OPERATIONS';
-        else uiRole = 'KDS';
+      if (user.department === 'Finance') uiRole = 'FINANCE';
+      else if (user.department === 'Operations') uiRole = 'OPERATIONS';
+      else uiRole = 'KDS';
     }
 
     setUserForm({
       username: user.username || "",
       email: user.email || "",
-      password: "", 
+      password: "",
       phone: user.phone || "",
       role: uiRole,
       restaurantId: user.restaurantId?._id || user.restaurantId || "",
@@ -247,7 +247,9 @@ export default function UsersManagement() {
   const roleStats = {
     SUPER_ADMIN: users.filter((u) => u.role === "SUPER_ADMIN").length,
     RESTAURANT_ADMIN: users.filter((u) => u.role === "RESTAURANT_ADMIN").length,
-    KDS: users.filter((u) => u.role === "KDS").length,
+    KDS: users.filter((u) => u.role === "KDS" && (!u.department || u.department === "KDS")).length,
+    FINANCE: users.filter((u) => u.role === "KDS" && u.department === "Finance").length,
+    OPERATIONS: users.filter((u) => u.role === "KDS" && u.department === "Operations").length,
   };
 
   if (loading && users.length === 0) {
@@ -278,14 +280,16 @@ export default function UsersManagement() {
         </div>
       </div>
 
-      {}
+      { }
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 mb-6">
-        <StatBadge label="Super Admins" count={roleStats.SUPER_ADMIN} color="purple" />
-        <StatBadge label="Restaurant Admins" count={roleStats.RESTAURANT_ADMIN} color="indigo" />
-        <StatBadge label="KDS & Staff" count={roleStats.KDS} color="emerald" />
+        <StatBadge label="Super Admins" count={roleStats.SUPER_ADMIN} color="purple" icon="shield" />
+        <StatBadge label="Restaurant Admins" count={roleStats.RESTAURANT_ADMIN} color="indigo" icon="store" />
+        <StatBadge label="KDS" count={roleStats.KDS} color="emerald" icon="chef" />
+        <StatBadge label="Finance" count={roleStats.FINANCE} color="pink" icon="money" />
+        <StatBadge label="Operations" count={roleStats.OPERATIONS} color="orange" icon="cog" />
       </div>
 
-      {}
+      { }
       <div className="bg-white border border-gray-200 rounded-lg p-4 mb-4 flex flex-col sm:flex-row sm:items-center gap-4">
         <div className="flex items-center gap-2">
           <label className="text-sm text-gray-600">Role:</label>
@@ -323,7 +327,7 @@ export default function UsersManagement() {
         )}
       </div>
 
-      {}
+      { }
       <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="min-w-full text-sm">
@@ -361,9 +365,8 @@ export default function UsersManagement() {
                   </td>
                   <td className="px-4 py-4 text-gray-600 whitespace-nowrap">{user.phone || "-"}</td>
                   <td className="px-4 py-4 whitespace-nowrap">
-                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
-                      user.isActive ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-700"
-                    }`}>
+                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${user.isActive ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-700"
+                      }`}>
                       {user.isActive ? "Active" : "Inactive"}
                     </span>
                   </td>
@@ -391,7 +394,7 @@ export default function UsersManagement() {
         </div>
       </div>
 
-      {}
+      { }
       {!loading && paginationMeta && (
         <Pagination
           currentPage={page}
@@ -402,34 +405,34 @@ export default function UsersManagement() {
         />
       )}
 
-      {}
+      { }
       {modal.type && (
-        <Modal 
-          title={modal.type === "create" ? "Create New User" : `Edit User: ${modal.user.username}`} 
+        <Modal
+          title={modal.type === "create" ? "Create New User" : `Edit User: ${modal.user.username}`}
           onClose={closeModal}
         >
           <form onSubmit={modal.type === "create" ? handleCreateUser : handleUpdateUser}>
             {error && <ErrorMsg msg={error} />}
-            
+
             <div className="space-y-4">
-              <InputField 
-                label="Username" 
-                value={userForm.username} 
-                onChange={(v) => setUserForm({ ...userForm, username: v })} 
+              <InputField
+                label="Username"
+                value={userForm.username}
+                onChange={(v) => setUserForm({ ...userForm, username: v })}
               />
-              
+
               {modal.type === "create" && (
                 <>
-                  <InputField 
-                    label="Email" 
-                    type="email" 
-                    value={userForm.email} 
-                    onChange={(v) => setUserForm({ ...userForm, email: v })} 
+                  <InputField
+                    label="Email"
+                    type="email"
+                    value={userForm.email}
+                    onChange={(v) => setUserForm({ ...userForm, email: v })}
                   />
-                  <InputField 
-                    label="Password" 
-                    type={showPassword ? "text" : "password"} 
-                    value={userForm.password} 
+                  <InputField
+                    label="Password"
+                    type={showPassword ? "text" : "password"}
+                    value={userForm.password}
                     onChange={(v) => setUserForm({ ...userForm, password: v })}
                     showToggle={true}
                     isToggled={showPassword}
@@ -437,13 +440,13 @@ export default function UsersManagement() {
                   />
                 </>
               )}
-              
-              <InputField 
-                label="Phone" 
-                value={userForm.phone} 
-                onChange={(v) => setUserForm({ ...userForm, phone: v })} 
+
+              <InputField
+                label="Phone"
+                value={userForm.phone}
+                onChange={(v) => setUserForm({ ...userForm, phone: v })}
               />
-              
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
                 <select
@@ -462,15 +465,15 @@ export default function UsersManagement() {
 
               {['KDS', 'FINANCE', 'OPERATIONS'].includes(userForm.role) && (
                 <div>
-                  <InputField 
-                    label="Role Title" 
-                    value={userForm.roleTitle} 
-                    onChange={(v) => setUserForm({ ...userForm, roleTitle: v })} 
+                  <InputField
+                    label="Role Title"
+                    value={userForm.roleTitle}
+                    onChange={(v) => setUserForm({ ...userForm, roleTitle: v })}
                     placeholder="e.g. Head Chef, Accountant"
                   />
                 </div>
               )}
-              
+
               {!['SUPER_ADMIN'].includes(userForm.role) && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Restaurant</label>
@@ -488,11 +491,11 @@ export default function UsersManagement() {
                 </div>
               )}
             </div>
-            
+
             <div className="mt-6">
-              <SubmitBtn 
-                loading={actionLoading} 
-                label={modal.type === "create" ? "Create User" : "Update User"} 
+              <SubmitBtn
+                loading={actionLoading}
+                label={modal.type === "create" ? "Create User" : "Update User"}
               />
             </div>
           </form>
@@ -513,19 +516,40 @@ export default function UsersManagement() {
   );
 }
 
-function StatBadge({ label, count, color }) {
+function StatBadge({ label, count, color, icon }) {
   const colors = {
-    purple: "bg-purple-50 text-purple-700 border-purple-200",
-    blue: "bg-blue-50 text-blue-700 border-blue-200",
-    indigo: "bg-indigo-50 text-indigo-700 border-indigo-200",
-    emerald: "bg-emerald-50 text-emerald-700 border-emerald-200",
-    amber: "bg-amber-50 text-amber-700 border-amber-200",
+    purple: "bg-purple-600 text-white",
+    blue: "bg-blue-600 text-white",
+    indigo: "bg-indigo-600 text-white",
+    emerald: "bg-emerald-500 text-white",
+    orange: "bg-orange-500 text-white",
+    pink: "bg-pink-500 text-white",
+    amber: "bg-amber-500 text-white",
   };
 
+  const icons = {
+    shield: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />,
+    store: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />,
+    chef: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />,
+    money: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />,
+    cog: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+  };
+
+  const style = colors[color] || colors.indigo;
+
   return (
-    <div className={`border rounded-lg px-4 py-3 ${colors[color]}`}>
-      <p className="text-2xl font-bold">{count}</p>
-      <p className="text-xs">{label}</p>
+    <div className={`rounded-xl p-2.5 md:p-5 shadow-sm flex flex-col justify-between h-full ${style}`}>
+      <div className="flex items-center justify-between mb-1.5 md:mb-2">
+        <span className="w-6 h-6 md:w-8 md:h-8 rounded-lg flex items-center justify-center bg-white/20 backdrop-blur-sm border border-white/10">
+          <svg className="w-3.5 h-3.5 md:w-5 md:h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            {icons[icon] || icons.shield}
+          </svg>
+        </span>
+      </div>
+      <div>
+        <h3 className="text-lg md:text-2xl font-bold text-white">{count}</h3>
+        <p className="text-[10px] md:text-xs font-medium text-white/80 leading-tight">{label}</p>
+      </div>
     </div>
   );
 }
@@ -577,7 +601,7 @@ function ActionDropdown({ user, onEdit, onToggleStatus, onDelete }) {
       const rect = buttonRef.current.getBoundingClientRect();
       const screenHeight = window.innerHeight;
       const menuHeightEstimate = 200;
-      
+
       const spaceBelow = screenHeight - rect.bottom;
       const shouldOpenUpwards = spaceBelow < menuHeightEstimate;
 
@@ -603,14 +627,14 @@ function ActionDropdown({ user, onEdit, onToggleStatus, onDelete }) {
     <>
       <div className="py-2">
         <div className="px-4 py-1 text-xs font-bold text-slate-400 uppercase tracking-wider">Account</div>
-        <MenuItem 
+        <MenuItem
           icon={<svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>}
-          label="Edit Details" 
-          onClick={() => { onEdit(); setOpen(false); }} 
+          label="Edit Details"
+          onClick={() => { onEdit(); setOpen(false); }}
         />
-        <MenuItem 
-          icon={user.isActive ? 
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" /></svg> : 
+        <MenuItem
+          icon={user.isActive ?
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" /></svg> :
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
           }
           label={user.isActive ? 'Deactivate User' : 'Activate User'}
@@ -623,11 +647,11 @@ function ActionDropdown({ user, onEdit, onToggleStatus, onDelete }) {
 
       <div className="py-2">
         <div className="px-4 py-1 text-xs font-bold text-slate-400 uppercase tracking-wider">Danger Zone</div>
-        <MenuItem 
-           icon={<svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>}
-           label="Delete User"
-           onClick={() => { onDelete(); setOpen(false); }}
-           variant="danger"
+        <MenuItem
+          icon={<svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>}
+          label="Delete User"
+          onClick={() => { onDelete(); setOpen(false); }}
+          variant="danger"
         />
       </div>
     </>
@@ -650,19 +674,19 @@ function ActionDropdown({ user, onEdit, onToggleStatus, onDelete }) {
         <>
           <div className="fixed inset-0 z-40 bg-slate-900/10 backdrop-blur-[1px]" onClick={() => setOpen(false)} />
           {isMobile ? (
-             <div className="fixed bottom-0 left-0 right-0 z-50 bg-white rounded-t-2xl shadow-2xl border-t border-slate-200 animate-in slide-in-from-bottom duration-200">
-                <div className="flex justify-center pt-3 pb-1">
-                   <div className="w-12 h-1.5 bg-slate-200 rounded-full" />
+            <div className="fixed bottom-0 left-0 right-0 z-50 bg-white rounded-t-2xl shadow-2xl border-t border-slate-200 animate-in slide-in-from-bottom duration-200">
+              <div className="flex justify-center pt-3 pb-1">
+                <div className="w-12 h-1.5 bg-slate-200 rounded-full" />
+              </div>
+              <div className="pb-6">
+                <div className="px-4 py-2 border-b border-slate-100 mb-2">
+                  <h3 className="font-semibold text-slate-900">Manage User</h3>
                 </div>
-                <div className="pb-6">
-                  <div className="px-4 py-2 border-b border-slate-100 mb-2">
-                     <h3 className="font-semibold text-slate-900">Manage User</h3>
-                  </div>
-                  <MenuContent />
-                </div>
-             </div>
+                <MenuContent />
+              </div>
+            </div>
           ) : (
-            <div 
+            <div
               style={menuStyle}
               className="z-50 w-56 bg-white border border-slate-200 rounded-xl shadow-xl shadow-slate-200/50 py-1 overflow-hidden animate-in fade-in zoom-in-95 duration-100"
             >
@@ -688,9 +712,8 @@ function MenuItem({ label, onClick, icon, variant = 'default', disabled = false 
     <button
       onClick={onClick}
       disabled={disabled}
-      className={`w-full text-left px-4 py-2.5 text-sm flex items-center gap-3 transition-colors ${
-         disabled ? 'opacity-50 cursor-not-allowed bg-slate-50 text-slate-400' : styles[variant]
-      }`}
+      className={`w-full text-left px-4 py-2.5 text-sm flex items-center gap-3 transition-colors ${disabled ? 'opacity-50 cursor-not-allowed bg-slate-50 text-slate-400' : styles[variant]
+        }`}
     >
       {icon && <span className={disabled ? '' : "opacity-75"}>{icon}</span>}
       <span className="font-medium">{label}</span>

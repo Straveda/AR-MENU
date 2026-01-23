@@ -18,7 +18,6 @@ export default function Menu() {
   const [searchTerm, setSearchTerm] = useState("");
   const [suspended, setSuspended] = useState(false);
   const [notFound, setNotFound] = useState(false);
-  const [showFilters, setShowFilters] = useState(false);
 
   const cartItemCount = items.reduce((sum, item) => sum + item.quantity, 0);
 
@@ -177,55 +176,32 @@ export default function Menu() {
           </p>
         </div>
 
-        {/* Search Bar with Filter Icon */}
-        <div className="max-w-4xl mx-auto mb-4">
-          <div className="flex gap-3">
-            {/* Search Bar */}
-            <div className="relative flex-1">
-              <input
-                type="text"
-                placeholder="Search dishes..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 text-base border border-amber-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent bg-white shadow-sm"
-              />
-              <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
-                <svg className="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
+        {/* Search and Filters Section */}
+        <div className="max-w-4xl mx-auto sticky top-[72px] z-20 bg-amber-50/95 backdrop-blur-sm py-4 -mx-4 px-4 mb-2">
+          <div className="flex flex-col gap-4">
+            {/* Search Bar Row */}
+            <div className="flex gap-2">
+              <div className="relative flex-1">
+                <input
+                  type="text"
+                  placeholder="Search for dishes..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-10 pr-4 py-3 bg-white border border-amber-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 shadow-sm transition-all"
+                />
+                <div className="absolute left-3.5 top-1/2 -translate-y-1/2">
+                  <svg className="w-5 h-5 text-amber-500/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </div>
               </div>
-            </div>
 
-            {/* Filter Icon Button */}
-            <button
-              onClick={() => setShowFilters(!showFilters)}
-              className={`relative px-4 py-3 rounded-lg font-semibold transition-all shadow-sm flex items-center gap-2 ${showFilters
-                ? 'bg-amber-600 text-white'
-                : 'bg-white text-amber-600 border border-amber-200 hover:bg-amber-50'
-                }`}
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-              </svg>
-              <span className="hidden sm:inline">Filters</span>
-              {(activeCategory !== 'all' || sortOption !== 'recommended') && (
-                <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white"></span>
-              )}
-            </button>
-          </div>
-        </div>
-
-        {/* Collapsible Filter Card */}
-        {showFilters && (
-          <div className="max-w-4xl mx-auto mb-6 card-premium p-5 border-amber-100/50 animate-fade-in">
-            {/* Sort Dropdown */}
-            <div className="mb-4">
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Sort By</label>
-              <div className="relative">
+              {/* Sort Button/Dropdown */}
+              <div className="relative shrink-0">
                 <select
                   value={sortOption}
                   onChange={(e) => setSortOption(e.target.value)}
-                  className="appearance-none w-full pl-4 pr-10 py-2.5 bg-amber-50 border border-amber-200 rounded-lg text-gray-700 focus:outline-none focus:ring-2 focus:ring-amber-500 font-medium cursor-pointer"
+                  className="appearance-none h-full pl-4 pr-10 py-3 bg-white border border-amber-100 rounded-2xl text-gray-700 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 font-medium cursor-pointer shadow-sm transition-all text-sm"
                 >
                   {sortOptions.map(option => (
                     <option key={option.value} value={option.value}>
@@ -233,7 +209,7 @@ export default function Menu() {
                     </option>
                   ))}
                 </select>
-                <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none text-amber-600">
+                <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none text-amber-600">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
@@ -241,44 +217,24 @@ export default function Menu() {
               </div>
             </div>
 
-            {/* Categories */}
-            <div className="mb-4">
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Categories</label>
-              <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-8 gap-2">
-                {categories.map(category => (
-                  <button
-                    key={category}
-                    onClick={() => setActiveCategory(category)}
-                    className={`px-3 py-2 rounded-lg type-label transition-all duration-200 whitespace-nowrap ${activeCategory === category
-                      ? "bg-amber-600 text-white shadow-md transform scale-105"
-                      : "bg-amber-100 text-amber-800 hover:bg-amber-200"
-                      }`}
-                  >
-                    {category === 'all' ? 'All' : category.charAt(0).toUpperCase() + category.slice(1)}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Clear Filters Button */}
-            {(activeCategory !== 'all' || sortOption !== 'recommended') && (
-              <div className="flex justify-end pt-2 border-t border-gray-100">
+            {/* Horizontal Categories */}
+            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 px-1 -mx-1">
+              {categories.map(category => (
                 <button
-                  onClick={() => {
-                    setActiveCategory('all');
-                    setSortOption('recommended');
-                  }}
-                  className="text-sm text-amber-600 hover:text-amber-700 font-semibold flex items-center gap-1"
+                  key={category}
+                  onClick={() => setActiveCategory(category)}
+                  className={`px-5 py-2 rounded-full whitespace-nowrap text-sm font-semibold transition-all duration-300 border ${activeCategory === category
+                    ? "bg-amber-600 text-white border-amber-600 shadow-md shadow-amber-200"
+                    : "bg-white text-gray-600 border-amber-100 hover:border-amber-300 hover:bg-amber-50"
+                    }`}
                 >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                  Clear All Filters
+                  {category === 'all' ? 'All' : category.charAt(0).toUpperCase() + category.slice(1)}
                 </button>
-              </div>
-            )}
+              ))}
+            </div>
           </div>
-        )}
+        </div>
+
 
         { }
         {loading ? (
