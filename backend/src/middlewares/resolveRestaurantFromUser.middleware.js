@@ -23,7 +23,7 @@ export const resolveRestaurantFromUser = async (req, res, next) => {
       });
     }
 
-    req.restaurant = restaurant;
+    req.restaurant = await restaurant.populate('planId');
     next();
   } catch (error) {
     return res.status(500).json({

@@ -183,6 +183,16 @@ const getDishes = async (req, res) => {
 
     const dishes = await Dish.find(filter).sort(sortOption);
 
+    // Hide AR models if plan doesn't support it
+    const arEnabled = req.restaurant?.planId?.features?.arModels;
+    if (!arEnabled) {
+      dishes.forEach(dish => {
+        dish.modelUrls = undefined;
+        dish.meshyTaskId = undefined;
+        // Do not overwrite status, so user sees 'Completed' (inactive) instead of 'Pending'
+      });
+    }
+
     return res.status(200).json({
       success: true,
       message: 'Dishes fetched successfully',
@@ -218,6 +228,14 @@ const getDishById = async (req, res) => {
     }
 
     const dish = await Dish.findOne(filter);
+
+    // Hide AR models if plan doesn't support it
+    const arEnabled = req.restaurant?.planId?.features?.arModels;
+    if (dish && !arEnabled) {
+      dish.modelUrls = undefined;
+      dish.meshyTaskId = undefined;
+      dish.modelStatus = 'pending';
+    }
 
     if (!dish) {
       return res.status(404).json({
@@ -605,6 +623,10 @@ const proxyModel = async (req, res) => {
         success: false,
         message: 'Restaurant not found',
       });
+    }
+
+    if (!req.restaurant.planId?.features?.arModels) {
+      return res.status(403).send('AR Models feature not available in current plan');
     }
 
     const dish = await Dish.findOne({ _id: id, restaurantId: restaurant._id });

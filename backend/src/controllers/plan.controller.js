@@ -1,5 +1,6 @@
 import { Plan } from '../models/plan.models.js';
 import { Restaurant } from '../models/restaurant.models.js';
+import { triggerPendingModelsForRestaurant } from '../services/meshyService.js';
 
 const createPlan = async (req, res) => {
   try {
@@ -60,16 +61,32 @@ const getAllPlans = async (req, res) => {
   }
 };
 
+
+
 const updatePlan = async (req, res) => {
   try {
     const { planId } = req.params;
 
-    const plan = await Plan.findByIdAndUpdate(planId, req.body, { new: true });
-
-    if (!plan) {
+    const oldPlan = await Plan.findById(planId);
+    if (!oldPlan) {
       return res.status(404).json({
         success: false,
         message: 'Plan not found',
+      });
+    }
+
+    const plan = await Plan.findByIdAndUpdate(planId, req.body, { new: true });
+
+    // Check if AR models feature was turned ON
+    if (!oldPlan.features?.arModels && plan.features?.arModels) {
+      console.log(`✨ AR Models feature enabled for plan ${plan.name}. Triggering auto-conversion...`);
+
+      const restaurants = await Restaurant.find({ planId: plan._id });
+      console.log(`Found ${restaurants.length} restaurants to update.`);
+
+      // Process in background to avoid blocking response
+      restaurants.forEach(restaurant => {
+        triggerPendingModelsForRestaurant(restaurant._id, plan._id);
       });
     }
 

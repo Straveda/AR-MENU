@@ -11,7 +11,7 @@ import bcrypt from 'bcryptjs';
 import { validateMeshyConfig } from '../config/meshy.config.js';
 import { Order } from '../models/order.models.js';
 import { AuditLog } from '../models/auditLog.model.js';
-import { createImageTo3DTask } from '../services/meshyService.js';
+import { createImageTo3DTask, triggerPendingModelsForRestaurant } from '../services/meshyService.js';
 import { startPollingForDish } from '../services/pollingService.js';
 
 const getSubscriptionLogs = async (req, res) => {
@@ -510,39 +510,7 @@ const updateRestaurantStatus = async (req, res) => {
   }
 };
 
-/**
- * Trigger 3D model generation for all pending dishes of a restaurant
- * if the plan includes arModels feature.
- */
-const triggerPendingModelsForRestaurant = async (restaurantId, planId) => {
-  try {
-    const plan = await Plan.findById(planId);
-    if (!plan?.features?.arModels) return;
 
-    const pendingDishes = await Dish.find({
-      restaurantId,
-      modelStatus: 'pending',
-    });
-
-    if (pendingDishes.length === 0) return;
-
-    console.log(`🔄 Auto-triggering 3D models for ${pendingDishes.length} pending dishes...`);
-
-    for (const dish of pendingDishes) {
-      try {
-        const { taskId } = await createImageTo3DTask(dish.imageUrl, dish.name, dish._id);
-        dish.meshyTaskId = taskId;
-        dish.modelStatus = 'processing';
-        await dish.save();
-        startPollingForDish(dish._id.toString(), taskId);
-      } catch (error) {
-        console.error(`Failed to trigger model for dish ${dish._id}:`, error.message);
-      }
-    }
-  } catch (error) {
-    console.error('Error in triggerPendingModelsForRestaurant:', error);
-  }
-};
 
 const createRestaurantAdmin = async (req, res) => {
   try {
