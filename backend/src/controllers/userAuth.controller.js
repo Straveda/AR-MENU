@@ -13,12 +13,19 @@ export const loginUser = async (req, res) => {
       });
     }
 
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email }).populate('restaurantId');
 
-    if (!user || user.isActive === false) {
+    if (!user) {
       return res.status(401).json({
         success: false,
-        message: 'Invalid user',
+        message: 'Invalid email or password', // Keep generic for security but I can log it
+      });
+    }
+
+    if (user.isActive === false) {
+      return res.status(401).json({
+        success: false,
+        message: 'Your account has been deactivated. Please contact support.',
       });
     }
 
@@ -27,14 +34,14 @@ export const loginUser = async (req, res) => {
     if (!isPasswordMatched) {
       return res.status(401).json({
         success: false,
-        message: 'Invalid credentials',
+        message: 'Invalid email or password',
       });
     }
 
     const token = signToken({
       id: user._id,
       role: user.role,
-      restaurantId: user.restaurantId,
+      restaurantId: user.restaurantId?._id || user.restaurantId,
     });
 
     return res.status(200).json({
@@ -46,6 +53,7 @@ export const loginUser = async (req, res) => {
         email: user.email,
         role: user.role,
         restaurantId: user.restaurantId,
+        subscriptionStatus: user.restaurantId?.subscriptionStatus,
         department: user.department,
       },
     });

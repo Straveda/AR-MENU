@@ -149,3 +149,44 @@ export const refineModel = async (taskId) => {
     throw error;
   }
 };
+
+/**
+ * Trigger 3D model generation for all pending dishes of a restaurant
+ * if the plan includes arModels feature.
+ */
+export const triggerPendingModelsForRestaurant = async (restaurantId, planId) => {
+  try {
+    // Import here to avoid circular dependencies if any, though Models should be fine
+    const { Plan } = await import('../models/plan.models.js');
+    const { Dish } = await import('../models/dish.models.js');
+    const { startPollingForDish } = await import('./pollingService.js');
+
+    const plan = await Plan.findById(planId);
+    if (!plan?.features?.arModels) return;
+
+    const pendingDishes = await Dish.find({
+      restaurantId,
+      modelStatus: 'pending',
+    });
+
+    if (pendingDishes.length === 0) return;
+
+    console.log(`🔄 Auto-triggering 3D models for ${pendingDishes.length} pending dishes...`);
+
+    for (const dish of pendingDishes) {
+      if (!dish.imageUrl) continue;
+
+      try {
+        const { taskId } = await createImageTo3DTask(dish.imageUrl, dish.name);
+        dish.meshyTaskId = taskId;
+        dish.modelStatus = 'processing';
+        await dish.save();
+        startPollingForDish(dish._id.toString(), taskId);
+      } catch (error) {
+        console.error(`Failed to trigger model for dish ${dish._id}:`, error.message);
+      }
+    }
+  } catch (error) {
+    console.error('Error in triggerPendingModelsForRestaurant:', error);
+  }
+};

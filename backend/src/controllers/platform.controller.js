@@ -11,7 +11,7 @@ import bcrypt from 'bcryptjs';
 import { validateMeshyConfig } from '../config/meshy.config.js';
 import { Order } from '../models/order.models.js';
 import { AuditLog } from '../models/auditLog.model.js';
-import { createImageTo3DTask } from '../services/meshyService.js';
+import { createImageTo3DTask, triggerPendingModelsForRestaurant } from '../services/meshyService.js';
 import { startPollingForDish } from '../services/pollingService.js';
 
 const getSubscriptionLogs = async (req, res) => {
@@ -434,7 +434,9 @@ const createRestaurant = async (req, res) => {
       planId: plan._id,
       subscriptionType: subscriptionType || 'MONTHLY',
       status: status,
-      subscriptionStatus: isActive ? 'ACTIVE' : 'SUSPENDED',
+      subscriptionStatus: isActive
+        ? (hasPaidPlan ? 'PAYMENT_PENDING' : 'ACTIVE')
+        : 'SUSPENDED',
       subscriptionStartsAt: new Date(),
       subscriptionEndsAt: subscriptionEndsAt,
       isActive: isActive,
@@ -510,39 +512,7 @@ const updateRestaurantStatus = async (req, res) => {
   }
 };
 
-/**
- * Trigger 3D model generation for all pending dishes of a restaurant
- * if the plan includes arModels feature.
- */
-const triggerPendingModelsForRestaurant = async (restaurantId, planId) => {
-  try {
-    const plan = await Plan.findById(planId);
-    if (!plan?.features?.arModels) return;
 
-    const pendingDishes = await Dish.find({
-      restaurantId,
-      modelStatus: 'pending',
-    });
-
-    if (pendingDishes.length === 0) return;
-
-    console.log(`🔄 Auto-triggering 3D models for ${pendingDishes.length} pending dishes...`);
-
-    for (const dish of pendingDishes) {
-      try {
-        const { taskId } = await createImageTo3DTask(dish.imageUrl, dish.name, dish._id);
-        dish.meshyTaskId = taskId;
-        dish.modelStatus = 'processing';
-        await dish.save();
-        startPollingForDish(dish._id.toString(), taskId);
-      } catch (error) {
-        console.error(`Failed to trigger model for dish ${dish._id}:`, error.message);
-      }
-    }
-  } catch (error) {
-    console.error('Error in triggerPendingModelsForRestaurant:', error);
-  }
-};
 
 const createRestaurantAdmin = async (req, res) => {
   try {
@@ -826,6 +796,13 @@ const changeRestaurantPlan = async (req, res) => {
 
     const oldPlanId = restaurant.planId;
     restaurant.planId = newPlan._id;
+
+    // If the new plan has a price > 0, set status to PAYMENT_PENDING
+    // This will trigger the payment modal for the restaurant admin on next login
+    if (newPlan.price > 0) {
+      restaurant.subscriptionStatus = 'PAYMENT_PENDING';
+    }
+
     await restaurant.save();
 
     await SubscriptionLog.create({
@@ -845,6 +822,7 @@ const changeRestaurantPlan = async (req, res) => {
       data: {
         restaurantId: restaurant._id,
         newPlan: newPlan.name,
+        requiresPayment: newPlan.price > 0,
       },
     });
   } catch (error) {
@@ -1290,6 +1268,75 @@ const deleteUser = async (req, res) => {
   }
 };
 
+const initiatePayment = async (req, res) => {
+  try {
+    const { planId } = req.body;
+    const restaurant = req.restaurant; // Assumes resolved by middleware
+
+    // In a real implementation:
+    // 1. Create Order in Razorpay
+    // 2. Return order_id and amount
+
+    const plan = await Plan.findById(planId);
+    if (!plan) return res.status(404).json({ message: 'Plan not found' });
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        orderId: `order_mock_${Date.now()}`,
+        amount: plan.price * 100, // In paise
+        currency: 'INR',
+        key: 'rzp_test_mock_key'
+      }
+    });
+
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+const verifyPayment = async (req, res) => {
+  try {
+    const { _paymentId, _orderId, _signature } = req.body;
+    const restaurant = req.restaurant;
+
+    // In real implementation: Verify signature
+
+    restaurant.subscriptionStatus = 'ACTIVE';
+    restaurant.subscriptionStartsAt = new Date();
+
+    // Calculate endsAt based on interval
+    const plan = await Plan.findById(restaurant.planId);
+    const now = new Date();
+    if (plan.interval === 'YEARLY') {
+      now.setFullYear(now.getFullYear() + 1);
+    } else {
+      now.setMonth(now.getMonth() + 1);
+    }
+    restaurant.subscriptionEndsAt = now;
+
+    await restaurant.save();
+
+    await SubscriptionLog.create({
+      restaurantId: restaurant._id,
+      planId: restaurant.planId,
+      action: 'ASSIGN', // Changed from 'RENEW' to match enum values
+      durationInDays: plan.interval === 'YEARLY' ? 365 : 30,
+      performedBy: req.user?._id,
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: 'Payment verified and subscription activated'
+    });
+
+
+  } catch (error) {
+    console.error('Error in verifyPayment:', error);
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 export {
   getAllRestaurants,
   getSubscriptionLogs,
@@ -1314,4 +1361,6 @@ export {
   getSystemHealth,
   deleteRestaurant,
   deleteUser,
+  initiatePayment,
+  verifyPayment,
 };

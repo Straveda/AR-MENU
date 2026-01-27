@@ -3,6 +3,82 @@ import { useState, useEffect, useRef } from "react";
 import axiosClient from "../../api/axiosClient";
 import "@google/model-viewer";
 
+// Ingredient icon mapping
+const ingredientIcons = {
+    // Vegetables
+    'tomato': '🍅', 'onion': '🧅', 'garlic': '🧄', 'ginger': '🫚',
+    'chilli': '🌶️', 'chili': '🌶️', 'pepper': '🫑', 'carrot': '🥕',
+    'potato': '🥔', 'broccoli': '🥦', 'mushroom': '🍄',
+
+    // Proteins
+    'chicken': '🍗', 'beef': '🥩', 'fish': '🐟', 'egg': '🥚',
+    'tofu': '🧊', 'paneer': '🧀', 'cheese': '🧀',
+
+    // Nuts & Seeds
+    'peanuts': '🥜', 'peanut': '🥜', 'cashews': '🌰', 'cashew': '🌰',
+    'almonds': '🌰', 'almond': '🌰', 'nuts': '🌰',
+
+    // Spices
+    'salt': '🧂', 'sugar': '🍬', 'cumin': '🌿', 'coriander': '🌿',
+
+    // Grains
+    'rice': '🍚', 'flour': '🌾', 'bread': '🍞', 'noodles': '🍜',
+
+    // Sauces & Liquids
+    'sauce': '🥫', 'oil': '🫗', 'butter': '🧈', 'cream': '🥛',
+
+    // Default
+    'default': '🍽️'
+};
+
+// Dietary tag icon mapping
+const tagIcons = {
+    'vegetarian': '🥬',
+    'vegan': '🌱',
+    'gluten free': '🌾',
+    'dairy free': '🥛',
+    'contains nuts': '🌰',
+    'spicy': '🌶️',
+    'halal': '☪️',
+    'kosher': '✡️',
+    'bestseller': '⭐',
+    'chef special': '👨‍🍳'
+};
+
+function getIngredientIcon(ingredient) {
+    const normalized = ingredient.toLowerCase().trim();
+    for (const [key, icon] of Object.entries(ingredientIcons)) {
+        if (normalized.includes(key)) {
+            return icon;
+        }
+    }
+    return ingredientIcons['default'];
+}
+
+function getTagIcon(tag) {
+    const normalized = tag.toLowerCase().trim();
+    return tagIcons[normalized] || '✓';
+}
+
+// Calculate circular positions for ingredients
+function calculateCircularPositions(count) {
+    if (count === 0) return [];
+
+    const positions = [];
+    const radius = 42; // percentage from center
+    const angleStep = (2 * Math.PI) / count;
+
+    for (let i = 0; i < count; i++) {
+        const angle = i * angleStep - Math.PI / 2; // Start from top
+        positions.push({
+            top: `${50 + radius * Math.sin(angle)}%`,
+            left: `${50 + radius * Math.cos(angle)}%`,
+        });
+    }
+
+    return positions;
+}
+
 export default function ARViewer() {
     const { slug, id } = useParams();
     const navigate = useNavigate();
@@ -11,6 +87,7 @@ export default function ARViewer() {
     const [loading, setLoading] = useState(true);
     const [arError, setArError] = useState(false);
     const [modelLoaded, setModelLoaded] = useState(false);
+    const [displayMode, setDisplayMode] = useState('nutrition'); // 'nutrition' or 'ingredients'
 
     const fetchDish = async () => {
         try {
@@ -105,9 +182,15 @@ export default function ARViewer() {
         );
     }
 
+    // Prepare data
+    const nutritionalInfo = dish.nutritionalInfo || {};
+    const ingredients = dish.ingredients || [];
+    const tags = dish.tags || [];
+    const ingredientPositions = calculateCircularPositions(Math.min(ingredients.length, 8)); // Limit to 8 for better UX
+
     return (
         <div className="min-h-screen bg-amber-50">
-            {}
+            {/* Header */}
             <div className="border-b border-amber-200 bg-white">
                 <div className="max-w-6xl mx-auto px-4 py-4">
                     <button
@@ -122,10 +205,10 @@ export default function ARViewer() {
                 </div>
             </div>
 
-            {}
+            {/* Main Content */}
             <div className="max-w-6xl mx-auto p-4">
                 <div className="bg-white rounded-xl shadow-lg border border-amber-100 overflow-hidden">
-                    {}
+                    {/* Dish Info Header */}
                     <div className="p-6 border-b border-amber-100">
                         <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-2">
                             {dish.name}
@@ -146,10 +229,10 @@ export default function ARViewer() {
                         </p>
                     </div>
 
-                    {}
+                    {/* AR Viewer Section */}
                     <div className="p-6">
                         <div className="bg-gray-50 rounded-lg border border-gray-200 overflow-hidden relative">
-                            {}
+                            {/* Loading Overlay */}
                             {!modelLoaded && (
                                 <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-90 z-10">
                                     <div className="text-center">
@@ -159,7 +242,125 @@ export default function ARViewer() {
                                 </div>
                             )}
 
-                            {}
+                            {/* Toggle Button */}
+                            {modelLoaded && (ingredients.length > 0 || Object.values(nutritionalInfo).some(v => v > 0)) && (
+                                <button
+                                    onClick={() => setDisplayMode(displayMode === 'nutrition' ? 'ingredients' : 'nutrition')}
+                                    className="absolute top-4 left-4 z-20 bg-white/90 backdrop-blur-sm px-4 py-2 rounded-lg shadow-lg border border-gray-200 hover:bg-white transition-all text-sm font-medium text-gray-700 hover:text-amber-600 flex items-center gap-2"
+                                >
+                                    {displayMode === 'nutrition' ? (
+                                        <>
+                                            <span>🥗</span>
+                                            <span className="hidden sm:inline">Show Ingredients</span>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <span>📊</span>
+                                            <span className="hidden sm:inline">Show Nutrition</span>
+                                        </>
+                                    )}
+                                </button>
+                            )}
+
+                            {/* Dietary Tags */}
+                            {modelLoaded && tags.length > 0 && (
+                                <div className="absolute right-4 top-1/2 transform -translate-y-1/2 space-y-2 z-20 hidden md:block">
+                                    {tags.slice(0, 5).map((tag, index) => (
+                                        <div
+                                            key={index}
+                                            className="bg-green-500/90 backdrop-blur-sm text-white px-3 py-1.5 rounded-full text-xs font-medium shadow-lg flex items-center gap-1.5"
+                                        >
+                                            <span>{getTagIcon(tag)}</span>
+                                            <span>{tag}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+
+                            {/* Nutritional Info Badges */}
+                            {modelLoaded && displayMode === 'nutrition' && (
+                                <>
+                                    {/* Calories - Top Left */}
+                                    {nutritionalInfo.calories > 0 && (
+                                        <div className="absolute top-[10%] left-[8%] z-20">
+                                            <div className="bg-white/95 backdrop-blur-sm rounded-full px-4 py-3 shadow-xl border border-gray-200">
+                                                <div className="text-center">
+                                                    <div className="text-2xl mb-1">🔥</div>
+                                                    <div className="text-lg font-bold text-gray-800">{nutritionalInfo.calories}</div>
+                                                    <div className="text-xs text-gray-600">kcal</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Protein - Top Right */}
+                                    {nutritionalInfo.protein > 0 && (
+                                        <div className="absolute top-[10%] right-[8%] z-20">
+                                            <div className="bg-white/95 backdrop-blur-sm rounded-full px-4 py-3 shadow-xl border border-gray-200">
+                                                <div className="text-center">
+                                                    <div className="text-2xl mb-1">🍖</div>
+                                                    <div className="text-lg font-bold text-gray-800">{nutritionalInfo.protein}g</div>
+                                                    <div className="text-xs text-gray-600">Protein</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Carbs - Bottom Right */}
+                                    {nutritionalInfo.carbs > 0 && (
+                                        <div className="absolute bottom-[20%] right-[8%] z-20">
+                                            <div className="bg-white/95 backdrop-blur-sm rounded-full px-4 py-3 shadow-xl border border-gray-200">
+                                                <div className="text-center">
+                                                    <div className="text-2xl mb-1">🌾</div>
+                                                    <div className="text-lg font-bold text-gray-800">{nutritionalInfo.carbs}g</div>
+                                                    <div className="text-xs text-gray-600">Carbs</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Sugar - Bottom Left */}
+                                    {nutritionalInfo.sugar > 0 && (
+                                        <div className="absolute bottom-[20%] left-[8%] z-20">
+                                            <div className="bg-white/95 backdrop-blur-sm rounded-full px-4 py-3 shadow-xl border border-gray-200">
+                                                <div className="text-center">
+                                                    <div className="text-2xl mb-1">🍬</div>
+                                                    <div className="text-lg font-bold text-gray-800">{nutritionalInfo.sugar}g</div>
+                                                    <div className="text-xs text-gray-600">Sugar</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+                                </>
+                            )}
+
+                            {/* Ingredient Badges - Circular Layout */}
+                            {modelLoaded && displayMode === 'ingredients' && ingredients.length > 0 && (
+                                <>
+                                    {ingredients.slice(0, 8).map((ingredient, index) => {
+                                        const position = ingredientPositions[index];
+                                        return (
+                                            <div
+                                                key={index}
+                                                className="absolute z-20 transform -translate-x-1/2 -translate-y-1/2"
+                                                style={{
+                                                    top: position.top,
+                                                    left: position.left,
+                                                }}
+                                            >
+                                                <div className="bg-white/95 backdrop-blur-sm rounded-full px-3 py-2 shadow-xl border border-gray-200">
+                                                    <div className="text-center">
+                                                        <div className="text-xl mb-0.5">{getIngredientIcon(ingredient)}</div>
+                                                        <div className="text-xs font-medium text-gray-700 whitespace-nowrap">{ingredient}</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </>
+                            )}
+
+                            {/* 3D Model Viewer */}
                             <model-viewer
                                 ref={modelViewerRef}
                                 src={dish.modelUrls?.glb ? `${import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1'}/dishes/r/${slug}/dishes/proxy-model/${dish._id}/glb` : undefined}
@@ -174,7 +375,7 @@ export default function ARViewer() {
                                 onError={handleModelError}
                                 style={{ display: modelLoaded ? 'block' : 'none' }}
                             >
-                                {}
+                                {/* AR Button */}
                                 <button
                                     slot="ar-button"
                                     className="absolute bottom-4 right-4 bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-lg font-medium transition-colors shadow-lg"
@@ -184,7 +385,7 @@ export default function ARViewer() {
                             </model-viewer>
                         </div>
 
-                        {/* Standalone AR Launch Button - Always visible fallback */}
+                        {/* Standalone AR Launch Button */}
                         {modelLoaded && (
                             <div className="mt-4 flex justify-center">
                                 <button
@@ -193,7 +394,7 @@ export default function ARViewer() {
                                             modelViewerRef.current.activateAR();
                                         }
                                     }}
-                                    className="bg-linear-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white px-8 py-4 rounded-xl font-bold text-lg shadow-lg transition-all transform hover:-translate-y-0.5 flex items-center gap-3"
+                                    className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white px-8 py-4 rounded-xl font-bold text-lg shadow-lg transition-all transform hover:-translate-y-0.5 flex items-center gap-3"
                                 >
                                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2z" />
@@ -238,7 +439,7 @@ export default function ARViewer() {
                     </div>
                 </div>
 
-                {}
+                {/* Footer */}
                 <div className="mt-4 text-center">
                     <p className="text-xs text-gray-500">
                         💫 AR experience powered by Google Model Viewer. Requires compatible device.

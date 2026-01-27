@@ -20,6 +20,8 @@ import {
   getSystemHealth,
   deleteRestaurant,
   deleteUser,
+  initiatePayment,
+  verifyPayment,
 } from '../controllers/platform.controller.js';
 
 const platformRouter = express.Router();
@@ -124,6 +126,9 @@ platformRouter.patch(
 );
 
 platformRouter.get('/get-system-health', requireAuth, requireRole('SUPER_ADMIN'), getSystemHealth);
+
+platformRouter.post('/initiate-payment', requireAuth, requireRole('RESTAURANT_ADMIN', 'SUPER_ADMIN'), resolveRestaurantFromUser, initiatePayment);
+platformRouter.post('/verify-payment', requireAuth, requireRole('RESTAURANT_ADMIN', 'SUPER_ADMIN'), resolveRestaurantFromUser, verifyPayment);
 
 platformRouter.delete(
   '/delete-restaurant/:restaurantId',

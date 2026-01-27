@@ -66,7 +66,7 @@ const restaurantSchema = new mongoose.Schema(
 
     subscriptionStatus: {
       type: String,
-      enum: ['TRIAL', 'ACTIVE', 'EXPIRED', 'SUSPENDED'],
+      enum: ['TRIAL', 'ACTIVE', 'EXPIRED', 'SUSPENDED', 'PAYMENT_PENDING'],
       default: 'TRIAL',
     },
 
