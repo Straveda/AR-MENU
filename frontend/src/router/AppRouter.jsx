@@ -6,6 +6,7 @@ import { OrderProvider } from '../context/OrderContext';
 import ErrorBoundary from '../components/common/ErrorBoundary';
 import RoleGuard from './RoleGuard';
 import { FeatureAccessProvider } from '../contexts/FeatureAccessContext';
+import PaymentGuard from './PaymentGuard';
 
 import Login from '../pages/admin/Login.jsx';
 import ForgotPassword from '../pages/admin/ForgotPassword.jsx';
@@ -67,18 +68,20 @@ const AppRouter = () => {
 
                                         { }
                                         <Route element={<RoleGuard allowedRoles={['RESTAURANT_ADMIN']} />}>
-                                            <Route element={<AdminLayout />}>
-                                                <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
-                                                <Route path="/admin/dashboard" element={<AnalyticsDashboard />} />
-                                                <Route path="/admin/analytics" element={<Analytics />} />
-                                                <Route path="/admin/menu" element={<MenuManagement />} />
+                                            <Route element={<PaymentGuard />}>
+                                                <Route element={<AdminLayout />}>
+                                                    <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
+                                                    <Route path="/admin/dashboard" element={<AnalyticsDashboard />} />
+                                                    <Route path="/admin/analytics" element={<Analytics />} />
+                                                    <Route path="/admin/menu" element={<MenuManagement />} />
 
-                                                <Route path="/admin/add-dish" element={<AddDish />} />
-                                                <Route path="/admin/edit-dish/:id" element={<EditDish />} />
-                                                <Route path="/admin/staff" element={<StaffManagement />} />
-                                                <Route path="/admin/inventory" element={<Inventory />} />
-                                                <Route path="/admin/expenses" element={<ExpensesPage />} />
-                                                <Route path="/admin/settings" element={<Settings />} />
+                                                    <Route path="/admin/add-dish" element={<AddDish />} />
+                                                    <Route path="/admin/edit-dish/:id" element={<EditDish />} />
+                                                    <Route path="/admin/staff" element={<StaffManagement />} />
+                                                    <Route path="/admin/inventory" element={<Inventory />} />
+                                                    <Route path="/admin/expenses" element={<ExpensesPage />} />
+                                                    <Route path="/admin/settings" element={<Settings />} />
+                                                </Route>
                                             </Route>
                                         </Route>
 

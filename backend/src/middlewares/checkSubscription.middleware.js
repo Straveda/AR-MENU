@@ -9,6 +9,11 @@ export const checkSubscription = async (req, res, next) => {
       });
     }
 
+    // Allow PAYMENT_PENDING users to access endpoints (they'll see PaymentModal on frontend)
+    if (restaurant.subscriptionStatus === 'PAYMENT_PENDING') {
+      return next();
+    }
+
     if (restaurant.subscriptionStatus === 'SUSPENDED') {
       return res.status(403).json({
         success: false,

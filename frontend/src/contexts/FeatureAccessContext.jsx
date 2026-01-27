@@ -25,11 +25,16 @@ export const FeatureAccessProvider = ({ children }) => {
     const [error, setError] = useState(null);
 
     const fetchFeatureAccess = useCallback(async () => {
+        const token = localStorage.getItem('token');
+        if (!token && !slug) {
+            setLoading(false);
+            return;
+        }
+
         try {
             setLoading(true);
             setError(null);
 
-            const token = localStorage.getItem('token');
             let data;
 
             if (token) {
@@ -37,27 +42,22 @@ export const FeatureAccessProvider = ({ children }) => {
                 try {
                     data = await checkFeatureAccess();
                 } catch (err) {
-                    // If authenticated check fails, try public check as fallback
-                    if (err.response?.status === 401 && slug) {
-                        data = await checkPublicFeatureAccess(slug);
+                    if (err.response?.status === 401) {
+                        localStorage.removeItem('token'); // Clear invalid token
+                        if (slug) {
+                            data = await checkPublicFeatureAccess(slug);
+                        } else {
+                            throw err;
+                        }
                     } else {
                         throw err;
                     }
                 }
-            } else if (slug) {
-                // Public check for guest users
-                data = await checkPublicFeatureAccess(slug);
             } else {
-                // No token and no slug (e.g., landing page)
-                setPlan(null);
-                setFeatures({
-                    arModels: false,
-                    kds: false,
-                    analytics: false,
-                });
-                setLoading(false);
-                return;
+                data = await checkPublicFeatureAccess(slug);
             }
+
+            if (!data) return;
 
             if (data.success) {
                 if (token) {

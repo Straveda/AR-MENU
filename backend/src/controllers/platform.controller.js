@@ -434,7 +434,9 @@ const createRestaurant = async (req, res) => {
       planId: plan._id,
       subscriptionType: subscriptionType || 'MONTHLY',
       status: status,
-      subscriptionStatus: isActive ? 'ACTIVE' : 'SUSPENDED',
+      subscriptionStatus: isActive
+        ? (hasPaidPlan ? 'PAYMENT_PENDING' : 'ACTIVE')
+        : 'SUSPENDED',
       subscriptionStartsAt: new Date(),
       subscriptionEndsAt: subscriptionEndsAt,
       isActive: isActive,
@@ -794,6 +796,13 @@ const changeRestaurantPlan = async (req, res) => {
 
     const oldPlanId = restaurant.planId;
     restaurant.planId = newPlan._id;
+
+    // If the new plan has a price > 0, set status to PAYMENT_PENDING
+    // This will trigger the payment modal for the restaurant admin on next login
+    if (newPlan.price > 0) {
+      restaurant.subscriptionStatus = 'PAYMENT_PENDING';
+    }
+
     await restaurant.save();
 
     await SubscriptionLog.create({
@@ -813,6 +822,7 @@ const changeRestaurantPlan = async (req, res) => {
       data: {
         restaurantId: restaurant._id,
         newPlan: newPlan.name,
+        requiresPayment: newPlan.price > 0,
       },
     });
   } catch (error) {
@@ -1258,6 +1268,75 @@ const deleteUser = async (req, res) => {
   }
 };
 
+const initiatePayment = async (req, res) => {
+  try {
+    const { planId } = req.body;
+    const restaurant = req.restaurant; // Assumes resolved by middleware
+
+    // In a real implementation:
+    // 1. Create Order in Razorpay
+    // 2. Return order_id and amount
+
+    const plan = await Plan.findById(planId);
+    if (!plan) return res.status(404).json({ message: 'Plan not found' });
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        orderId: `order_mock_${Date.now()}`,
+        amount: plan.price * 100, // In paise
+        currency: 'INR',
+        key: 'rzp_test_mock_key'
+      }
+    });
+
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+const verifyPayment = async (req, res) => {
+  try {
+    const { _paymentId, _orderId, _signature } = req.body;
+    const restaurant = req.restaurant;
+
+    // In real implementation: Verify signature
+
+    restaurant.subscriptionStatus = 'ACTIVE';
+    restaurant.subscriptionStartsAt = new Date();
+
+    // Calculate endsAt based on interval
+    const plan = await Plan.findById(restaurant.planId);
+    const now = new Date();
+    if (plan.interval === 'YEARLY') {
+      now.setFullYear(now.getFullYear() + 1);
+    } else {
+      now.setMonth(now.getMonth() + 1);
+    }
+    restaurant.subscriptionEndsAt = now;
+
+    await restaurant.save();
+
+    await SubscriptionLog.create({
+      restaurantId: restaurant._id,
+      planId: restaurant.planId,
+      action: 'ASSIGN', // Changed from 'RENEW' to match enum values
+      durationInDays: plan.interval === 'YEARLY' ? 365 : 30,
+      performedBy: req.user?._id,
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: 'Payment verified and subscription activated'
+    });
+
+
+  } catch (error) {
+    console.error('Error in verifyPayment:', error);
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 export {
   getAllRestaurants,
   getSubscriptionLogs,
@@ -1282,4 +1361,6 @@ export {
   getSystemHealth,
   deleteRestaurant,
   deleteUser,
+  initiatePayment,
+  verifyPayment,
 };

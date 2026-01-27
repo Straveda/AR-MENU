@@ -47,10 +47,14 @@ export default function AuthProvider({ children }) {
       const { data } = await axiosClient.get("/users/auth/me");
 
       if (data && data._id) {
-        setUser(data);
-
+        // Preserve the full populated restaurantId object
+        const userData = {
+          ...data,
+          subscriptionStatus: data.restaurantId?.subscriptionStatus
+        };
+        setUser(userData);
         setRole(data.role);
-        setRestaurantId(data.restaurantId);
+        setRestaurantId(data.restaurantId?._id);
       }
     } catch (error) {
       console.error("Failed to fetch user:", error);
@@ -107,6 +111,7 @@ export default function AuthProvider({ children }) {
     isKDS: role === "KDS",
     login,
     logout,
+    refreshUser: fetchCurrentUser,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

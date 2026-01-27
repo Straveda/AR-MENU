@@ -16,19 +16,29 @@ export const resolveRestaurantFromUser = async (req, res, next) => {
 
     const restaurant = await Restaurant.findById(req.user.restaurantId);
 
-    if (!restaurant || restaurant.status !== 'Active') {
+    if (!restaurant) {
       return res.status(403).json({
         success: false,
-        message: 'Restaurant is inactive or not found',
+        message: 'Restaurant not found',
+      });
+    }
+
+    // Check if restaurant is active (status field is 'Active' or 'Inactive')
+    if (restaurant.status === 'Inactive') {
+      return res.status(403).json({
+        success: false,
+        message: 'Restaurant is inactive',
       });
     }
 
     req.restaurant = await restaurant.populate('planId');
     next();
   } catch (error) {
+    console.error('Error in resolveRestaurantFromUser:', error);
     return res.status(500).json({
       success: false,
       message: 'Failed to resolve restaurant context',
+      error: error.message,
     });
   }
 };

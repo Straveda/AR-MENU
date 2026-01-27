@@ -15,7 +15,14 @@ userAuthRouter.post('/verify-otp', verifyOtp);
 userAuthRouter.post('/reset-password', resetPassword);
 
 userAuthRouter.get('/me', requireAuth, async (req, res) => {
-  const user = await req.user.populate('restaurantId', 'name slug');
+  const user = await req.user.populate({
+    path: 'restaurantId',
+    select: 'name slug subscriptionStatus planId subscriptionEndsAt',
+    populate: {
+      path: 'planId',
+      select: 'name features limits'
+    }
+  });
   res.json(user);
 });
 
