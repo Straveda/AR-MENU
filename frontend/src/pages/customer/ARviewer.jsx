@@ -92,6 +92,9 @@ export default function ARViewer() {
     const fetchDish = async () => {
         try {
             const { data } = await axiosClient.get(`/dishes/r/${slug}/dishes/${id}`);
+            console.log("AR Viewer - Dish Data:", data.data.dish);
+            console.log("Ingredients:", data.data.dish.ingredients);
+            console.log("Nutritional Info:", data.data.dish.nutritionalInfo);
             setDish(data.data.dish);
         } catch (error) {
             console.error("Error loading AR model:", error);
@@ -246,7 +249,7 @@ export default function ARViewer() {
                             {modelLoaded && (ingredients.length > 0 || Object.values(nutritionalInfo).some(v => v > 0)) && (
                                 <button
                                     onClick={() => setDisplayMode(displayMode === 'nutrition' ? 'ingredients' : 'nutrition')}
-                                    className="absolute top-4 left-4 z-20 bg-white/90 backdrop-blur-sm px-4 py-2 rounded-lg shadow-lg border border-gray-200 hover:bg-white transition-all text-sm font-medium text-gray-700 hover:text-amber-600 flex items-center gap-2"
+                                    className="absolute top-4 left-4 z-20 bg-white/90 backdrop-blur-sm px-4 py-2 rounded-lg shadow-lg border border-gray-200 hover:bg-white transition-all text-sm font-medium text-gray-700 hover:text-amber-600 flex items-center gap-2 pointer-events-auto"
                                 >
                                     {displayMode === 'nutrition' ? (
                                         <>
@@ -264,11 +267,11 @@ export default function ARViewer() {
 
                             {/* Dietary Tags */}
                             {modelLoaded && tags.length > 0 && (
-                                <div className="absolute right-4 top-1/2 transform -translate-y-1/2 space-y-2 z-20 hidden md:block">
+                                <div className="absolute right-4 top-1/2 transform -translate-y-1/2 space-y-2 z-20 hidden md:block pointer-events-none">
                                     {tags.slice(0, 5).map((tag, index) => (
                                         <div
                                             key={index}
-                                            className="bg-green-500/90 backdrop-blur-sm text-white px-3 py-1.5 rounded-full text-xs font-medium shadow-lg flex items-center gap-1.5"
+                                            className="bg-green-500/90 backdrop-blur-sm text-white px-3 py-1.5 rounded-full text-xs font-medium shadow-lg flex items-center gap-1.5 pointer-events-auto"
                                         >
                                             <span>{getTagIcon(tag)}</span>
                                             <span>{tag}</span>
@@ -282,8 +285,8 @@ export default function ARViewer() {
                                 <>
                                     {/* Calories - Top Left */}
                                     {nutritionalInfo.calories > 0 && (
-                                        <div className="absolute top-[10%] left-[8%] z-20">
-                                            <div className="bg-white/95 backdrop-blur-sm rounded-full px-4 py-3 shadow-xl border border-gray-200">
+                                        <div className="absolute top-[10%] left-[8%] z-20 pointer-events-none">
+                                            <div className="bg-white/95 backdrop-blur-sm rounded-full px-4 py-3 shadow-xl border border-gray-200 pointer-events-auto">
                                                 <div className="text-center">
                                                     <div className="text-2xl mb-1">🔥</div>
                                                     <div className="text-lg font-bold text-gray-800">{nutritionalInfo.calories}</div>
@@ -295,8 +298,8 @@ export default function ARViewer() {
 
                                     {/* Protein - Top Right */}
                                     {nutritionalInfo.protein > 0 && (
-                                        <div className="absolute top-[10%] right-[8%] z-20">
-                                            <div className="bg-white/95 backdrop-blur-sm rounded-full px-4 py-3 shadow-xl border border-gray-200">
+                                        <div className="absolute top-[10%] right-[8%] z-20 pointer-events-none">
+                                            <div className="bg-white/95 backdrop-blur-sm rounded-full px-4 py-3 shadow-xl border border-gray-200 pointer-events-auto">
                                                 <div className="text-center">
                                                     <div className="text-2xl mb-1">🍖</div>
                                                     <div className="text-lg font-bold text-gray-800">{nutritionalInfo.protein}g</div>
@@ -308,8 +311,8 @@ export default function ARViewer() {
 
                                     {/* Carbs - Bottom Right */}
                                     {nutritionalInfo.carbs > 0 && (
-                                        <div className="absolute bottom-[20%] right-[8%] z-20">
-                                            <div className="bg-white/95 backdrop-blur-sm rounded-full px-4 py-3 shadow-xl border border-gray-200">
+                                        <div className="absolute bottom-[20%] right-[8%] z-20 pointer-events-none">
+                                            <div className="bg-white/95 backdrop-blur-sm rounded-full px-4 py-3 shadow-xl border border-gray-200 pointer-events-auto">
                                                 <div className="text-center">
                                                     <div className="text-2xl mb-1">🌾</div>
                                                     <div className="text-lg font-bold text-gray-800">{nutritionalInfo.carbs}g</div>
@@ -321,8 +324,8 @@ export default function ARViewer() {
 
                                     {/* Sugar - Bottom Left */}
                                     {nutritionalInfo.sugar > 0 && (
-                                        <div className="absolute bottom-[20%] left-[8%] z-20">
-                                            <div className="bg-white/95 backdrop-blur-sm rounded-full px-4 py-3 shadow-xl border border-gray-200">
+                                        <div className="absolute bottom-[20%] left-[8%] z-20 pointer-events-none">
+                                            <div className="bg-white/95 backdrop-blur-sm rounded-full px-4 py-3 shadow-xl border border-gray-200 pointer-events-auto">
                                                 <div className="text-center">
                                                     <div className="text-2xl mb-1">🍬</div>
                                                     <div className="text-lg font-bold text-gray-800">{nutritionalInfo.sugar}g</div>
@@ -342,13 +345,13 @@ export default function ARViewer() {
                                         return (
                                             <div
                                                 key={index}
-                                                className="absolute z-20 transform -translate-x-1/2 -translate-y-1/2"
+                                                className="absolute z-20 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none"
                                                 style={{
                                                     top: position.top,
                                                     left: position.left,
                                                 }}
                                             >
-                                                <div className="bg-white/95 backdrop-blur-sm rounded-full px-3 py-2 shadow-xl border border-gray-200">
+                                                <div className="bg-white/95 backdrop-blur-sm rounded-full px-3 py-2 shadow-xl border border-gray-200 pointer-events-auto">
                                                     <div className="text-center">
                                                         <div className="text-xl mb-0.5">{getIngredientIcon(ingredient)}</div>
                                                         <div className="text-xs font-medium text-gray-700 whitespace-nowrap">{ingredient}</div>
