@@ -60,20 +60,24 @@ function getTagIcon(tag) {
     return tagIcons[normalized] || '✓';
 }
 
-// Calculate circular positions for ingredients
+// Calculate circular positions for ingredients (3D coordinates for AR hotspots)
 function calculateCircularPositions(count) {
     if (count === 0) return [];
 
     const positions = [];
-    const radius = 42; // percentage from center
+    const radius = 0.35; // meters
+    const height = 0.1; // meters height relative to model center
     const angleStep = (2 * Math.PI) / count;
 
     for (let i = 0; i < count; i++) {
-        const angle = i * angleStep - Math.PI / 2; // Start from top
-        positions.push({
-            top: `${50 + radius * Math.sin(angle)}%`,
-            left: `${50 + radius * Math.cos(angle)}%`,
-        });
+        const angle = i * angleStep - Math.PI / 2; // Start from top (back)
+        // Convert to string format "x y z" (meters)
+        // x = horizontal, y = vertical, z = depth
+        // Note: In model-viewer coordinate system (Y-up):
+        // x = horizontal, y = vertical, z = depth
+        const x = (radius * Math.cos(angle)).toFixed(2);
+        const z = (radius * Math.sin(angle)).toFixed(2);
+        positions.push(`${x}m ${height}m ${z}m`);
     }
 
     return positions;
@@ -245,7 +249,7 @@ export default function ARViewer() {
                                 </div>
                             )}
 
-                            {/* Toggle Button */}
+                            {/* Toggle Button - Keeps functioning as 2D overlay for mode switching */}
                             {modelLoaded && (ingredients.length > 0 || Object.values(nutritionalInfo).some(v => v > 0)) && (
                                 <button
                                     onClick={() => setDisplayMode(displayMode === 'nutrition' ? 'ingredients' : 'nutrition')}
@@ -265,105 +269,7 @@ export default function ARViewer() {
                                 </button>
                             )}
 
-                            {/* Dietary Tags */}
-                            {modelLoaded && tags.length > 0 && (
-                                <div className="absolute right-4 top-1/2 transform -translate-y-1/2 space-y-2 z-20 hidden md:block pointer-events-none">
-                                    {tags.slice(0, 5).map((tag, index) => (
-                                        <div
-                                            key={index}
-                                            className="bg-green-500/90 backdrop-blur-sm text-white px-3 py-1.5 rounded-full text-xs font-medium shadow-lg flex items-center gap-1.5 pointer-events-auto"
-                                        >
-                                            <span>{getTagIcon(tag)}</span>
-                                            <span>{tag}</span>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-
-                            {/* Nutritional Info Badges */}
-                            {modelLoaded && displayMode === 'nutrition' && (
-                                <>
-                                    {/* Calories - Top Left */}
-                                    {nutritionalInfo.calories > 0 && (
-                                        <div className="absolute top-[10%] left-[8%] z-20 pointer-events-none">
-                                            <div className="bg-white/95 backdrop-blur-sm rounded-full px-4 py-3 shadow-xl border border-gray-200 pointer-events-auto">
-                                                <div className="text-center">
-                                                    <div className="text-2xl mb-1">🔥</div>
-                                                    <div className="text-lg font-bold text-gray-800">{nutritionalInfo.calories}</div>
-                                                    <div className="text-xs text-gray-600">kcal</div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    {/* Protein - Top Right */}
-                                    {nutritionalInfo.protein > 0 && (
-                                        <div className="absolute top-[10%] right-[8%] z-20 pointer-events-none">
-                                            <div className="bg-white/95 backdrop-blur-sm rounded-full px-4 py-3 shadow-xl border border-gray-200 pointer-events-auto">
-                                                <div className="text-center">
-                                                    <div className="text-2xl mb-1">🍖</div>
-                                                    <div className="text-lg font-bold text-gray-800">{nutritionalInfo.protein}g</div>
-                                                    <div className="text-xs text-gray-600">Protein</div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    {/* Carbs - Bottom Right */}
-                                    {nutritionalInfo.carbs > 0 && (
-                                        <div className="absolute bottom-[20%] right-[8%] z-20 pointer-events-none">
-                                            <div className="bg-white/95 backdrop-blur-sm rounded-full px-4 py-3 shadow-xl border border-gray-200 pointer-events-auto">
-                                                <div className="text-center">
-                                                    <div className="text-2xl mb-1">🌾</div>
-                                                    <div className="text-lg font-bold text-gray-800">{nutritionalInfo.carbs}g</div>
-                                                    <div className="text-xs text-gray-600">Carbs</div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    {/* Sugar - Bottom Left */}
-                                    {nutritionalInfo.sugar > 0 && (
-                                        <div className="absolute bottom-[20%] left-[8%] z-20 pointer-events-none">
-                                            <div className="bg-white/95 backdrop-blur-sm rounded-full px-4 py-3 shadow-xl border border-gray-200 pointer-events-auto">
-                                                <div className="text-center">
-                                                    <div className="text-2xl mb-1">🍬</div>
-                                                    <div className="text-lg font-bold text-gray-800">{nutritionalInfo.sugar}g</div>
-                                                    <div className="text-xs text-gray-600">Sugar</div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    )}
-                                </>
-                            )}
-
-                            {/* Ingredient Badges - Circular Layout */}
-                            {modelLoaded && displayMode === 'ingredients' && ingredients.length > 0 && (
-                                <>
-                                    {ingredients.slice(0, 8).map((ingredient, index) => {
-                                        const position = ingredientPositions[index];
-                                        return (
-                                            <div
-                                                key={index}
-                                                className="absolute z-20 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none"
-                                                style={{
-                                                    top: position.top,
-                                                    left: position.left,
-                                                }}
-                                            >
-                                                <div className="bg-white/95 backdrop-blur-sm rounded-full px-3 py-2 shadow-xl border border-gray-200 pointer-events-auto">
-                                                    <div className="text-center">
-                                                        <div className="text-xl mb-0.5">{getIngredientIcon(ingredient)}</div>
-                                                        <div className="text-xs font-medium text-gray-700 whitespace-nowrap">{ingredient}</div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
-                                </>
-                            )}
-
-                            {/* 3D Model Viewer */}
+                            {/* 3D Model Viewer with Hotspots */}
                             <model-viewer
                                 ref={modelViewerRef}
                                 src={dish.modelUrls?.glb ? `${import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1'}/dishes/r/${slug}/dishes/proxy-model/${dish._id}/glb` : undefined}
@@ -385,6 +291,86 @@ export default function ARViewer() {
                                 >
                                     👆 View in AR
                                 </button>
+
+                                {/* Dietary Tags - Right Vertical Stack */}
+                                {modelLoaded && tags.length > 0 && tags.slice(0, 5).map((tag, index) => (
+                                    <button
+                                        key={`tag-${index}`}
+                                        slot={`hotspot-tag-${index}`}
+                                        data-position={`0.5m ${0.2 + (index * 0.08)}m 0m`}
+                                        data-normal="1m 0m 0m"
+                                        className="bg-green-500/90 backdrop-blur-sm text-white px-3 py-1.5 rounded-full text-xs font-medium shadow-lg flex items-center gap-1.5 whitespace-nowrap pointer-events-none transform -translate-y-1/2"
+                                        style={{ display: 'flex', border: 'none' }}
+                                    >
+                                        <span>{getTagIcon(tag)}</span>
+                                        <span>{tag}</span>
+                                    </button>
+                                ))}
+
+                                {/* Ingredient Hotspots (Circular) */}
+                                {modelLoaded && displayMode === 'ingredients' && ingredients.length > 0 &&
+                                    ingredients.slice(0, 8).map((ingredient, index) => (
+                                        <button
+                                            key={`ing-${index}`}
+                                            slot={`hotspot-ingredient-${index}`}
+                                            data-position={ingredientPositions[index]}
+                                            data-normal="0m 1m 0m"
+                                            className="bg-white/95 backdrop-blur-sm rounded-full px-3 py-2 shadow-xl border border-gray-200 pointer-events-none transform -translate-x-1/2 -translate-y-1/2"
+                                            style={{ display: 'block', border: 'none' }}
+                                        >
+                                            <div className="text-center">
+                                                <div className="text-xl mb-0.5">{getIngredientIcon(ingredient)}</div>
+                                                <div className="text-xs font-medium text-gray-700 whitespace-nowrap">{ingredient}</div>
+                                            </div>
+                                        </button>
+                                    ))
+                                }
+
+                                {/* Nutritional Info Hotspots (Corners) */}
+                                {modelLoaded && displayMode === 'nutrition' && (
+                                    <>
+                                        {/* Calories - Back Left */}
+                                        {nutritionalInfo.calories > 0 && (
+                                            <button slot="hotspot-cal" data-position="-0.35m 0.2m -0.35m" data-normal="-1m 1m -1m" className="bg-white/95 backdrop-blur-sm rounded-full px-4 py-3 shadow-xl border border-gray-200 pointer-events-none" style={{ border: 'none', display: 'block' }}>
+                                                <div className="text-center">
+                                                    <div className="text-2xl mb-1">🔥</div>
+                                                    <div className="text-lg font-bold text-gray-800">{nutritionalInfo.calories}</div>
+                                                    <div className="text-xs text-gray-600">kcal</div>
+                                                </div>
+                                            </button>
+                                        )}
+                                        {/* Protein - Back Right */}
+                                        {nutritionalInfo.protein > 0 && (
+                                            <button slot="hotspot-prot" data-position="0.35m 0.2m -0.35m" data-normal="1m 1m -1m" className="bg-white/95 backdrop-blur-sm rounded-full px-4 py-3 shadow-xl border border-gray-200 pointer-events-none" style={{ border: 'none', display: 'block' }}>
+                                                <div className="text-center">
+                                                    <div className="text-2xl mb-1">🍖</div>
+                                                    <div className="text-lg font-bold text-gray-800">{nutritionalInfo.protein}g</div>
+                                                    <div className="text-xs text-gray-600">Protein</div>
+                                                </div>
+                                            </button>
+                                        )}
+                                        {/* Carbs - Front Right */}
+                                        {nutritionalInfo.carbs > 0 && (
+                                            <button slot="hotspot-carb" data-position="0.35m 0.15m 0.35m" data-normal="1m 1m 1m" className="bg-white/95 backdrop-blur-sm rounded-full px-4 py-3 shadow-xl border border-gray-200 pointer-events-none" style={{ border: 'none', display: 'block' }}>
+                                                <div className="text-center">
+                                                    <div className="text-2xl mb-1">🌾</div>
+                                                    <div className="text-lg font-bold text-gray-800">{nutritionalInfo.carbs}g</div>
+                                                    <div className="text-xs text-gray-600">Carbs</div>
+                                                </div>
+                                            </button>
+                                        )}
+                                        {/* Sugar - Front Left */}
+                                        {nutritionalInfo.sugar > 0 && (
+                                            <button slot="hotspot-sug" data-position="-0.35m 0.15m 0.35m" data-normal="-1m 1m 1m" className="bg-white/95 backdrop-blur-sm rounded-full px-4 py-3 shadow-xl border border-gray-200 pointer-events-none" style={{ border: 'none', display: 'block' }}>
+                                                <div className="text-center">
+                                                    <div className="text-2xl mb-1">🍬</div>
+                                                    <div className="text-lg font-bold text-gray-800">{nutritionalInfo.sugar}g</div>
+                                                    <div className="text-xs text-gray-600">Sugar</div>
+                                                </div>
+                                            </button>
+                                        )}
+                                    </>
+                                )}
                             </model-viewer>
                         </div>
 
@@ -397,7 +383,7 @@ export default function ARViewer() {
                                             modelViewerRef.current.activateAR();
                                         }
                                     }}
-                                    className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white px-8 py-4 rounded-xl font-bold text-lg shadow-lg transition-all transform hover:-translate-y-0.5 flex items-center gap-3"
+                                    className="bg-linear-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white px-8 py-4 rounded-xl font-bold text-lg shadow-lg transition-all transform hover:-translate-y-0.5 flex items-center gap-3"
                                 >
                                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2z" />

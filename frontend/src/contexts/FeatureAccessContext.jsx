@@ -2,11 +2,13 @@ import { createContext, useContext, useState, useEffect, useCallback } from 'rea
 import PropTypes from 'prop-types';
 import { checkFeatureAccess, checkPublicFeatureAccess } from '../api/featureAccessApi';
 import { useTenant } from '../context/TenantProvider';
+import { useAuth } from '../context/AuthProvider';
 
 const FeatureAccessContext = createContext(null);
 
 export const FeatureAccessProvider = ({ children }) => {
     const { slug } = useTenant();
+    const { token: authToken } = useAuth();
     const [plan, setPlan] = useState(null);
     const [features, setFeatures] = useState({
         arModels: false,
@@ -101,7 +103,7 @@ export const FeatureAccessProvider = ({ children }) => {
         } finally {
             setLoading(false);
         }
-    }, [slug]);
+    }, [slug, authToken]);
 
     useEffect(() => {
         fetchFeatureAccess();

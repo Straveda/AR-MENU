@@ -2,6 +2,7 @@ import express from 'express';
 import { requireAuth } from '../middlewares/requireAuth.middleware.js';
 import { requireRole } from '../middlewares/requireRole.middleware.js';
 import { resolveRestaurant } from '../middlewares/resolveRestaurant.middleware.js';
+import { enforcePlanFeature } from '../middlewares/enforcePlanFeature.middleware.js';
 import * as expensesController from '../controllers/expenses.controller.js';
 
 const router = express.Router({ mergeParams: true });

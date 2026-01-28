@@ -78,7 +78,6 @@ export const checkFeatureAccess = async (req, res) => {
             },
         });
     } catch (error) {
-        console.error('Error checking feature access:', error);
         return res.status(500).json({
             success: false,
             message: 'Failed to check feature access',
@@ -124,7 +123,6 @@ export const getCurrentPlan = async (req, res) => {
             },
         });
     } catch (error) {
-        console.error('Error getting current plan:', error);
         return res.status(500).json({
             success: false,
             message: 'Failed to get current plan',
