@@ -2,11 +2,13 @@ import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import axiosClient from "../../api/axiosClient";
 import { useToast } from "../../components/common/Toast/ToastContext";
+import { useFeatureAccess } from "../../contexts/FeatureAccessContext";
 
 export default function EditDish() {
   const navigate = useNavigate();
   const { id } = useParams();
   const { showSuccess, showError } = useToast();
+  const { hasFeature } = useFeatureAccess();
 
   const [form, setForm] = useState({
     name: "",
@@ -128,7 +130,18 @@ export default function EditDish() {
               Back
             </button>
           </div>
-          <h1 className="text-3xl font-bold text-gray-800">Edit Dish</h1>
+          <div className="flex items-center justify-between">
+            <h1 className="text-3xl font-bold text-gray-800">Edit Dish</h1>
+            {hasFeature('arModels') ? (
+              <span className="bg-emerald-100 text-emerald-700 text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full border border-emerald-200">
+                AR Ready Plan
+              </span>
+            ) : (
+              <span className="bg-amber-100 text-amber-700 text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full border border-amber-200">
+                Standard Plan (No AR)
+              </span>
+            )}
+          </div>
           <p className="text-gray-600 mt-2">Update the dish information below</p>
         </div>
 

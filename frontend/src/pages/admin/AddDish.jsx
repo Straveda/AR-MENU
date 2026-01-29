@@ -141,19 +141,21 @@ export default function AddDish() {
         <h1 className="text-3xl font-bold text-center text-gray-800 mb-2">
           Add New Dish
         </h1>
+        <div className="flex justify-center mb-2">
+          {hasFeature('arModels') ? (
+            <span className="bg-emerald-100 text-emerald-700 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border border-emerald-200">
+              AR Ready Plan
+            </span>
+          ) : (
+            <span className="bg-amber-100 text-amber-700 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border border-amber-200">
+              Standard Plan (No AR)
+            </span>
+          )}
+        </div>
         <div className="w-16 h-1 bg-amber-600 mx-auto"></div>
       </div>
 
       <div className="max-w-2xl mx-auto bg-white shadow-lg rounded-xl p-6">
-        {!hasFeature('arModels') && (
-          <div className="mb-6 p-4 bg-indigo-50 border border-indigo-100 rounded-xl flex items-center gap-3">
-            <span className="text-xl">✨</span>
-            <div>
-              <p className="text-sm font-bold text-indigo-900">3D Models are Locked</p>
-              <p className="text-xs text-indigo-700">Upgrade to Pro to automatically generate immersive AR models for your dishes.</p>
-            </div>
-          </div>
-        )}
         <form onSubmit={handleSubmit} className="space-y-6">
 
           <div>

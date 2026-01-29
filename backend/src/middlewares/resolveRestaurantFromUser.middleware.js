@@ -31,7 +31,7 @@ export const resolveRestaurantFromUser = async (req, res, next) => {
       });
     }
 
-    req.restaurant = await restaurant.populate('planId');
+    req.restaurant = restaurant;
     next();
   } catch (error) {
     console.error('Error in resolveRestaurantFromUser:', error);

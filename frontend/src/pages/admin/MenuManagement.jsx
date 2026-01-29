@@ -7,10 +7,12 @@ import Loading from "../../components/common/Loading";
 import EmptyState from "../../components/common/EmptyState";
 import { useToast } from "../../components/common/Toast/ToastContext";
 import ConfirmationModal from "../../components/common/ConfirmationModal";
+import { useFeatureAccess } from "../../contexts/FeatureAccessContext";
 
 export default function MenuManagement() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { hasFeature, isAtLimit } = useFeatureAccess();
   const { showSuccess, showError, showInfo, showWarning } = useToast();
   const [dishes, setDishes] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -234,7 +236,10 @@ export default function MenuManagement() {
 
           <button
             onClick={() => navigate("/admin/add-dish")}
-            className="btn-primary shadow-lg hover:shadow-xl group px-6 py-3 flex-1 sm:flex-none justify-center flex items-center gap-2"
+            disabled={isAtLimit('maxDishes')}
+            className={`btn-primary shadow-lg hover:shadow-xl group px-6 py-3 flex-1 sm:flex-none justify-center flex items-center gap-2 ${isAtLimit('maxDishes') ? 'opacity-50 cursor-not-allowed grayscale' : ''
+              }`}
+            title={isAtLimit('maxDishes') ? "Dish limit reached. Upgrade your plan to add more." : ""}
           >
             <svg className="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -467,8 +472,10 @@ export default function MenuManagement() {
                       {dish.modelStatus === 'failed' ? (
                         <button
                           onClick={() => initiateRetryModel(dish._id, dish.name)}
-                          disabled={retryLoading === dish._id}
-                          className="flex-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 py-2.5 rounded-xl type-btn transition-all duration-200 flex items-center justify-center gap-1.5 border border-indigo-100 shadow-sm"
+                          disabled={retryLoading === dish._id || !hasFeature('arModels')}
+                          className={`flex-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 py-2.5 rounded-xl type-btn transition-all duration-200 flex items-center justify-center gap-1.5 border border-indigo-100 shadow-sm ${!hasFeature('arModels') ? 'opacity-50 cursor-not-allowed grayscale' : ''
+                            }`}
+                          title={!hasFeature('arModels') ? "AR Models feature not included in plan" : ""}
                         >
                           Retry
                         </button>

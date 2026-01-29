@@ -14,7 +14,7 @@ export default function ExpensesPage() {
 
   return (
     <div className="space-y-10 animate-fade-in pb-12">
-      {}
+      { }
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h1 className="type-h1">Financial Oversight</h1>
@@ -22,17 +22,16 @@ export default function ExpensesPage() {
         </div>
       </div>
 
-      {}
+      { }
       <div className="flex gap-8 border-b border-slate-200">
         {tabs.map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`pb-4 type-label transition-all relative ${
-              activeTab === tab.id 
-                ? "text-slate-900" 
-                : "text-slate-400 hover:text-slate-600"
-            }`}
+            className={`pb-4 type-label transition-all relative ${activeTab === tab.id
+              ? "text-slate-900"
+              : "text-slate-400 hover:text-slate-600"
+              }`}
           >
             {tab.label}
             {activeTab === tab.id && <span className="absolute bottom-0 left-0 w-full h-0.5 bg-slate-900 rounded-full"></span>}
@@ -40,7 +39,7 @@ export default function ExpensesPage() {
         ))}
       </div>
 
-      {}
+      { }
       <div className="mt-6">
         {activeTab === "expenses" && <ExpensesTab />}
         {activeTab === "petty-cash" && <PettyCashTab />}
