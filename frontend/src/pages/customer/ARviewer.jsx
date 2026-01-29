@@ -971,7 +971,7 @@ export default function ARViewer() {
     const ingredientPositions = calculateCircularPositions(Math.min(ingredients.length, 8)); // Limit to 8 for better UX
 
     return (
-        <div className="bg-white flex flex-col font-sans">
+        <div className="h-screen bg-white flex flex-col font-sans overflow-hidden">
             {/* Floating Back Button */}
             <button
                 onClick={() => navigate(`/r/${slug}/menu`)}
@@ -1020,13 +1020,12 @@ export default function ARViewer() {
                     camera-controls
                     touch-action="pan-y"
                     auto-rotate
-                    class="w-full h-full"
+                    className="w-full h-full"
                     onLoad={handleModelLoad}
                     onError={handleModelError}
                     style={{
                         width: '100%',
                         height: '100%',
-                        display: modelLoaded ? 'block' : 'none',
                         '--poster-color': 'transparent'
                     }}
                 >
