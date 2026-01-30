@@ -38,6 +38,7 @@ import LandingPage from '../pages/LandingPage.jsx';
 import AdminLayout from '../components/layout/AdminLayout.jsx';
 import ExpensesPage from '../pages/admin/ExpensesPage.jsx';
 import Settings from '../pages/admin/Settings.jsx';
+import NotFound from '../pages/NotFound.jsx';
 
 const AppRouter = () => {
     return (
@@ -104,6 +105,9 @@ const AppRouter = () => {
 
                                         { }
                                         <Route path="/" element={<LandingPage />} />
+
+                                        {/* 404 Route */}
+                                        <Route path="*" element={<NotFound />} />
                                     </Routes>
                                 </FeatureAccessProvider>
                             </ErrorBoundary>

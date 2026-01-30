@@ -70,7 +70,7 @@ export const updateRestaurantProfile = async (req, res) => {
       });
     }
 
-    const { name, address, contactEmail, contactPhone, logo, openingTime, closingTime } = req.body;
+    const { name, address, contactEmail, contactPhone, logo, openingTime, closingTime, notificationPreferences } = req.body;
     const restaurantId = req.restaurant._id;
 
     const restaurant = await Restaurant.findById(restaurantId);
@@ -88,6 +88,7 @@ export const updateRestaurantProfile = async (req, res) => {
     if (logo !== undefined) restaurant.logo = logo;
     if (openingTime !== undefined) restaurant.openingTime = openingTime;
     if (closingTime !== undefined) restaurant.closingTime = closingTime;
+    if (notificationPreferences !== undefined) restaurant.notificationPreferences = notificationPreferences;
 
     await restaurant.save();
 

@@ -13,6 +13,7 @@ import { Order } from '../models/order.models.js';
 import { AuditLog } from '../models/auditLog.model.js';
 import { createImageTo3DTask, triggerPendingModelsForRestaurant } from '../services/meshyService.js';
 import { startPollingForDish } from '../services/pollingService.js';
+import { PlatformSettings } from '../models/platformSettings.model.js';
 
 const getSubscriptionLogs = async (req, res) => {
   try {
@@ -1333,7 +1334,52 @@ const verifyPayment = async (req, res) => {
 
   } catch (error) {
     console.error('Error in verifyPayment:', error);
-    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+const getPlatformSettings = async (req, res) => {
+  try {
+    const settings = await PlatformSettings.getSettings();
+    return res.status(200).json({
+      success: true,
+      data: settings,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: 'Internal server error',
+      error: error.message,
+    });
+  }
+};
+
+const updatePlatformSettings = async (req, res) => {
+  try {
+    const { featureToggles, notificationSettings } = req.body;
+    const settings = await PlatformSettings.getSettings();
+
+    if (featureToggles) {
+      settings.featureToggles = { ...settings.featureToggles, ...featureToggles };
+    }
+
+    if (notificationSettings) {
+      settings.notificationSettings = { ...settings.notificationSettings, ...notificationSettings };
+    }
+
+    settings.updatedBy = req.user._id;
+    await settings.save();
+
+    return res.status(200).json({
+      success: true,
+      message: 'Platform settings updated successfully',
+      data: settings,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: 'Internal server error',
+      error: error.message,
+    });
   }
 };
 
@@ -1363,4 +1409,6 @@ export {
   deleteUser,
   initiatePayment,
   verifyPayment,
+  getPlatformSettings,
+  updatePlatformSettings,
 };

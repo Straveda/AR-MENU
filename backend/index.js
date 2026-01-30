@@ -13,7 +13,7 @@ dotenv.config();
 const app = express();
 const server = http.createServer(app);
 
-const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:5173';
+const CLIENT_URL = process.env.CLIENT_URL;
 
 app.use(
   cors({
@@ -110,6 +110,16 @@ app.use('/api/v1/features', featureAccessRoute);
 app.get('/', (req, res) => {
   res.send('Hello World!');
 });
+
+
+
+app.use((req, res, next) => {
+  res.status(404).json({
+    success: false,
+    message: `Route ${req.originalUrl} not found`,
+  });
+});
+
 
 import { errorHandler } from './src/middlewares/errorHandler.middleware.js';
 app.use(errorHandler);

@@ -233,8 +233,8 @@
 //                 {/* 3D Model Viewer */}
 //                 <model-viewer
 //                     ref={modelViewerRef}
-//                     src={dish.modelUrls?.glb ? `${import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1'}/dishes/r/${slug}/dishes/proxy-model/${dish._id}/glb` : undefined}
-//                     ios-src={dish.modelUrls?.usdz ? `${import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1'}/dishes/r/${slug}/dishes/proxy-model/${dish._id}/usdz` : undefined}
+//                     src={dish.modelUrls?.glb ? `${import.meta.env.VITE_API_URL}/dishes/r/${slug}/dishes/proxy-model/${dish._id}/glb` : undefined}
+//                     ios-src={dish.modelUrls?.usdz ? `${import.meta.env.VITE_API_URL}/dishes/r/${slug}/dishes/proxy-model/${dish._id}/usdz` : undefined}
 //                     alt={`3D model of ${dish.name}`}
 //                     ar
 //                     ar-modes="webxr scene-viewer quick-look"
@@ -622,8 +622,8 @@
 //                 {/* 3D Model Viewer */}
 //                 <model-viewer
 //                     ref={modelViewerRef}
-//                     src={dish.modelUrls?.glb ? `${import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1'}/dishes/r/${slug}/dishes/proxy-model/${dish._id}/glb` : undefined}
-//                     ios-src={dish.modelUrls?.usdz ? `${import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1'}/dishes/r/${slug}/dishes/proxy-model/${dish._id}/usdz` : undefined}
+//                     src={dish.modelUrls?.glb ? `${import.meta.env.VITE_API_URL}/dishes/r/${slug}/dishes/proxy-model/${dish._id}/glb` : undefined}
+//                     ios-src={dish.modelUrls?.usdz ? `${import.meta.env.VITE_API_URL}/dishes/r/${slug}/dishes/proxy-model/${dish._id}/usdz` : undefined}
 //                     alt={`3D model of ${dish.name}`}
 //                     ar
 //                     ar-modes="webxr scene-viewer quick-look"
@@ -841,15 +841,17 @@ function calculateCircularPositions(count) {
     if (count === 0) return [];
 
     const positions = [];
-    const radius = 0.65; // Reduced from 0.8 to fit within mobile screen widths
-    const height = 0.2;
-    const xOffset = 0.2; // Slightly shift to the right
+    const radius = 0.8; // Reduced range to keep in frame (was 1.1)
+    const height = 0.15; // Slightly lower height (0.15m)
+    const xOffset = 0.04; // Shift right to prevent left-side clipping
+
+    // Full circle distribution
     const angleStep = (2 * Math.PI) / count;
 
     for (let i = 0; i < count; i++) {
         const angle = i * angleStep;
 
-        const x = (parseFloat((radius * Math.cos(angle)).toFixed(2)) + xOffset).toFixed(2);
+        const x = ((radius * Math.cos(angle)) + xOffset).toFixed(2);
         const z = (radius * Math.sin(angle)).toFixed(2);
 
         positions.push(`${x}m ${height}m ${z}m`);
@@ -866,7 +868,12 @@ export default function ARViewer() {
     const [loading, setLoading] = useState(true);
     const [arError, setArError] = useState(false);
     const [modelLoaded, setModelLoaded] = useState(false);
-    const [displayMode, setDisplayMode] = useState('nutrition'); // 'nutrition' or 'ingredients'
+    const [displayMode, setDisplayMode] = useState('nutrition'); // 'nutrition', 'ingredients', or 'hidden'
+    const [isIOS, setIsIOS] = useState(false);
+
+    useEffect(() => {
+        setIsIOS(/iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream);
+    }, []);
 
     const fetchDish = async () => {
         try {
@@ -965,10 +972,24 @@ export default function ARViewer() {
     }
 
     // Prepare data
+    // Prepare data
     const nutritionalInfo = dish.nutritionalInfo || {};
     const ingredients = dish.ingredients || [];
-    const tags = dish.tags || [];
-    const ingredientPositions = calculateCircularPositions(Math.min(ingredients.length, 8)); // Limit to 8 for better UX
+    // const tags = dish.tags || []; // Unused
+
+    // Constants for positioning
+    const MAX_ITEMS = 6; // Limit to 6 items on arc
+
+    // Prepare active nutrients list for dynamic positioning
+    const activeNutrients = [
+        { key: 'calories', label: 'kcal', icon: '🔥', value: nutritionalInfo.calories },
+        { key: 'protein', label: 'prot', icon: '🍖', value: nutritionalInfo.protein, unit: 'g' },
+        { key: 'carbs', label: 'carbs', icon: '🌾', value: nutritionalInfo.carbs, unit: 'g' },
+        { key: 'sugar', label: 'sugar', icon: '🍬', value: nutritionalInfo.sugar, unit: 'g' },
+    ].filter(n => n.value > 0);
+
+    const ingredientPositions = calculateCircularPositions(Math.min(ingredients.length, MAX_ITEMS));
+    const nutrientPositions = calculateCircularPositions(activeNutrients.length);
 
     return (
         <div className="h-screen bg-white flex flex-col font-sans overflow-hidden">
@@ -998,25 +1019,42 @@ export default function ARViewer() {
                     </div>
                 )}
 
-                {/* Toggle Mode Button (Floating Top Right) */}
+                {/* Toggle Mode Buttons (Floating) */}
                 {modelLoaded && (ingredients.length > 0 || Object.values(nutritionalInfo).some(v => v > 0)) && (
-                    <button
-                        onClick={() => setDisplayMode(displayMode === 'nutrition' ? 'ingredients' : 'nutrition')}
-                        className="absolute top-4 right-4 z-50 bg-white/80 backdrop-blur-md px-4 py-2 rounded-full shadow-lg border border-slate-100 text-xs font-bold text-slate-600 active:scale-95 transition-all flex items-center gap-1.5 hover:text-amber-600"
-                    >
-                        {displayMode === 'nutrition' ? '🥗 Ingredients' : '📊 Nutrition'}
-                    </button>
+                    <div className="absolute top-4 right-4 z-50 flex gap-2">
+                        {/* Hide All / Show Toggle */}
+                        <button
+                            onClick={() => setDisplayMode(displayMode === 'hidden' ? 'nutrition' : 'hidden')}
+                            className={`backdrop-blur-md px-3 py-2 rounded-full shadow-lg border text-xs font-bold active:scale-95 transition-all flex items-center justify-center ${displayMode === 'hidden'
+                                ? 'bg-amber-100/90 border-amber-200 text-amber-700'
+                                : 'bg-white/80 border-slate-100 text-slate-600 hover:text-amber-600'
+                                }`}
+                        >
+                            {displayMode === 'hidden' ? '👁️ Show' : '👁️ Hide'}
+                        </button>
+
+                        {/* Switch Info Type Toggle */}
+                        {displayMode !== 'hidden' && (
+                            <button
+                                onClick={() => setDisplayMode(displayMode === 'nutrition' ? 'ingredients' : 'nutrition')}
+                                className="bg-white/80 backdrop-blur-md px-4 py-2 rounded-full shadow-lg border border-slate-100 text-xs font-bold text-slate-600 active:scale-95 transition-all flex items-center gap-1.5 hover:text-amber-600"
+                            >
+                                {displayMode === 'nutrition' ? '🥗 Ingredients' : '📊 Nutrition'}
+                            </button>
+                        )}
+                    </div>
                 )}
 
                 {/* 3D Model Viewer */}
                 <model-viewer
                     ref={modelViewerRef}
-                    src={dish.modelUrls?.glb ? `${import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1'}/dishes/r/${slug}/dishes/proxy-model/${dish._id}/glb` : undefined}
-                    ios-src={dish.modelUrls?.usdz ? `${import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1'}/dishes/r/${slug}/dishes/proxy-model/${dish._id}/usdz` : undefined}
+                    src={dish.modelUrls?.glb ? `${import.meta.env.VITE_API_URL}/dishes/r/${slug}/dishes/proxy-model/${dish._id}/glb` : undefined}
+                    ios-src={dish.modelUrls?.usdz ? `${import.meta.env.VITE_API_URL}/dishes/r/${slug}/dishes/proxy-model/${dish._id}/usdz` : undefined}
                     alt={`3D model of ${dish.name}`}
                     ar
                     ar-modes="webxr scene-viewer quick-look"
                     ar-scale="auto"
+                    ar-placement="floor" // Explicitly allow floor placement for better dragging
                     camera-controls
                     touch-action="pan-y"
                     auto-rotate
@@ -1032,79 +1070,64 @@ export default function ARViewer() {
                     {/* Native AR Button - Positioned Customly */}
                     <button
                         slot="ar-button"
-                        className="absolute bottom-6 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-amber-500 to-orange-600 text-white px-8 py-3 rounded-full font-bold shadow-2xl flex items-center gap-2 z-50 animate-bounce-slight hover:from-amber-600 hover:to-orange-700 transition-all border border-amber-500/30"
+                        className="absolute bottom-6 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-amber-500 to-orange-600 text-white px-6 py-2.5 md:px-8 md:py-3 rounded-full font-bold shadow-2xl flex items-center gap-2 z-50 animate-bounce-slight hover:from-amber-600 hover:to-orange-700 transition-all border border-amber-500/30"
                     >
-                        <span className="text-xl">✨</span>
-                        <span>View in AR</span>
+                        <span className="text-lg md:text-xl">✨</span>
+                        <span className="text-sm md:text-base">View in AR</span>
                     </button>
+                    {isIOS && (
+                        <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 text-[10px] text-slate-400 font-medium whitespace-nowrap z-40 bg-white/50 px-2 py-0.5 rounded-md backdrop-blur-sm">
+                            *Info hotspots not available in AR on iOS
+                        </div>
+                    )}
 
                     {/* Ingredient Hotspots - Light Theme */}
                     {modelLoaded && displayMode === 'ingredients' && ingredients.length > 0 &&
-                        ingredients.slice(0, 8).map((ingredient, index) => (
+                        ingredients.slice(0, MAX_ITEMS).map((ingredient, index) => (
                             <button
                                 key={`ing-${index}`}
                                 slot={`hotspot-ingredient-${index}`}
                                 data-position={ingredientPositions[index]}
                                 data-normal="0m 1m 0m"
-                                className="bg-white/90 backdrop-blur-md rounded-2xl px-3 py-2 shadow-lg border border-slate-100 pointer-events-none transform -translate-x-1/2 -translate-y-1/2"
+                                className="bg-white rounded-full w-12 h-12 md:w-16 md:h-16 flex items-center justify-center shadow-xl border-2 border-slate-100 pointer-events-none transform -translate-x-1/2 -translate-y-1/2"
                                 style={{ border: 'none' }}
                             >
-                                <div className="text-center leading-none">
-                                    <div className="text-xl mb-1 drop-shadow-sm">{getIngredientIcon(ingredient)}</div>
-                                    <div className="text-[10px] font-bold text-slate-700 uppercase tracking-tight max-w-[60px] truncate">{ingredient}</div>
+                                <div className="text-center leading-none flex flex-col items-center justify-center">
+                                    <div className="text-base md:text-xl mb-0.5">{getIngredientIcon(ingredient)}</div>
+                                    <div className="text-[7px] md:text-[9px] font-bold text-slate-800 uppercase tracking-tight max-w-[40px] md:max-w-[55px] truncate">{ingredient}</div>
                                 </div>
                             </button>
                         ))
                     }
 
-                    {/* Nutritional Hotspots - Light Theme */}
-                    {modelLoaded && displayMode === 'nutrition' && (
-                        <>
-                            {nutritionalInfo.calories > 0 && (
-                                <button slot="hotspot-cal" data-position="-0.35m 0.2m -0.35m" data-normal="-1m 1m -1m" className="hotspot-card" style={{ border: 'none' }}>
-                                    <div className="bg-white/90 backdrop-blur-md rounded-2xl p-3 text-center shadow-lg border border-slate-100">
-                                        <div className="text-xl mb-1">🔥</div>
-                                        <div className="text-sm font-bold text-slate-800">{nutritionalInfo.calories}</div>
-                                        <div className="text-[10px] text-slate-500 uppercase font-bold">kcal</div>
-                                    </div>
-                                </button>
-                            )}
-                            {nutritionalInfo.protein > 0 && (
-                                <button slot="hotspot-prot" data-position="0.35m 0.2m -0.35m" data-normal="1m 1m -1m" className="hotspot-card" style={{ border: 'none' }}>
-                                    <div className="bg-white/90 backdrop-blur-md rounded-2xl p-3 text-center shadow-lg border border-slate-100">
-                                        <div className="text-xl mb-1">🍖</div>
-                                        <div className="text-sm font-bold text-slate-800">{nutritionalInfo.protein}g</div>
-                                        <div className="text-[10px] text-slate-500 uppercase font-bold">prot</div>
-                                    </div>
-                                </button>
-                            )}
-                            {nutritionalInfo.carbs > 0 && (
-                                <button slot="hotspot-carb" data-position="0.35m 0.15m 0.35m" data-normal="1m 1m 1m" className="hotspot-card" style={{ border: 'none' }}>
-                                    <div className="bg-white/90 backdrop-blur-md rounded-2xl p-3 text-center shadow-lg border border-slate-100">
-                                        <div className="text-xl mb-1">🌾</div>
-                                        <div className="text-sm font-bold text-slate-800">{nutritionalInfo.carbs}g</div>
-                                        <div className="text-[10px] text-slate-500 uppercase font-bold">carbs</div>
-                                    </div>
-                                </button>
-                            )}
-                            {nutritionalInfo.sugar > 0 && (
-                                <button slot="hotspot-sugar" data-position="-0.35m 0.15m 0.35m" data-normal="-1m 1m 1m" className="hotspot-card" style={{ border: 'none' }}>
-                                    <div className="bg-white/90 backdrop-blur-md rounded-2xl p-3 text-center shadow-lg border border-slate-100">
-                                        <div className="text-xl mb-1">🍬</div>
-                                        <div className="text-sm font-bold text-slate-800">{nutritionalInfo.sugar}g</div>
-                                        <div className="text-[10px] text-slate-500 uppercase font-bold">sugar</div>
-                                    </div>
-                                </button>
-                            )}
-                        </>
-                    )}
+                    {/* Nutritional Hotspots - Dynamic Arc Positioning */}
+                    {modelLoaded && displayMode === 'nutrition' && activeNutrients.map((nutrient, index) => (
+                        <button
+                            key={`nut-${nutrient.key}`}
+                            slot={`hotspot-${nutrient.key}`}
+                            data-position={nutrientPositions[index]}
+                            data-normal="0m 1m 0m"
+                            className="hotspot-card" // Keeping class but overriding style via inline if needed or relying on parent
+                            style={{ border: 'none' }}
+                        >
+                            <div className="bg-white rounded-full w-12 h-12 md:w-16 md:h-16 flex flex-col items-center justify-center shadow-xl border-2 border-slate-100">
+                                <div className="text-base md:text-xl mb-0.5">{nutrient.icon}</div>
+                                <div className="text-[10px] md:text-xs font-bold text-slate-900 leading-none">
+                                    {nutrient.value}{nutrient.unit || ''}
+                                </div>
+                                <div className="text-[6px] md:text-[8px] text-slate-600 uppercase font-bold leading-none">{nutrient.label}</div>
+                            </div>
+                        </button>
+                    ))}
+
+
                 </model-viewer>
             </div>
 
             {/* Bottom Info Sheet - Light Theme */}
             <div className="bg-white/95 backdrop-blur-xl rounded-t-[2.5rem] md:rounded-[2.5rem] shadow-2xl border-t md:border border-slate-100 z-40 shrink-0 relative md:max-w-4xl md:mx-auto md:mb-8 md:w-[calc(100%-4rem)]">
-                <div className="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mt-4 mb-2"></div>
-                <div className="px-6 pb-6 pt-4">
+                {/* <div className="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mt-4 mb-2"></div> */}
+                <div className="px-6 pb-6 pt-6">
                     <div className="flex justify-between items-start mb-5">
                         <div>
                             <span className="inline-block text-[10px] font-bold tracking-widest text-amber-600 uppercase bg-slate-50 px-2.5 py-1 rounded-lg mb-2 border border-slate-100">
@@ -1148,12 +1171,12 @@ export default function ARViewer() {
                         </div>
                     </div>
 
-                    {/* AR Visibility Note */}
-                    <div className="bg-slate-50 rounded-xl p-3 border border-slate-100 md:max-w-2xl md:mx-auto">
+                    {/* AR Visibility Note Removed as requested */}
+                    {/* <div className="bg-slate-50 rounded-xl p-3 border border-slate-100 md:max-w-2xl md:mx-auto">
                         <p className="text-[10px] text-slate-500 font-medium leading-relaxed text-center">
                             <span className="font-bold text-amber-600 italic">Quick Note:</span> 3D annotation icons are visible in preview for all users. Native AR mode (camera view) annotations are optimized for Android (Chrome).
                         </p>
-                    </div>
+                    </div> */}
                 </div>
             </div>
         </div>

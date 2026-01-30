@@ -30,6 +30,13 @@ export default function Settings() {
     confirmPassword: "",
   });
 
+  const [notificationPreferences, setNotificationPreferences] = useState({
+    newOrders: true,
+    orderUpdates: true,
+    lowStockAlerts: true,
+    dailyReport: false,
+  });
+
   useEffect(() => {
     if (user?.restaurantId) {
       fetchProfile();
@@ -58,6 +65,14 @@ export default function Settings() {
           openingTime: r.openingTime || "",
           closingTime: r.closingTime || "",
         });
+        if (r.notificationPreferences) {
+          setNotificationPreferences({
+            newOrders: r.notificationPreferences.newOrders ?? true,
+            orderUpdates: r.notificationPreferences.orderUpdates ?? true,
+            lowStockAlerts: r.notificationPreferences.lowStockAlerts ?? true,
+            dailyReport: r.notificationPreferences.dailyReport ?? false,
+          });
+        }
       }
     } catch (error) {
       console.error("Failed to load settings", error);
@@ -115,6 +130,18 @@ export default function Settings() {
       });
     } catch (error) {
       addToast(error.response?.data?.message || "Password change failed", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleNotificationsSave = async () => {
+    setLoading(true);
+    try {
+      await settingsApi.updateProfile({ notificationPreferences });
+      addToast("Notification preferences updated", "success");
+    } catch (error) {
+      addToast("Failed to update preferences", "error");
     } finally {
       setLoading(false);
     }
@@ -219,6 +246,11 @@ export default function Settings() {
               id="hours"
               label="Operating Hours"
               icon={<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>}
+            />
+            <TabButton
+              id="notifications"
+              label="Notifications"
+              icon={<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>}
             />
             <TabButton
               id="security"
@@ -439,6 +471,92 @@ export default function Settings() {
               )}
             </div>
           )}
+
+          {/* NOTIFICATIONS TAB */}
+          {activeTab === "notifications" && (
+            <div className="max-w-2xl">
+              <h2 className="text-lg font-semibold text-slate-900 mb-6">Notification Preferences</h2>
+              <div className="space-y-4">
+                {/* New Orders */}
+                <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-100">
+                  <div>
+                    <h3 className="text-base font-medium text-slate-900">New Orders</h3>
+                    <p className="text-sm text-slate-500">Get notified when new orders come in</p>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={notificationPreferences.newOrders}
+                      onChange={(e) => setNotificationPreferences({ ...notificationPreferences, newOrders: e.target.checked })}
+                      className="sr-only peer"
+                    />
+                    <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-amber-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
+                  </label>
+                </div>
+
+                {/* Order Updates */}
+                <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-100">
+                  <div>
+                    <h3 className="text-base font-medium text-slate-900">Order Updates</h3>
+                    <p className="text-sm text-slate-500">Notifications for order status changes</p>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={notificationPreferences.orderUpdates}
+                      onChange={(e) => setNotificationPreferences({ ...notificationPreferences, orderUpdates: e.target.checked })}
+                      className="sr-only peer"
+                    />
+                    <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-amber-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
+                  </label>
+                </div>
+
+                {/* Low Stock Alerts */}
+                <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-100">
+                  <div>
+                    <h3 className="text-base font-medium text-slate-900">Low Stock Alerts</h3>
+                    <p className="text-sm text-slate-500">Alert when items are running low</p>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={notificationPreferences.lowStockAlerts}
+                      onChange={(e) => setNotificationPreferences({ ...notificationPreferences, lowStockAlerts: e.target.checked })}
+                      className="sr-only peer"
+                    />
+                    <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-amber-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
+                  </label>
+                </div>
+
+                {/* Daily Report */}
+                <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-100">
+                  <div>
+                    <h3 className="text-base font-medium text-slate-900">Daily Report</h3>
+                    <p className="text-sm text-slate-500">Receive daily summary email</p>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={notificationPreferences.dailyReport}
+                      onChange={(e) => setNotificationPreferences({ ...notificationPreferences, dailyReport: e.target.checked })}
+                      className="sr-only peer"
+                    />
+                    <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-amber-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
+                  </label>
+                </div>
+
+                <div className="pt-4">
+                  <button
+                    onClick={handleNotificationsSave}
+                    disabled={loading}
+                    className="px-6 py-2 bg-amber-500 hover:bg-amber-600 text-white font-semibold rounded-lg transition-colors shadow-sm disabled:opacity-50 min-w-[150px]"
+                  >
+                    {loading ? "Saving..." : "Save Changes"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
           {/* SECURITY TAB */}
           {activeTab === "security" && (
             <div className="max-w-xl">
@@ -505,6 +623,6 @@ export default function Settings() {
           )}
         </div>
       </div>
-    </div>
+    </div >
   );
 }

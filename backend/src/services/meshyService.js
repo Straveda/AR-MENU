@@ -7,7 +7,7 @@ export const createImageTo3DTask = async (imageUrl, dishName = '') => {
       throw new Error('MESHY_API_KEY is not configured');
     }
 
-    const response = await fetch(`${MESHY_API_BASE_URL}/v1/image-to-3d`, {
+    const response = await fetch(`${MESHY_API_BASE_URL}/v2/image-to-3d`, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${MESHY_API_KEY}`,
@@ -49,7 +49,7 @@ export const getTaskStatus = async (taskId) => {
       throw new Error('MESHY_API_KEY is not configured');
     }
 
-    const response = await fetch(`${MESHY_API_BASE_URL}/v1/image-to-3d/${taskId}`, {
+    const response = await fetch(`${MESHY_API_BASE_URL}/v2/image-to-3d/${taskId}`, {
       method: 'GET',
       headers: {
         Authorization: `Bearer ${MESHY_API_KEY}`,
@@ -127,7 +127,7 @@ export const refineModel = async (taskId) => {
       throw new Error('MESHY_API_KEY is not configured');
     }
 
-    const response = await fetch(`${MESHY_API_BASE_URL}/v1/image-to-3d/${taskId}/refine`, {
+    const response = await fetch(`${MESHY_API_BASE_URL}/v2/image-to-3d/${taskId}/refine`, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${MESHY_API_KEY}`,
