@@ -111,6 +111,16 @@ app.get('/', (req, res) => {
   res.send('Hello World!');
 });
 
+
+
+app.use((req, res, next) => {
+  res.status(404).json({
+    success: false,
+    message: `Route ${req.originalUrl} not found`,
+  });
+});
+
+
 import { errorHandler } from './src/middlewares/errorHandler.middleware.js';
 app.use(errorHandler);
 
