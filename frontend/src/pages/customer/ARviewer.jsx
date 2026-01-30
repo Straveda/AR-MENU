@@ -233,8 +233,8 @@
 //                 {/* 3D Model Viewer */}
 //                 <model-viewer
 //                     ref={modelViewerRef}
-//                     src={dish.modelUrls?.glb ? `${import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1'}/dishes/r/${slug}/dishes/proxy-model/${dish._id}/glb` : undefined}
-//                     ios-src={dish.modelUrls?.usdz ? `${import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1'}/dishes/r/${slug}/dishes/proxy-model/${dish._id}/usdz` : undefined}
+//                     src={dish.modelUrls?.glb ? `${import.meta.env.VITE_API_URL}/dishes/r/${slug}/dishes/proxy-model/${dish._id}/glb` : undefined}
+//                     ios-src={dish.modelUrls?.usdz ? `${import.meta.env.VITE_API_URL}/dishes/r/${slug}/dishes/proxy-model/${dish._id}/usdz` : undefined}
 //                     alt={`3D model of ${dish.name}`}
 //                     ar
 //                     ar-modes="webxr scene-viewer quick-look"
@@ -622,8 +622,8 @@
 //                 {/* 3D Model Viewer */}
 //                 <model-viewer
 //                     ref={modelViewerRef}
-//                     src={dish.modelUrls?.glb ? `${import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1'}/dishes/r/${slug}/dishes/proxy-model/${dish._id}/glb` : undefined}
-//                     ios-src={dish.modelUrls?.usdz ? `${import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1'}/dishes/r/${slug}/dishes/proxy-model/${dish._id}/usdz` : undefined}
+//                     src={dish.modelUrls?.glb ? `${import.meta.env.VITE_API_URL}/dishes/r/${slug}/dishes/proxy-model/${dish._id}/glb` : undefined}
+//                     ios-src={dish.modelUrls?.usdz ? `${import.meta.env.VITE_API_URL}/dishes/r/${slug}/dishes/proxy-model/${dish._id}/usdz` : undefined}
 //                     alt={`3D model of ${dish.name}`}
 //                     ar
 //                     ar-modes="webxr scene-viewer quick-look"
@@ -1048,8 +1048,8 @@ export default function ARViewer() {
                 {/* 3D Model Viewer */}
                 <model-viewer
                     ref={modelViewerRef}
-                    src={dish.modelUrls?.glb ? `${import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1'}/dishes/r/${slug}/dishes/proxy-model/${dish._id}/glb` : undefined}
-                    ios-src={dish.modelUrls?.usdz ? `${import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1'}/dishes/r/${slug}/dishes/proxy-model/${dish._id}/usdz` : undefined}
+                    src={dish.modelUrls?.glb ? `${import.meta.env.VITE_API_URL}/dishes/r/${slug}/dishes/proxy-model/${dish._id}/glb` : undefined}
+                    ios-src={dish.modelUrls?.usdz ? `${import.meta.env.VITE_API_URL}/dishes/r/${slug}/dishes/proxy-model/${dish._id}/usdz` : undefined}
                     alt={`3D model of ${dish.name}`}
                     ar
                     ar-modes="webxr scene-viewer quick-look"
