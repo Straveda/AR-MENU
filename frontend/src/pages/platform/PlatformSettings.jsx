@@ -23,9 +23,36 @@ export default function PlatformSettings() {
         confirmPassword: "",
     });
 
+    const [platformSettings, setPlatformSettings] = useState({
+        featureToggles: {
+            arMenuPreview: true,
+            multiLanguageSupport: true,
+            kdsIntegration: true,
+            advancedAnalytics: true,
+        },
+        notificationSettings: {
+            subscriptionReminders: true,
+            usageAlerts: true,
+            reminderDaysBeforeExpiry: 14,
+            gracePeriodDays: 7,
+        },
+    });
+
     useEffect(() => {
         fetchProfile();
+        fetchPlatformSettings();
     }, [user]);
+
+    const fetchPlatformSettings = async () => {
+        try {
+            const data = await settingsApi.getPlatformSettings();
+            if (data.success) {
+                setPlatformSettings(data.data);
+            }
+        } catch (error) {
+            console.error("Failed to load platform settings", error);
+        }
+    };
 
     // Reset editing state when switching tabs
     useEffect(() => {
@@ -100,6 +127,18 @@ export default function PlatformSettings() {
         }
     };
 
+    const handlePlatformSettingsSave = async () => {
+        setLoading(true);
+        try {
+            await settingsApi.updatePlatformSettings(platformSettings);
+            addToast("Platform settings updated successfully", "success");
+        } catch (error) {
+            addToast("Failed to update platform settings", "error");
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const TabButton = ({ id, label, icon }) => (
         <button
             onClick={() => setActiveTab(id)}
@@ -111,6 +150,13 @@ export default function PlatformSettings() {
             {icon}
             {label}
         </button>
+    );
+
+    const ToggleSwitch = ({ checked, onChange }) => (
+        <label className="relative inline-flex items-center cursor-pointer">
+            <input type="checkbox" className="sr-only peer" checked={checked} onChange={onChange} />
+            <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+        </label>
     );
 
     if (loading && !profile.username) {
@@ -147,6 +193,11 @@ export default function PlatformSettings() {
                             id="security"
                             label="Security"
                             icon={<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>}
+                        />
+                        <TabButton
+                            id="platform"
+                            label="Platform Config"
+                            icon={<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>}
                         />
                     </div>
                 </div>
@@ -315,6 +366,146 @@ export default function PlatformSettings() {
                                     </button>
                                 </div>
                             </form>
+                        </div>
+                    )}
+
+                    {/* PLATFORM CONFIG TAB */}
+                    {activeTab === "platform" && (
+                        <div className="max-w-4xl space-y-8">
+                            {/* Feature Toggles */}
+                            <div className="space-y-4">
+                                <div className="flex items-center gap-3 mb-6">
+                                    <div className="p-2 bg-indigo-50 rounded-lg text-indigo-600">
+                                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.384-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" /></svg>
+                                    </div>
+                                    <div>
+                                        <h2 className="text-xl font-bold text-slate-900">Feature Toggles</h2>
+                                        <p className="text-slate-500 text-sm">Enable or disable platform features globally</p>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-4">
+                                    <div className="flex items-center justify-between p-4 bg-white rounded-lg border border-slate-200">
+                                        <div>
+                                            <h3 className="font-semibold text-slate-900">AR Menu Preview</h3>
+                                            <p className="text-sm text-slate-500">Allow restaurants to preview AR menus before publishing</p>
+                                        </div>
+                                        <ToggleSwitch
+                                            checked={platformSettings.featureToggles?.arMenuPreview}
+                                            onChange={(e) => setPlatformSettings({
+                                                ...platformSettings,
+                                                featureToggles: { ...platformSettings.featureToggles, arMenuPreview: e.target.checked }
+                                            })}
+                                        />
+                                    </div>
+
+                                    <div className="flex items-center justify-between p-4 bg-white rounded-lg border border-slate-200">
+                                        <div>
+                                            <h3 className="font-semibold text-slate-900">KDS Integration</h3>
+                                            <p className="text-sm text-slate-500">Kitchen Display System integration for orders</p>
+                                        </div>
+                                        <ToggleSwitch
+                                            checked={platformSettings.featureToggles?.kdsIntegration}
+                                            onChange={(e) => setPlatformSettings({
+                                                ...platformSettings,
+                                                featureToggles: { ...platformSettings.featureToggles, kdsIntegration: e.target.checked }
+                                            })}
+                                        />
+                                    </div>
+                                    <div className="flex items-center justify-between p-4 bg-white rounded-lg border border-slate-200">
+                                        <div>
+                                            <h3 className="font-semibold text-slate-900">Advanced Analytics</h3>
+                                            <p className="text-sm text-slate-500">Detailed analytics and reporting features</p>
+                                        </div>
+                                        <ToggleSwitch
+                                            checked={platformSettings.featureToggles?.advancedAnalytics}
+                                            onChange={(e) => setPlatformSettings({
+                                                ...platformSettings,
+                                                featureToggles: { ...platformSettings.featureToggles, advancedAnalytics: e.target.checked }
+                                            })}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Notification Settings */}
+                            <div className="space-y-4">
+                                <div className="flex items-center gap-3 mb-6">
+                                    <div className="p-2 bg-emerald-50 rounded-lg text-emerald-600">
+                                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
+                                    </div>
+                                    <div>
+                                        <h2 className="text-xl font-bold text-slate-900">Notification Settings</h2>
+                                        <p className="text-slate-500 text-sm">Configure automated notifications</p>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-4">
+                                    <div className="flex items-center justify-between p-4 bg-white rounded-lg border border-slate-200">
+                                        <div>
+                                            <h3 className="font-semibold text-slate-900">Subscription Reminders</h3>
+                                            <p className="text-sm text-slate-500">Send email reminders before subscription expiry</p>
+                                        </div>
+                                        <ToggleSwitch
+                                            checked={platformSettings.notificationSettings?.subscriptionReminders}
+                                            onChange={(e) => setPlatformSettings({
+                                                ...platformSettings,
+                                                notificationSettings: { ...platformSettings.notificationSettings, subscriptionReminders: e.target.checked }
+                                            })}
+                                        />
+                                    </div>
+                                    <div className="flex items-center justify-between p-4 bg-white rounded-lg border border-slate-200">
+                                        <div>
+                                            <h3 className="font-semibold text-slate-900">Usage Alerts</h3>
+                                            <p className="text-sm text-slate-500">Alert restaurants when approaching limits</p>
+                                        </div>
+                                        <ToggleSwitch
+                                            checked={platformSettings.notificationSettings?.usageAlerts}
+                                            onChange={(e) => setPlatformSettings({
+                                                ...platformSettings,
+                                                notificationSettings: { ...platformSettings.notificationSettings, usageAlerts: e.target.checked }
+                                            })}
+                                        />
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-4 mt-4">
+                                        <div>
+                                            <label className="block text-sm font-medium text-slate-700 mb-1">Reminder Days Before Expiry</label>
+                                            <input
+                                                type="number"
+                                                className="w-full px-4 py-2 bg-white border border-slate-300 rounded-lg text-slate-900 outline-none focus:ring-2 focus:ring-indigo-500"
+                                                value={platformSettings.notificationSettings?.reminderDaysBeforeExpiry}
+                                                onChange={(e) => setPlatformSettings({
+                                                    ...platformSettings,
+                                                    notificationSettings: { ...platformSettings.notificationSettings, reminderDaysBeforeExpiry: parseInt(e.target.value) }
+                                                })}
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-slate-700 mb-1">Grace Period (Days)</label>
+                                            <input
+                                                type="number"
+                                                className="w-full px-4 py-2 bg-white border border-slate-300 rounded-lg text-slate-900 outline-none focus:ring-2 focus:ring-indigo-500"
+                                                value={platformSettings.notificationSettings?.gracePeriodDays}
+                                                onChange={(e) => setPlatformSettings({
+                                                    ...platformSettings,
+                                                    notificationSettings: { ...platformSettings.notificationSettings, gracePeriodDays: parseInt(e.target.value) }
+                                                })}
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="pt-4">
+                                <button
+                                    onClick={handlePlatformSettingsSave}
+                                    disabled={loading}
+                                    className="px-6 py-2 bg-slate-900 hover:bg-slate-800 text-white font-semibold rounded-lg transition-colors shadow-sm disabled:opacity-50 min-w-[180px]"
+                                >
+                                    {loading ? "Saving Settings..." : "Save Changes"}
+                                </button>
+                            </div>
                         </div>
                     )}
                 </div>

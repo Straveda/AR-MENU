@@ -21,7 +21,10 @@ import {
   deleteRestaurant,
   deleteUser,
   initiatePayment,
+
   verifyPayment,
+  getPlatformSettings,
+  updatePlatformSettings,
 } from '../controllers/platform.controller.js';
 
 const platformRouter = express.Router();

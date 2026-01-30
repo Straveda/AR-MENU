@@ -79,6 +79,25 @@ const restaurantSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
+
+    notificationPreferences: {
+      newOrders: {
+        type: Boolean,
+        default: true,
+      },
+      orderUpdates: {
+        type: Boolean,
+        default: true,
+      },
+      lowStockAlerts: {
+        type: Boolean,
+        default: true,
+      },
+      dailyReport: {
+        type: Boolean,
+        default: false,
+      },
+    },
   },
   { timestamps: true },
 );
