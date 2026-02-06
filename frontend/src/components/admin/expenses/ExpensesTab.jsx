@@ -214,8 +214,8 @@ export default function ExpensesTab() {
                       </td>
                       <td className="px-6 py-4">
                         <span className={`px-2 py-0.5 rounded-full text-xs font-medium border ${expense.paymentMode === 'CASH' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
-                            expense.paymentMode === 'UPI' ? 'bg-indigo-50 text-indigo-600 border-indigo-100' :
-                              'bg-slate-50 text-slate-600 border-slate-200'
+                          expense.paymentMode === 'UPI' ? 'bg-indigo-50 text-indigo-600 border-indigo-100' :
+                            'bg-slate-50 text-slate-600 border-slate-200'
                           }`}>
                           {expense.paymentMode}
                         </span>

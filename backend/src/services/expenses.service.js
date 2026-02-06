@@ -50,10 +50,13 @@ export const getExpenses = async (restaurantId, filters = {}, pagination = {}) =
   };
 };
 
-export const getMonthlyTotal = async (restaurantId) => {
+export const getMonthlyTotal = async (restaurantId, month = null, year = null) => {
   const now = new Date();
-  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-  const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+  const targetMonth = month ? parseInt(month) - 1 : now.getMonth();
+  const targetYear = year ? parseInt(year) : now.getFullYear();
+
+  const startOfMonth = new Date(targetYear, targetMonth, 1);
+  const endOfMonth = new Date(targetYear, targetMonth + 1, 0, 23, 59, 59);
 
   const result = await Expense.aggregate([
     {
