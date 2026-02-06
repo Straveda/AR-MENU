@@ -16,7 +16,7 @@ import {
     Legend,
     Filler
 } from 'chart.js';
-import { Line, Bar, Doughnut, Pie, Chart } from 'react-chartjs-2';
+import { Line, Bar, Doughnut, Pie } from 'react-chartjs-2';
 
 // Register ChartJS components
 ChartJS.register(
@@ -389,10 +389,9 @@ function AnalyticsContent() {
             {/* Main Charts Grid - 2x2 Layout */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-                {/* 1. Sales Performance (Mixed Chart) */}
                 <ChartCard title="Sales Performance" subtitle="Revenue vs Orders">
                     <div className="h-72">
-                        <Chart type='line' data={prepareSalesData()} options={mixedChartOptions} />
+                        <Line data={prepareSalesData()} options={mixedChartOptions} />
                     </div>
                 </ChartCard>
 
