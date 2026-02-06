@@ -110,7 +110,11 @@ export const getExpenses = async (req, res) => {
       { page, limit },
     );
 
-    const monthlyTotal = await expensesService.getMonthlyTotal(req.restaurant._id);
+    const monthlyTotal = await expensesService.getMonthlyTotal(
+      req.restaurant._id,
+      month,
+      year
+    );
 
     res.status(200).json({
       success: true,
