@@ -96,142 +96,98 @@ export default function ExpensesTab() {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 animate-fade-in">
       { }
-      <div className="space-y-8 animate-fade-in">
-        { }
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <div className="bg-slate-900 rounded-2xl p-6 text-white shadow-xl shadow-slate-900/10 relative overflow-hidden group">
-            <div className="relative z-10">
-              <p className="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-2">Monthly Expenditure</p>
-              <h3 className="text-3xl font-semibold tracking-tight text-white">₹{totalMonthly.toLocaleString()}</h3>
-              <div className="mt-4 flex items-center gap-2 text-xs text-amber-500 font-medium tracking-tight">
-                <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
-                Current Billing Period
-              </div>
+      <div className="space-y-6">
+        {/* Summary Card and Actions */}
+        <div className="flex flex-col md:flex-row gap-6 items-start md:items-end justify-between">
+          <div className="bg-white border border-slate-200 rounded-xl py-3 px-4 min-w-[300px] flex items-center gap-3 shadow-sm">
+            <div className="w-9 h-9 bg-rose-50 rounded-lg flex items-center justify-center">
+              <svg className="w-5 h-5 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
             </div>
-            <div className="absolute -right-4 -bottom-4 w-32 h-32 bg-amber-500/5 rounded-full blur-3xl transition-all"></div>
+            <div>
+              <p className="text-slate-500 text-[10px] font-black uppercase tracking-widest mb-0.5">Total Expenses (This Month)</p>
+              <h3 className="text-2xl font-black text-slate-900">₹{totalMonthly.toLocaleString()}</h3>
+            </div>
           </div>
 
-          <div className="lg:col-span-2 card-premium p-6 flex flex-col justify-between">
-            <div className="flex flex-col sm:flex-row gap-6 items-center justify-between">
-              <div className="flex gap-4">
-                <div className="space-y-1">
-                  <label className="block text-xs font-semibold text-slate-500 ml-1">Period Selection</label>
-                  <div className="flex gap-2">
-                    <select
-                      className="input-standard py-2"
-                      value={filters.month}
-                      onChange={(e) => setFilters({ ...filters, month: parseInt(e.target.value) })}
-                    >
-                      {months.map((m, i) => <option key={i} value={i + 1}>{m}</option>)}
-                    </select>
-                    <select
-                      className="input-standard py-2"
-                      value={filters.year}
-                      onChange={(e) => setFilters({ ...filters, year: parseInt(e.target.value) })}
-                    >
-                      {[2024, 2025, 2026].map(y => <option key={y} value={y}>{y}</option>)}
-                    </select>
-                  </div>
-                </div>
-              </div>
-              <button
-                onClick={() => setShowModal(true)}
-                className="btn-primary flex items-center gap-2"
+          <div className="flex items-center gap-3">
+            <div className="flex gap-2">
+              <select
+                className="bg-white border border-slate-200 text-slate-700 text-sm rounded-lg focus:ring-slate-500 focus:border-slate-500 block p-2.5"
+                value={filters.month}
+                onChange={(e) => setFilters({ ...filters, month: parseInt(e.target.value) })}
               >
-                <svg className="w-5 h-5 font-bold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
-                Add Record
-              </button>
+                {months.map((m, i) => <option key={i} value={i + 1}>{m}</option>)}
+              </select>
+              <select
+                className="bg-white border border-slate-200 text-slate-700 text-sm rounded-lg focus:ring-slate-500 focus:border-slate-500 block p-2.5"
+                value={filters.year}
+                onChange={(e) => setFilters({ ...filters, year: parseInt(e.target.value) })}
+              >
+                {[2024, 2025, 2026].map(y => <option key={y} value={y}>{y}</option>)}
+              </select>
             </div>
-            <div className="mt-6 flex flex-wrap gap-3">
-              <div className="space-y-1">
-                <label className="block text-xs font-semibold text-slate-500 ml-1">Quick Filters</label>
-                <div className="flex gap-2">
-                  <select
-                    className="input-standard py-1.5 text-xs font-medium"
-                    value={filters.vendorId}
-                    onChange={(e) => setFilters({ ...filters, vendorId: e.target.value })}
-                  >
-                    <option value="">All Vendors</option>
-                    {vendors.map(v => <option key={v._id} value={v._id}>{v.name}</option>)}
-                  </select>
-                  <select
-                    className="input-standard py-1.5 text-xs font-medium"
-                    value={filters.paymentMode}
-                    onChange={(e) => setFilters({ ...filters, paymentMode: e.target.value })}
-                  >
-                    <option value="">All Payments</option>
-                    <option value="CASH">Cash</option>
-                    <option value="CARD">Card</option>
-                    <option value="UPI">UPI</option>
-                    <option value="BANK">Bank</option>
-                  </select>
-                </div>
-              </div>
-            </div>
+            <button
+              onClick={() => setShowModal(true)}
+              className="btn-primary flex items-center gap-2 h-10"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
+              Add Expense
+            </button>
           </div>
         </div>
 
         { }
-        <div className="card-premium overflow-hidden transition-all">
-          <div className="px-6 py-4 border-b border-slate-100 flex justify-end bg-slate-50/30">
-            <PageSizeSelector
-              pageSize={pagination.limit}
-              onPageSizeChange={(val) => setPagination({ ...pagination, limit: val, page: 1 })}
-            />
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-left">
-              <thead>
-                <tr className="bg-slate-50 border-b border-slate-200">
-                  <th className="px-6 py-4 text-xs font-semibold text-slate-500 text-left">Billing Date</th>
-                  <th className="px-6 py-4 text-xs font-semibold text-slate-500 text-left">Expense Details</th>
-                  <th className="px-6 py-4 text-xs font-semibold text-slate-500 text-left">Merchant / Vendor</th>
-                  <th className="px-6 py-4 text-xs font-semibold text-slate-500 text-left">Mode</th>
-                  <th className="px-6 py-4 text-xs font-semibold text-slate-500 text-right">Amount</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 font-medium text-slate-700">
-                {loading ? (
-                  <tr><td colSpan="5" className="py-20"><Loading /></td></tr>
-                ) : expenses.length === 0 ? (
-                  <tr><td colSpan="5" className="py-20 text-center text-slate-400 font-black uppercase tracking-widest text-[10px]">No transaction history found</td></tr>
-                ) : (
-                  expenses.map((expense) => (
-                    <tr key={expense._id} className="hover:bg-slate-50/50 transition-colors">
-                      <td className="px-6 py-4">
-                        <span className="text-xs font-bold text-slate-500">{new Date(expense.expenseDate).toLocaleDateString()}</span>
-                      </td>
-                      <td className="px-6 py-4">
-                        <p className="font-bold text-slate-900 leading-tight">{expense.expenseType}</p>
-                        {expense.notes && <p className="text-[10px] text-slate-400 font-black uppercase tracking-tighter mt-0.5 truncate max-w-[240px] opacity-60">Note: {expense.notes}</p>}
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className="text-[10px] px-2 py-1 rounded bg-slate-100 text-slate-600 font-black uppercase tracking-wider border border-slate-200">
-                          {expense.vendorId?.name || "N/A"}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className={`px-2 py-0.5 rounded-full text-xs font-medium border ${expense.paymentMode === 'CASH' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
-                          expense.paymentMode === 'UPI' ? 'bg-indigo-50 text-indigo-600 border-indigo-100' :
-                            'bg-slate-50 text-slate-600 border-slate-200'
-                          }`}>
-                          {expense.paymentMode}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-right">
-                        <span className="text-sm font-semibold text-slate-900 tracking-tight">₹{expense.amount.toLocaleString()}</span>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-
-          { }
-          <div className="px-6 py-4 border-t border-slate-100 flex items-center justify-end bg-slate-50/30">
+        {/* Expenses Table */}
+        <div className="bg-white rounded-lg overflow-hidden border border-slate-200">
+          <table className="w-full text-left text-sm text-slate-600">
+            <thead className="bg-slate-50 text-slate-500 uppercase text-[10px] font-black tracking-widest border-b border-slate-200">
+              <tr>
+                <th className="px-4 py-3">Date</th>
+                <th className="px-4 py-3">Type</th>
+                <th className="px-4 py-3">Vendor</th>
+                <th className="px-4 py-3 text-right">Amount</th>
+                <th className="px-4 py-3">Payment</th>
+                <th className="px-4 py-3">Notes</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {loading ? (
+                <tr><td colSpan="6" className="py-20"><Loading /></td></tr>
+              ) : expenses.length === 0 ? (
+                <tr><td colSpan="6" className="py-20 text-center text-slate-500">No expenses found</td></tr>
+              ) : (
+                expenses.map((expense) => (
+                  <tr key={expense._id} className="hover:bg-slate-50 transition-colors">
+                    <td className="px-4 py-2.5 text-xs font-bold text-slate-700">
+                      {new Date(expense.expenseDate).toLocaleDateString()}
+                    </td>
+                    <td className="px-4 py-2.5 text-xs font-black text-slate-900">
+                      {expense.expenseType}
+                    </td>
+                    <td className="px-4 py-2.5 text-xs font-bold text-slate-500">
+                      {expense.vendorId?.name || "N/A"}
+                    </td>
+                    <td className="px-4 py-2.5 text-right font-black text-rose-500">
+                      ₹{expense.amount.toLocaleString()}
+                    </td>
+                    <td className="px-4 py-2.5">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-100 text-slate-600 border border-slate-200 uppercase">
+                        {expense.paymentMode}
+                      </span>
+                    </td>
+                    <td className="px-4 py-2.5 text-[10px] text-slate-400 font-medium italic max-w-xs truncate">
+                      {expense.notes || "-"}
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+          <div className="p-4 border-t border-slate-200 bg-slate-50 flex justify-end">
             <Pagination
               currentPage={pagination.page}
               totalPages={pagination.totalPages}

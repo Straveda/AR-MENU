@@ -4,43 +4,43 @@ import ExpensesTab from "../../components/admin/expenses/ExpensesTab";
 import PettyCashTab from "../../components/admin/expenses/PettyCashTab";
 
 export default function ExpensesPage() {
-  const [activeTab, setActiveTab] = useState("expenses");
+  const [activeTab, setActiveTab] = useState("vendors");
 
   const tabs = [
-    { id: "expenses", label: "Expenses", icon: "💰" },
-    { id: "petty-cash", label: "Petty Cash", icon: "🪙" },
-    { id: "vendors", label: "Vendors", icon: "🤝" },
+    { id: "vendors", label: "Vendors" },
+    { id: "expenses", label: "Expenses" },
+    { id: "petty-cash", label: "Petty Cash" },
   ];
 
   return (
-    <div className="space-y-10 animate-fade-in pb-12">
+    <div className="space-y-4 animate-fade-in pb-12">
       { }
+      {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="type-h1">Financial Oversight</h1>
-          <p className="type-secondary mt-1">Track operational expenses and manage vendor relationships</p>
+          <h1 className="text-2xl font-bold text-slate-900">Expenses & Petty Cash</h1>
+          <p className="text-slate-500 mt-1">Track vendors, expenses, and petty cash</p>
         </div>
       </div>
 
-      { }
-      <div className="flex gap-8 border-b border-slate-200">
+      {/* Tabs */}
+      <div className="bg-slate-100 p-1 rounded-xl inline-flex gap-1">
         {tabs.map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`pb-4 type-label transition-all relative ${activeTab === tab.id
-              ? "text-slate-900"
-              : "text-slate-400 hover:text-slate-600"
+            className={`px-4 py-2 text-sm font-medium rounded-lg transition-all ${activeTab === tab.id
+              ? "bg-white text-slate-900 shadow-sm"
+              : "text-slate-500 hover:text-slate-700 hover:bg-slate-200/50"
               }`}
           >
             {tab.label}
-            {activeTab === tab.id && <span className="absolute bottom-0 left-0 w-full h-0.5 bg-slate-900 rounded-full"></span>}
           </button>
         ))}
       </div>
 
       { }
-      <div className="mt-6">
+      <div className="">
         {activeTab === "expenses" && <ExpensesTab />}
         {activeTab === "petty-cash" && <PettyCashTab />}
         {activeTab === "vendors" && <VendorsTab />}

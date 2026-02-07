@@ -86,90 +86,105 @@ export default function VendorsTab() {
     }
   };
 
-  const filteredVendors = vendors.filter(v => 
+  const filteredVendors = vendors.filter(v =>
     v.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     v.category.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
-    <div className="space-y-8 animate-fade-in">
-      {}
-      <div className="card-premium p-4 flex flex-col sm:flex-row gap-4 items-center justify-between">
-        <div className="relative w-full sm:w-96">
+    <div className="space-y-4 animate-fade-in">
+      { }
+      {/* Actions */}
+      <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
+        <div className="relative w-full max-w-md">
           <input
             type="text"
-            placeholder="Search merchants or categories..."
+            placeholder="Search vendors..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="input-standard w-full pl-10"
+            className="w-full bg-slate-50 border border-slate-200 text-slate-900 text-sm rounded-lg focus:ring-slate-500 focus:border-slate-500 block pl-10 p-2.5"
           />
-          <svg className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
+          <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+            <svg className="w-4 h-4 text-slate-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+              <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
+            </svg>
+          </div>
         </div>
         <button
           onClick={() => handleOpenModal()}
           className="btn-primary flex items-center gap-2"
         >
-          <svg className="w-5 h-5 font-bold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
-          Add Merchant
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+          Add Vendor
         </button>
       </div>
 
-      {}
+      {/* Vendors Grid */}
       {loading ? (
         <Loading />
       ) : filteredVendors.length === 0 ? (
-        <EmptyState 
-          title="No vendors found" 
+        <EmptyState
+          title="No vendors found"
           message={searchTerm ? "Try adjusting your search" : "Start by adding your first vendor"}
           onAction={searchTerm ? () => setSearchTerm("") : () => handleOpenModal()}
           actionLabel={searchTerm ? "Clear Search" : "Add Vendor"}
         />
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredVendors.map((vendor) => (
-            <div key={vendor._id} className="card-premium p-6 group hover:translate-y-[-2px] transition-all duration-300">
-              <div className="flex justify-between items-start mb-6">
-                <div className={`px-2 py-1 rounded text-[10px] font-black uppercase tracking-widest border ${
-                  vendor.status === 'ACTIVE' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-slate-50 text-slate-400 border-slate-200'
-                }`}>
-                  {vendor.status}
+            <div key={vendor._id} className="bg-white border border-slate-200 rounded-xl py-3 px-4 relative group hover:shadow-md transition-shadow">
+              <div className="flex justify-between items-start">
+                <div className="flex gap-3">
+                  <div className="w-9 h-9 rounded-lg bg-slate-100 flex items-center justify-center text-slate-500">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 className="text-slate-900 font-bold text-sm leading-tight">{vendor.name}</h3>
+                    <span className="inline-block bg-slate-100 text-slate-600 text-[10px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded mt-0.5 border border-slate-200">
+                      {vendor.category}
+                    </span>
+                  </div>
                 </div>
-                <button 
+                <button
                   onClick={() => handleOpenModal(vendor)}
-                  className="p-2 text-slate-300 hover:text-amber-500 transition-colors"
+                  className="p-1 px-1.5 bg-slate-50 border border-slate-200 rounded-md text-slate-400 hover:text-blue-600 hover:bg-white transition-all shadow-sm"
                 >
-                  <svg className="w-5 h-5 font-bold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
                 </button>
               </div>
-              
-              <h3 className="text-xl font-black text-slate-900 tracking-tight leading-none mb-1">{vendor.name}</h3>
-              <p className="text-[10px] font-black text-amber-600 uppercase tracking-widest mb-6">{vendor.category}</p>
 
-              <div className="space-y-3">
+              <div className="mt-6 space-y-2">
                 {vendor.phone && (
-                  <div className="flex items-center gap-3 text-slate-500">
-                    <svg className="w-4 h-4 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
-                    <span className="text-xs font-bold">{vendor.phone}</span>
+                  <div className="text-slate-500 text-sm flex items-center gap-2">
+                    <span className="text-slate-400">+91</span> {vendor.phone}
                   </div>
                 )}
                 {vendor.email && (
-                  <div className="flex items-center gap-3 text-slate-500">
-                    <svg className="w-4 h-4 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
-                    <span className="text-xs font-bold">{vendor.email}</span>
+                  <div className="text-slate-500 text-sm truncate">
+                    {vendor.email}
                   </div>
                 )}
+              </div>
+
+              <div className="mt-4 pt-4 border-t border-slate-100">
+                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${vendor.status === 'ACTIVE'
+                  ? 'bg-emerald-100 text-emerald-700'
+                  : 'bg-slate-100 text-slate-600'
+                  }`}>
+                  {vendor.status === 'ACTIVE' ? 'Active' : 'Inactive'}
+                </span>
               </div>
             </div>
           ))}
         </div>
       )}
 
-      {}
+      { }
       {showModal && (
-        <Modal 
-          onClose={handleCloseModal} 
+        <Modal
+          onClose={handleCloseModal}
           title={editingVendor ? "Edit Vendor" : "Add New Vendor"}
         >
           <form onSubmit={handleSubmit} className="space-y-6">

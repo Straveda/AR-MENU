@@ -77,7 +77,7 @@ export const updateVendor = async (req, res) => {
 
 export const createExpense = async (req, res) => {
   try {
-    const { expenseType, amount, vendorId, paymentMode, notes, expenseDate } = req.body;
+    const { expenseType, amount, vendorId, paymentMode, notes, expenseDate, transactionType } = req.body;
     const expense = await expensesService.createExpense({
       expenseType,
       amount,
@@ -85,6 +85,7 @@ export const createExpense = async (req, res) => {
       paymentMode,
       notes,
       expenseDate,
+      transactionType: transactionType || 'DEBIT', // Default to DEBIT if not provided
       createdBy: req.user._id,
       restaurantId: req.restaurant._id,
     });
@@ -116,11 +117,18 @@ export const getExpenses = async (req, res) => {
       year
     );
 
+    const pettyCashStats = await expensesService.getPettyCashStats(
+      req.restaurant._id,
+      month,
+      year
+    );
+
     res.status(200).json({
       success: true,
       data: {
         ...result,
         monthlyTotal,
+        pettyCashStats,
       },
     });
   } catch (error) {

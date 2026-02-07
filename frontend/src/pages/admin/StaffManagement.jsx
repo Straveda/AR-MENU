@@ -140,7 +140,7 @@ export default function StaffManagement() {
   if (loading) return <Loading message="Loading staff accounts..." />;
 
   return (
-    <div className="space-y-10 animate-fade-in pb-12">
+    <div className="space-y-4 animate-fade-in pb-12">
       { }
       <div className="flex flex-col md:flex-row items-center justify-between gap-4">
         <div>
@@ -161,8 +161,8 @@ export default function StaffManagement() {
 
       { }
       <div className="card-premium overflow-hidden">
-        <div className="px-6 py-4 border-b border-slate-100 bg-slate-50/50">
-          <h2 className="type-h2">Active Personnel ({staff.length})</h2>
+        <div className="px-4 py-3 border-b border-slate-100 bg-slate-50/50">
+          <h2 className="text-sm font-black text-slate-900 uppercase tracking-widest">Active Personnel ({staff.length})</h2>
         </div>
 
         <div className="p-0">
@@ -181,45 +181,45 @@ export default function StaffManagement() {
               <table className="w-full text-left">
                 <thead>
                   <tr className="bg-slate-50 border-b border-slate-200">
-                    <th className="px-6 py-4 type-label">User Profile</th>
-                    <th className="px-6 py-4 type-label">Department</th>
-                    <th className="px-6 py-4 type-label">Role Title</th>
-                    <th className="px-6 py-4 type-label">Status</th>
-                    <th className="px-6 py-4 type-label text-right">Actions</th>
+                    <th className="px-4 py-3 type-label">User Profile</th>
+                    <th className="px-4 py-3 type-label">Department</th>
+                    <th className="px-4 py-3 type-label">Role Title</th>
+                    <th className="px-4 py-3 type-label">Status</th>
+                    <th className="px-4 py-3 type-label text-right">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 font-medium type-body">
                   {staff.map((user) => (
                     <tr key={user._id} className="hover:bg-slate-50/50 transition-colors">
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-3">
-                          <div className="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center text-amber-600 font-bold border border-slate-200 shadow-inner text-lg">
+                      <td className="px-4 py-2.5">
+                        <div className="flex items-center gap-2.5">
+                          <div className="w-9 h-9 rounded-lg bg-slate-100 flex items-center justify-center text-amber-600 font-bold border border-slate-200 shadow-inner text-sm">
                             {user.username.charAt(0).toUpperCase()}
                           </div>
                           <div>
-                            <p className="type-h3">{user.username}</p>
-                            <p className="type-caption text-slate-400 mt-0.5">{user.email}</p>
+                            <p className="text-sm font-bold text-slate-900 leading-tight">{user.username}</p>
+                            <p className="text-[10px] text-slate-400 font-medium">{user.email}</p>
                           </div>
                         </div>
                       </td>
-                      <td className="px-6 py-4">
-                        <span className="badge-standard bg-slate-100 text-slate-600 border border-slate-200">
+                      <td className="px-4 py-2.5">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600 border border-slate-200 uppercase">
                           {user.department || "KDS"}
                         </span>
                       </td>
-                      <td className="px-6 py-4 type-cell-value">{user.roleTitle || "Staff Member"}</td>
-                      <td className="px-6 py-4 text-center">
+                      <td className="px-4 py-2.5 text-xs font-bold text-slate-700">{user.roleTitle || "Staff Member"}</td>
+                      <td className="px-4 py-2.5 text-center">
                         <div className="flex">
-                          <span className={`badge-standard border ${user.isActive
-                              ? "bg-emerald-50 text-emerald-600 border-emerald-100"
-                              : "bg-rose-50 text-rose-600 border-rose-100"
-                            }`}>
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold border ${user.isActive
+                            ? "bg-emerald-50 text-emerald-600 border-emerald-100"
+                            : "bg-rose-50 text-rose-600 border-rose-100"
+                            } uppercase`}>
                             {user.isActive ? "Active" : "Inactive"}
                           </span>
                         </div>
                       </td>
 
-                      <td className="px-6 py-4 text-right">
+                      <td className="px-4 py-3 text-right">
                         <div className="flex justify-end gap-2">
                           <ActionMenu
                             actions={[
