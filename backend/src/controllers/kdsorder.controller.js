@@ -1,5 +1,8 @@
 import { Order } from '../models/order.models.js';
 import { User } from '../models/user.models.js';
+import { Dish } from '../models/dish.models.js';
+import { Ingredient } from '../models/ingredient.model.js';
+import { StockMovement } from '../models/stockMovement.model.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { io } from '../../index.js';
@@ -49,18 +52,23 @@ const getKdsOrders = async (req, res) => {
 
     const pendingOrders = await Order.find(
       { orderStatus: 'Pending', restaurantId: restaurant._id },
-      'orderCode tableNumber orderItems.name orderItems.quantity createdAt orderStatus',
+      'orderCode tableNumber orderItems.name orderItems.quantity createdAt orderStatus total',
     ).lean();
 
     const preparingOrders = await Order.find(
       { orderStatus: 'Preparing', restaurantId: restaurant._id },
-      'orderCode tableNumber orderItems.name orderItems.quantity createdAt orderStatus',
+      'orderCode tableNumber orderItems.name orderItems.quantity createdAt orderStatus total',
     ).lean();
 
     const readyOrders = await Order.find(
       { orderStatus: 'Ready', restaurantId: restaurant._id },
-      'orderCode tableNumber orderItems.name orderItems.quantity createdAt orderStatus',
+      'orderCode tableNumber orderItems.name orderItems.quantity createdAt orderStatus total',
     ).lean();
+
+    const deliveredOrders = await Order.find(
+      { orderStatus: 'Completed', restaurantId: restaurant._id },
+      'orderCode tableNumber orderItems.name orderItems.quantity createdAt orderStatus total',
+    ).limit(50).sort({ createdAt: -1 }).lean();
 
     const format = (orders) =>
       orders.map((order) => ({
@@ -73,6 +81,7 @@ const getKdsOrders = async (req, res) => {
         })),
         createdAt: order.createdAt,
         orderStatus: order.orderStatus,
+        total: order.total,
       }));
 
     return res.status(200).json({
@@ -80,6 +89,7 @@ const getKdsOrders = async (req, res) => {
         pending: format(pendingOrders),
         preparing: format(preparingOrders),
         ready: format(readyOrders),
+        delivered: format(deliveredOrders),
       },
       success: true,
       message: 'Orders fetched successfully',
@@ -144,6 +154,56 @@ const updateKdsOrderStatus = async (req, res) => {
       status,
       by: 'kds',
     });
+
+    // --- AUTOMATED STOCK DEDUCTION START ---
+    if (status === 'Completed') {
+      try {
+        console.log(`Processing stock deduction for Order ${orderCode}`);
+        for (const item of order.orderItems) {
+          // Fetch the dish to get the recipe
+          const dish = await Dish.findById(item.dishId).lean();
+          if (!dish || !dish.recipe || dish.recipe.length === 0) {
+            continue; // Skip if no dish or no recipe
+          }
+
+          // Process each ingredient in the recipe
+          for (const ingredientUsage of dish.recipe) {
+            const deductionAmount = ingredientUsage.quantity * item.quantity;
+
+            // Atomically update stock, ensuring it doesn't go below 0 is handled here or by check
+            // We use $inc with negative value. 
+            // MongoDB will let it go negative unless schema has min: 0. 
+            // Our Schema HAS min: 0. So strict decrement might fail if stock < deduction.
+            // Strategy: Find, Calculate new val, Update.
+
+            const ingredient = await Ingredient.findById(ingredientUsage.ingredientId);
+            if (ingredient) {
+              let newStock = ingredient.currentStock - deductionAmount;
+              if (newStock < 0) newStock = 0; // Prevent negative stock error
+
+              ingredient.currentStock = newStock;
+              await ingredient.save();
+
+              // Log stock movement
+              await StockMovement.create({
+                ingredientId: ingredient._id,
+                action: 'DEDUCT',
+                quantity: deductionAmount,
+                reason: 'ORDER',
+                performedBy: req.user?._id || ingredient.restaurantId, // Fallback if user not in req
+                restaurantId: restaurant._id,
+              });
+
+              console.log(`Deducted ${deductionAmount} ${ingredient.unit} of ${ingredient.name}. New Stock: ${newStock}`);
+            }
+          }
+        }
+      } catch (stockError) {
+        console.error('Stock Deduction Error:', stockError);
+        // We do NOT fail the order update if stock fails. Just log it.
+      }
+    }
+    // --- AUTOMATED STOCK DEDUCTION END ---
 
     await order.save();
 

@@ -27,7 +27,10 @@ const addDish = async (req, res) => {
       nutritionalInfo,
       portionSize,
       isChefSpecial,
+      recipe
     } = req.body;
+
+    // ... (rest of the code)
 
     if (typeof tags === 'string') {
       try {
@@ -48,6 +51,13 @@ const addDish = async (req, res) => {
         nutritionalInfo = JSON.parse(nutritionalInfo);
       } catch (e) {
         nutritionalInfo = {};
+      }
+    }
+    if (typeof recipe === 'string') {
+      try {
+        recipe = JSON.parse(recipe);
+      } catch (e) {
+        recipe = [];
       }
     }
     if (typeof available === 'string') {
@@ -102,6 +112,7 @@ const addDish = async (req, res) => {
       nutritionalInfo,
       portionSize,
       isChefSpecial,
+      recipe: recipe || [],
     });
 
     await dish.save();
@@ -274,6 +285,7 @@ const updateDish = async (req, res) => {
       portionSize,
       nutritionalInfo,
       isChefSpecial,
+      recipe
     } = req.body;
 
     if (typeof available === 'string') {
@@ -283,6 +295,15 @@ const updateDish = async (req, res) => {
     if (typeof isChefSpecial === 'string') {
       isChefSpecial = isChefSpecial === 'true';
     }
+
+    if (typeof recipe === 'string') {
+      try {
+        recipe = JSON.parse(recipe);
+      } catch (e) {
+        recipe = [];
+      }
+    }
+
     if (
       !name &&
       !description &&
@@ -293,7 +314,8 @@ const updateDish = async (req, res) => {
       !tags &&
       available === undefined &&
       !portionSize &&
-      !nutritionalInfo
+      !nutritionalInfo &&
+      !recipe
     ) {
       return res.status(400).json({
         success: false,
@@ -321,6 +343,7 @@ const updateDish = async (req, res) => {
     if (portionSize) dish.portionSize = portionSize;
     if (nutritionalInfo) dish.nutritionalInfo = nutritionalInfo;
     if (isChefSpecial !== undefined) dish.isChefSpecial = isChefSpecial;
+    if (recipe) dish.recipe = recipe;
 
     const updatedDish = await dish.save();
 
