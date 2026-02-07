@@ -16,6 +16,8 @@ function AdminLayoutContent() {
     { label: "Dashboard", path: "/admin/dashboard", icon: "dashboard" },
     { label: "Analytics", path: "/admin/analytics", icon: "analytics" },
     { label: "Menu Management", path: "/admin/menu", icon: "menu" },
+    { label: "Orders", path: "/admin/orders", icon: "orders" },
+    { label: "POS & Billing", path: "/admin/pos", icon: "pos" },
     { label: "Inventory", path: "/admin/inventory", icon: "inventory" },
     { label: "Staff", path: "/admin/staff", icon: "staff" },
     { label: "Expenses", path: "/admin/expenses", icon: "expenses" },
@@ -41,7 +43,7 @@ function AdminLayoutContent() {
 
       { }
       <aside className={`
-        fixed inset-y-0 left-0 z-50 w-64 bg-slate-900 flex flex-col transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:w-64
+        fixed inset-y-0 left-0 z-50 w-62 bg-slate-900 flex flex-col transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:w-62
         ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
       `}>
         <div className="h-16 flex items-center justify-between px-6 border-b border-slate-800">
@@ -59,9 +61,8 @@ function AdminLayoutContent() {
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto py-6 px-4">
+        <div className="flex-1 overflow-y-auto py-6 px-4 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
           <div className="mb-8 px-2">
-            <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-4 ml-1">Main Menu</p>
             <nav className="space-y-1">
               {navItems.map((item) => {
                 const isActive = location.pathname === item.path;
@@ -107,38 +108,18 @@ function AdminLayoutContent() {
       </aside>
 
       { }
-      <main className="flex-1 flex flex-col overflow-hidden">
-        { }
-        <header className="h-16 bg-white border-b border-slate-200 px-4 lg:px-8 flex items-center justify-between shrink-0 shadow-[0_1px_2px_rgba(0,0,0,0.03)]">
-          <div className="flex items-center">
-            <button
-              onClick={() => setSidebarOpen(true)}
-              className="lg:hidden p-2 -ml-2 text-slate-500 hover:text-slate-900 mr-2 transition-colors"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-            </button>
-            <div>
-              <h2 className="text-sm font-black text-slate-900 uppercase tracking-widest">
-                {navItems.find(item => item.path === location.pathname)?.label || "Restaurant Admin"}
-              </h2>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-4">
-            <div className="hidden sm:flex flex-col items-end">
-              <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                Live Session
-              </span>
-              <span className="text-[9px] text-slate-400 font-bold uppercase tracking-tight opacity-70">Cloud-Synced Environment</span>
-            </div>
-          </div>
-        </header>
+      <main className="flex-1 flex flex-col overflow-hidden relative">
+        <button
+          onClick={() => setSidebarOpen(true)}
+          className="lg:hidden absolute top-4 left-4 z-30 p-2 bg-white rounded-lg shadow-sm text-slate-500 hover:text-slate-900 transition-colors"
+        >
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
 
         { }
-        <div className="flex-1 overflow-y-auto p-4 lg:p-8 bg-slate-50/50">
+        <div className="flex-1 overflow-y-auto p-4 lg:px-8 lg:pt-4 lg:pb-8 bg-slate-50/50">
           <Outlet />
         </div>
       </main>
@@ -185,6 +166,16 @@ function NavIcon({ name }) {
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+      </svg>
+    ),
+    orders: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+      </svg>
+    ),
+    pos: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
       </svg>
     ),
 

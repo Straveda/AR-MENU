@@ -7,6 +7,12 @@ const expenseSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+    transactionType: {
+      type: String,
+      enum: ['DEBIT', 'CREDIT'],
+      default: 'DEBIT',
+      required: true,
+    },
     amount: {
       type: Number,
       required: true,
@@ -15,7 +21,7 @@ const expenseSchema = new mongoose.Schema(
     vendorId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Vendor',
-      required: true,
+      required: false, // Optional for internal cash additions
       index: true,
     },
     paymentMode: {

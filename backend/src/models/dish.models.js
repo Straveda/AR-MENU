@@ -59,6 +59,21 @@ const dishSchema = new mongoose.Schema(
       sugar: { type: Number, default: 0 },
     },
 
+    recipe: [{
+      ingredientId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Ingredient',
+        required: true
+      },
+      quantity: {
+        type: Number,
+        required: true,
+        min: 0
+      },
+      // unit is derived from Ingredient, but we could store it if needed for conversion. 
+      // For now, assume same unit or simple ratio.
+    }],
+
     orderCount: {
       type: Number,
       default: 0,

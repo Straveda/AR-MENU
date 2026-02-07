@@ -329,26 +329,26 @@ function AnalyticsContent() {
 
 
     return (
-        <div className="space-y-8 animate-fade-in pb-12">
+        <div className="space-y-4 animate-fade-in pb-12 max-w-[1400px] mx-auto">
             {/* Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2">
                 <div>
-                    <h1 className="text-2xl font-bold text-slate-900">Analytics</h1>
-                    <p className="text-slate-500 mt-1 text-sm">Comprehensive restaurant performance insights & trends</p>
+                    <h1 className="type-h1">Analytics</h1>
+                    <p className="type-secondary mt-1">Comprehensive restaurant performance insights & trends</p>
                 </div>
 
                 {/* Time Range Selector */}
-                <div className="flex gap-2">
+                <div className="flex gap-1.5 p-1 bg-slate-100 rounded-xl">
                     {['today', 'week', 'month', 'year'].map((range) => (
                         <button
                             key={range}
                             onClick={() => setTimeRange(range)}
-                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${timeRange === range
-                                ? 'bg-indigo-600 text-white shadow-sm'
-                                : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
+                            className={`px-4 py-1.5 rounded-lg text-xs font-black uppercase tracking-tight transition-all duration-200 ${timeRange === range
+                                ? 'bg-white text-indigo-600 shadow-sm'
+                                : 'text-slate-500 hover:text-slate-700'
                                 }`}
                         >
-                            {range.charAt(0).toUpperCase() + range.slice(1)}
+                            {range}
                         </button>
                     ))}
                 </div>
@@ -357,14 +357,14 @@ function AnalyticsContent() {
             {/* Key Metrics Cards */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 <MetricCard
-                    title="Total Revenue"
+                    title={timeRange === 'month' ? "Monthly Revenue" : "Revenue"}
                     value={`₹${metrics.totalRevenue?.toLocaleString() || '0'}`}
                     change="+12.5%"
                     trend="up"
                     icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>}
                 />
                 <MetricCard
-                    title="Total Orders"
+                    title={timeRange === 'month' ? "Monthly Orders" : "Orders"}
                     value={metrics.totalOrders || '0'}
                     change="+8.2%"
                     trend="up"
@@ -475,18 +475,23 @@ function AnalyticsContent() {
 
 function MetricCard({ title, value, change, trend, icon }) {
     return (
-        <div className="bg-white rounded-xl border border-slate-200 p-4 md:p-6 shadow-sm hover:shadow-md transition-shadow">
-            <div className="flex items-start justify-between mb-3">
+        <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm hover:border-slate-300 transition-all group">
+            <div className="flex items-start justify-between mb-4">
+                <div>
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{title}</p>
+                    <h3 className="text-2xl font-black text-slate-900 tracking-tight">{value}</h3>
+                </div>
                 <div className="w-10 h-10 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center">
                     {icon}
                 </div>
-                <span className={`text-xs font-semibold px-2 py-1 rounded ${trend === 'up' ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'
+            </div>
+            <div className="flex items-center gap-1.5">
+                <span className={`text-[10px] font-black uppercase tracking-tight px-1.5 py-0.5 rounded ${trend === 'up' ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'
                     }`}>
                     {change}
                 </span>
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">vs last period</span>
             </div>
-            <h3 className="text-2xl font-bold text-slate-900 mb-1">{value}</h3>
-            <p className="text-xs text-slate-500 font-medium">{title}</p>
         </div>
     );
 }

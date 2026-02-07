@@ -215,7 +215,7 @@ export default function MenuManagement() {
 
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       { }
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div>
@@ -249,7 +249,7 @@ export default function MenuManagement() {
         </div>
       </div>
 
-      { }
+      {/* Stats Quick View */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
           { label: "Total Dishes", value: stats.total, color: "blue", icon: "📋" },
@@ -257,9 +257,9 @@ export default function MenuManagement() {
           { label: "Processing", value: stats.processing, color: "yellow", icon: "⏳" },
           { label: "Pending", value: stats.pending, color: "gray", icon: "⏸️" }
         ].map((stat, index) => (
-          <div key={index} className="card-premium p-5 border-amber-100/50">
-            <div className="flex items-center gap-4">
-              <div className={`w-12 h-12 bg-${stat.color}-100 rounded-xl flex items-center justify-center text-xl`}>
+          <div key={index} className="card-premium p-4 border-amber-100/50">
+            <div className="flex items-center gap-3">
+              <div className={`w-10 h-10 bg-${stat.color}-100 rounded-lg flex items-center justify-center text-lg`}>
                 {stat.icon}
               </div>
               <div>
@@ -271,8 +271,8 @@ export default function MenuManagement() {
         ))}
       </div>
 
-      { }
-      <div className="card-premium p-6 border-amber-100/50">
+      {/* Search and Filters */}
+      <div className="card-premium p-5 border-amber-100/50">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block type-label mb-2">Search Dishes</label>
@@ -339,7 +339,7 @@ export default function MenuManagement() {
           </h2>
         </div>
 
-        <div className="p-6">
+        <div className="p-4">
           {loading ? (
             <Loading message="Loading dishes..." />
           ) : filteredDishes.length === 0 ? (
@@ -361,7 +361,7 @@ export default function MenuManagement() {
               />
             )
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               {filteredDishes.map((dish) => (
                 <div
                   key={dish._id}
@@ -402,7 +402,7 @@ export default function MenuManagement() {
                     </div>
                   </div>
 
-                  <div className="p-6 flex flex-col grow">
+                  <div className="p-5 flex flex-col grow">
                     <div className="flex justify-between items-start mb-2">
                       <h3 className="type-h3 leading-tight line-clamp-1 group-hover:text-amber-600 transition-colors uppercase tracking-tight">{dish.name}</h3>
                     </div>

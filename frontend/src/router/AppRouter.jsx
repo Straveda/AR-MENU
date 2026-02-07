@@ -37,6 +37,8 @@ import LandingPage from '../pages/LandingPage.jsx';
 
 import AdminLayout from '../components/layout/AdminLayout.jsx';
 import ExpensesPage from '../pages/admin/ExpensesPage.jsx';
+import OrderManagement from '../pages/admin/OrderManagement.jsx';
+import POSBilling from '../pages/admin/POSBilling.jsx';
 import Settings from '../pages/admin/Settings.jsx';
 import NotFound from '../pages/NotFound.jsx';
 
@@ -81,6 +83,8 @@ const AppRouter = () => {
                                                     <Route path="/admin/staff" element={<StaffManagement />} />
                                                     <Route path="/admin/inventory" element={<Inventory />} />
                                                     <Route path="/admin/expenses" element={<ExpensesPage />} />
+                                                    <Route path="/admin/orders" element={<OrderManagement />} />
+                                                    <Route path="/admin/pos" element={<POSBilling />} />
                                                     <Route path="/admin/settings" element={<Settings />} />
                                                 </Route>
                                             </Route>

@@ -11,7 +11,10 @@ export const getDashboardAnalytics = async (restaurantId) => {
   today.setHours(0, 0, 0, 0);
 
   const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+  const sevenDaysAgo = new Date(today);
+  sevenDaysAgo.setDate(today.getDate() - 6);
 
+  // Sales Metrics
   const salesMetrics = await Order.aggregate([
     { $match: { restaurantId: rId, createdAt: { $gte: startOfMonth } } },
     {
@@ -53,29 +56,56 @@ export const getDashboardAnalytics = async (restaurantId) => {
       ? (metrics.totalRevenueMonth / metrics.completedOrdersMonth).toFixed(2)
       : 0;
 
-  const operationsSnapshot = await Order.aggregate([
-    { $match: { restaurantId: rId, createdAt: { $gte: today } } },
+  // Last 7 days Revenue Trend
+  const revenueTrend = await Order.aggregate([
+    {
+      $match: {
+        restaurantId: rId,
+        createdAt: { $gte: sevenDaysAgo },
+        orderStatus: { $ne: 'Cancelled' },
+      },
+    },
     {
       $group: {
-        _id: null,
-        completedToday: { $sum: { $cond: [{ $eq: ['$orderStatus', 'Completed'] }, 1, 0] } },
-        cancelledToday: { $sum: { $cond: [{ $eq: ['$orderStatus', 'Cancelled'] }, 1, 0] } },
-        inProgress: {
-          $sum: {
-            $cond: [{ $in: ['$orderStatus', ['Pending', 'Preparing', 'Ready']] }, 1, 0],
-          },
-        },
+        _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
+        revenue: { $sum: '$total' },
+      },
+    },
+    { $sort: { _id: 1 } },
+  ]);
+
+  // Operations Snapshot
+  const operationsSnapshot = await Order.aggregate([
+    {
+      $match: {
+        restaurantId: rId,
+        $or: [
+          { createdAt: { $gte: today } },
+          { orderStatus: { $in: ['Pending', 'Preparing', 'Ready'] } },
+        ],
+      },
+    },
+    {
+      $group: {
+        _id: '$orderStatus',
+        count: { $sum: 1 },
       },
     },
   ]);
 
-  const activeOrdersCount = await Order.countDocuments({
+  const activeOrders = await Order.find({
     restaurantId,
     orderStatus: { $in: ['Pending', 'Preparing', 'Ready'] },
   });
 
-  const ops = operationsSnapshot[0] || { completedToday: 0, cancelledToday: 0 };
+  const uniqueTables = [...new Set(activeOrders.map((o) => o.tableNumber).filter(Boolean))];
 
+  const opsMap = operationsSnapshot.reduce((acc, curr) => {
+    acc[curr._id] = curr.count;
+    return acc;
+  }, {});
+
+  // Inventory Metrics
   const inventoryMetrics = await Ingredient.aggregate([
     { $match: { restaurantId: rId } },
     {
@@ -94,6 +124,7 @@ export const getDashboardAnalytics = async (restaurantId) => {
 
   const inv = inventoryMetrics[0] || { lowStockCount: 0, deadStockCount: 0, totalValue: 0 };
 
+  // Expenses Metrics
   const expenseMetrics = await Expense.aggregate([
     { $match: { restaurantId: rId, expenseDate: { $gte: startOfMonth } } },
     {
@@ -107,6 +138,10 @@ export const getDashboardAnalytics = async (restaurantId) => {
 
   const monthlyExpenses = expenseMetrics.reduce((sum, item) => sum + item.totalAmount, 0);
   const topExpenseCategory = expenseMetrics.length > 0 ? expenseMetrics[0]._id : 'N/A';
+
+  // Menu and Plan info
+  const restaurant = await mongoose.model('Restaurant').findById(restaurantId).populate('planId');
+  const dishCount = await Dish.countDocuments({ restaurantId });
 
   const topDish = await Dish.findOne({ restaurantId })
     .sort({ orderCount: -1 })
@@ -135,11 +170,16 @@ export const getDashboardAnalytics = async (restaurantId) => {
       ordersThisMonth: metrics.totalOrdersMonth,
       revenueThisMonth: metrics.totalRevenueMonth,
       avgOrderValue,
+      revenueTrend,
     },
     operations: {
-      inProgress: activeOrdersCount,
-      completedToday: ops.completedToday,
-      cancelledToday: ops.cancelledToday,
+      inProgress: activeOrders.length,
+      pending: opsMap['Pending'] || 0,
+      preparing: opsMap['Preparing'] || 0,
+      ready: opsMap['Ready'] || 0,
+      completedToday: opsMap['Completed'] || 0,
+      cancelledToday: opsMap['Cancelled'] || 0,
+      activeTablesCount: uniqueTables.length,
     },
     inventory: {
       lowStockCount: inv.lowStockCount,
@@ -151,10 +191,16 @@ export const getDashboardAnalytics = async (restaurantId) => {
       topCategory: topExpenseCategory,
     },
     menu: {
+      dishCount,
       topSelling: topDish?.name || 'N/A',
       leastSelling: leastDish?.name || 'N/A',
       arReadyCount: ar.arReady,
       nonArCount: ar.total - ar.arReady,
+    },
+    plan: {
+      name: restaurant?.planId?.name || 'TRIAL',
+      maxDishes: restaurant?.planId?.limits?.maxDishes || 50,
+      maxStaff: restaurant?.planId?.limits?.maxStaff || 5,
     },
   };
 };
