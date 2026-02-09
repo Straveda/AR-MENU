@@ -3,6 +3,10 @@ import NodeCache from 'node-cache';
 import { Order } from '../models/order.models.js';
 import { Dish } from '../models/dish.models.js';
 import Restaurant from '../models/restaurant.models.js';
+import { Ingredient } from '../models/ingredient.model.js';
+import Expense from '../models/expense.model.js';
+import * as analyticsService from './analytics.service.js';
+import mongoose from 'mongoose';
 
 // Initialize Cache (Std TTL 5 mins, Check period 60s)
 const aiCache = new NodeCache({ stdTTL: 300, checkperiod: 60 });
@@ -28,7 +32,8 @@ try {
 }
 
 /**
- * Builds a context object for the AI based on current restaurant data
+ * Builds a comprehensive context object for the AI with full access to restaurant analytics
+ * Includes sales, revenue, expenses, inventory, menu performance, and operational metrics
  */
 const buildContext = async (restaurantId) => {
     try {
@@ -36,47 +41,120 @@ const buildContext = async (restaurantId) => {
         const cachedContext = aiCache.get(cacheKey);
         if (cachedContext) return cachedContext;
 
+        const rId = new mongoose.Types.ObjectId(restaurantId);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+
         // 1. Fetch Restaurant Details
         const restaurant = await Restaurant.findById(restaurantId).select('name cuisine status openingTime closingTime');
 
-        // 2. Fetch Active Orders
+        // 2. Fetch Comprehensive Dashboard Analytics
+        const dashboardAnalytics = await analyticsService.getDashboardAnalytics(restaurantId);
+
+        // 3. Fetch Active Orders with details
         const activeOrders = await Order.find({
             restaurantId,
             orderStatus: { $in: ['Pending', 'Preparing', 'Ready'] },
         })
             .select('orderCode orderStatus total tableNumber createdAt')
             .sort({ createdAt: -1 })
+            .limit(10);
+
+        // 4. Fetch Low Stock Items
+        const lowStockItems = await Ingredient.find({
+            restaurantId,
+            $expr: { $lte: ['$currentStock', '$minStockLevel'] },
+        })
+            .select('name currentStock minStockLevel costPerUnit')
             .limit(5);
 
-        // 3. Fetch Today's Stats (Simple Aggregation)
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-
-        const todaysOrders = await Order.find({
+        // 5. Fetch Recent Expenses
+        const recentExpenses = await Expense.find({
             restaurantId,
-            createdAt: { $gte: today },
-        }).select('total orderStatus');
+            expenseDate: { $gte: startOfMonth },
+        })
+            .select('expenseType amount description expenseDate')
+            .sort({ expenseDate: -1 })
+            .limit(5);
 
-        const revenue = todaysOrders.reduce((acc, order) => acc + (order.total || 0), 0);
-        const orderCount = todaysOrders.length;
+        // 6. Fetch Top and Bottom Performing Dishes
+        const topDish = await Dish.findOne({ restaurantId })
+            .sort({ orderCount: -1 })
+            .select('name orderCount');
+        const bottomDish = await Dish.findOne({ restaurantId })
+            .sort({ orderCount: 1 })
+            .select('name orderCount');
 
-        // 4. Fetch Top Menu Items (by availability)
-        const lowStockItems = await Dish.find({
+        // 7. Get Pending Orders Count (for KDS alerting)
+        const pendingOrdersCount = await Order.countDocuments({
             restaurantId,
-            available: true, // Assuming available means in stock for now, or add logic if quantity exists
-        }).limit(5).select('name price category');
+            orderStatus: 'Pending',
+        });
 
         const contextData = {
+            // Restaurant Info
             restaurantName: restaurant?.name || 'Your Restaurant',
+            cuisine: restaurant?.cuisine || 'N/A',
             status: restaurant?.status,
             hours: `${restaurant?.openingTime} - ${restaurant?.closingTime}`,
-            activeOrdersCount: activeOrders.length,
-            latestOrders: activeOrders.map(o => `#${o.orderCode} (${o.orderStatus}) - $${o.total}`).join(', '),
-            todayStats: `Orders: ${orderCount}, Revenue: $${revenue.toFixed(2)}`,
-            menuSnippet: lowStockItems.map(d => d.name).join(', ')
+
+            // Sales & Revenue Data
+            sales: {
+                todayOrders: dashboardAnalytics.sales.ordersToday,
+                todayRevenue: dashboardAnalytics.sales.revenueToday.toFixed(2),
+                monthOrders: dashboardAnalytics.sales.ordersThisMonth,
+                monthRevenue: dashboardAnalytics.sales.revenueThisMonth.toFixed(2),
+                avgOrderValue: dashboardAnalytics.sales.avgOrderValue,
+            },
+
+            // Operations Data
+            operations: {
+                activeOrders: activeOrders.length,
+                inProgress: dashboardAnalytics.operations.inProgress,
+                completedToday: dashboardAnalytics.operations.completedToday,
+                cancelledToday: dashboardAnalytics.operations.cancelledToday,
+                pendingOrders: pendingOrdersCount,
+                activeOrdersList: activeOrders
+                    .map(o => `#${o.orderCode} (${o.orderStatus}) - $${o.total.toFixed(2)}`)
+                    .join(', ') || 'None',
+            },
+
+            // Inventory Data
+            inventory: {
+                lowStockCount: dashboardAnalytics.inventory.lowStockCount,
+                deadStockCount: dashboardAnalytics.inventory.deadStockCount,
+                totalValue: dashboardAnalytics.inventory.totalValue,
+                lowStockItems: lowStockItems
+                    .map(i => `${i.name} (${i.currentStock}/${i.minStockLevel})`)
+                    .join(', ') || 'None',
+            },
+
+            // Expense Data
+            expenses: {
+                monthlyTotal: dashboardAnalytics.expenses.monthlyTotal,
+                topCategory: dashboardAnalytics.expenses.topCategory,
+                recentExpenses: recentExpenses
+                    .map(e => `${e.expenseType}: $${e.amount.toFixed(2)}`)
+                    .join(', ') || 'None',
+            },
+
+            // Menu Performance Data
+            menu: {
+                topSelling: {
+                    name: topDish?.name || 'N/A',
+                    orders: topDish?.orderCount || 0,
+                },
+                leastSelling: {
+                    name: bottomDish?.name || 'N/A',
+                    orders: bottomDish?.orderCount || 0,
+                },
+                arReadyCount: dashboardAnalytics.menu.arReadyCount,
+                nonArCount: dashboardAnalytics.menu.nonArCount,
+            },
         };
 
-        // Cache context for 2 minutes to serve frequent chats
+        // Cache context for 2 minutes
         aiCache.set(cacheKey, contextData, 120);
 
         return contextData;
@@ -98,44 +176,89 @@ export const processMessage = async (restaurantId, userMessage, userId) => {
         // --- LEVEL 1: Static / FAQ Routing (Cost Optimization) ---
         const lowerMsg = userMessage.toLowerCase();
 
+        // FAQ for common questions
         if (lowerMsg.includes('how to add dish') || lowerMsg.includes('add menu item')) {
             return "To add a new dish, go to the **Menu** tab in the sidebar and click the **'Add Dish'** button in the top right corner.";
         }
 
-        if (lowerMsg.includes('change status') || lowerMsg.includes('open restaurant')) {
+        if (lowerMsg.includes('change status') || lowerMsg.includes('open restaurant') || lowerMsg.includes('close restaurant')) {
             return "You can change your restaurant status (Open/Closed) from the toggle switch in the active dashboard header.";
         }
 
-        // --- LEVEL 2: AI Reasoning with Context ---
+        if (lowerMsg.includes('how to manage inventory') || lowerMsg.includes('stock')) {
+            return "Go to the **Inventory** tab to manage your ingredients, set minimum stock levels, and track stock movements.";
+        }
 
-        // 1. Get Context
+        if (lowerMsg.includes('how to view analytics') || lowerMsg.includes('reports')) {
+            return "Visit the **Analytics** dashboard to view sales trends, revenue reports, order patterns, and detailed performance metrics.";
+        }
+
+        // --- LEVEL 2: AI Reasoning with Full Context ---
+
+        // 1. Get Comprehensive Context
         const context = await buildContext(restaurantId);
 
         if (!context) {
             return "I'm having trouble accessing your restaurant data right now. Please try again later.";
         }
 
-        // 2. Construct Prompt
+        // 2. Construct Enhanced Prompt with Full Access
         const prompt = `
-      You are a helpful restaurant assistant for ${context.restaurantName}.
-      
-      Current Data:
-      - Status: ${context.status}
-      - Hours: ${context.hours}
-      - Today's Performance: ${context.todayStats}
-      - Active Orders (${context.activeOrdersCount}): ${context.latestOrders || 'None'}
-      - Key Menu Items: ${context.menuSnippet}
+You are an intelligent restaurant business assistant with full access to all restaurant analytics and operations data. Your role is to help restaurant administrators make data-driven decisions.
 
-      User Query: "${userMessage}"
+RESTAURANT INFORMATION:
+- Name: ${context.restaurantName}
+- Cuisine: ${context.cuisine}
+- Status: ${context.status}
+- Operating Hours: ${context.hours}
 
-      Instructions:
-      - Answer briefly and professionally.
-      - Use the provided data to give specific answers.
-      - If the user asks for data you don't have, say "I don't have access to that specific data yet."
-      - Format key numbers or terms in **bold**.
+TODAY'S SALES & REVENUE:
+- Orders Today: ${context.sales.todayOrders}
+- Revenue Today: $${context.sales.todayRevenue}
+- Average Order Value: $${context.sales.avgOrderValue}
+
+THIS MONTH'S PERFORMANCE:
+- Total Orders: ${context.sales.monthOrders}
+- Total Revenue: $${context.sales.monthRevenue}
+
+CURRENT OPERATIONS:
+- Active Orders: ${context.operations.activeOrders}
+- In Progress: ${context.operations.inProgress}
+- Pending Orders: ${context.operations.pendingOrders}
+- Completed Today: ${context.operations.completedToday}
+- Cancelled Today: ${context.operations.cancelledToday}
+- Active Orders List: ${context.operations.activeOrdersList}
+
+INVENTORY STATUS:
+- Low Stock Items: ${context.inventory.lowStockCount}
+- Dead Stock (Zero Qty): ${context.inventory.deadStockCount}
+- Total Inventory Value: $${context.inventory.totalValue}
+- Critical Items: ${context.inventory.lowStockItems}
+
+EXPENSES (This Month):
+- Monthly Total: $${context.expenses.monthlyTotal}
+- Top Category: ${context.expenses.topCategory}
+- Recent Expenses: ${context.expenses.recentExpenses}
+
+MENU PERFORMANCE:
+- Top Selling: ${context.menu.topSelling.name} (${context.menu.topSelling.orders} orders)
+- Least Selling: ${context.menu.leastSelling.name} (${context.menu.leastSelling.orders} orders)
+- AR Models Ready: ${context.menu.arReadyCount} out of ${context.menu.arReadyCount + context.menu.nonArCount}
+
+USER QUESTION: "${userMessage}"
+
+INSTRUCTIONS:
+1. Use the provided data to give specific, data-backed answers.
+2. Be professional, concise, and actionable.
+3. Provide insights and recommendations when applicable.
+4. If asked about metrics, quote accurate numbers from the data provided.
+5. Format important numbers in **bold**.
+6. If asked about something you don't have data for, offer to help with what you do have.
+7. Provide business insights and suggestions for improvement.
+8. If the question involves trends or comparisons, use the available metrics intelligently.
     `;
 
-        console.log('AI Service - Constructed Prompt:', prompt);
+        console.log('AI Service - Constructed Enhanced Prompt with full data access');
 
         // 3. Generate Response
         try {

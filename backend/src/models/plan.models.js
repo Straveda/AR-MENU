@@ -39,6 +39,10 @@ const planSchema = new mongoose.Schema(
         type: Boolean,
         default: false,
       },
+      chatbot: {
+        type: Boolean,
+        default: true, // Chatbot is available by default
+      },
     },
 
     limits: {

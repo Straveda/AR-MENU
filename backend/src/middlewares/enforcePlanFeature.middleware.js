@@ -66,6 +66,7 @@ export const enforcePlanFeature = (feature) => {
         analytics: 'analytics',
         arModels: 'arModels',
         kds: 'kds',
+        chatbot: 'chatbot',
       };
 
       const modelFeatureName = featureMap[feature] || feature;
@@ -76,6 +77,7 @@ export const enforcePlanFeature = (feature) => {
           arModels: 'AR Models',
           kds: 'Kitchen Display System (KDS)',
           analytics: 'Analytics',
+          chatbot: 'AI Chatbot',
         };
 
         return res.status(403).json({
