@@ -12,6 +12,12 @@ export default function SocketProvider({ children }) {
 
   useEffect(() => {
     const apiUrl = import.meta.env.VITE_API_URL;
+
+    if (!apiUrl) {
+      console.error('VITE_API_URL is not defined in environment variables');
+      return;
+    }
+
     const backendUrl = apiUrl.replace('/api/v1', '');
 
     if (!socketRef.current) {

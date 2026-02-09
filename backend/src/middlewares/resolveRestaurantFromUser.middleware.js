@@ -7,6 +7,9 @@ export const resolveRestaurantFromUser = async (req, res, next) => {
       return next();
     }
 
+    console.log('ResolveRestaurant Middleware - User Role:', req.user.role);
+    console.log('ResolveRestaurant Middleware - RestaurantID:', req.user.restaurantId);
+
     if (!req.user.restaurantId) {
       return res.status(400).json({
         success: false,

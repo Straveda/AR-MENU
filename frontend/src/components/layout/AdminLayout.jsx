@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useLocation, useNavigate, Outlet } from "react-router-dom";
 import { useAuth } from "../../context/AuthProvider";
 import { useToast } from "../common/Toast/ToastContext";
+import ChatWidget from "../common/ChatWidget/ChatWidget";
 
 function AdminLayoutContent() {
   const { logout, user } = useAuth();
@@ -123,6 +124,7 @@ function AdminLayoutContent() {
           <Outlet />
         </div>
       </main>
+      <ChatWidget />
     </div>
   );
 }
