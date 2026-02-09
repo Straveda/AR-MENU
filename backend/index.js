@@ -69,6 +69,14 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
 app.use(cookieParser());
 
+app.use((req, res, next) => {
+  console.log(`[REQUEST] ${req.method} ${req.url}`);
+  if (req.method === 'POST') {
+    console.log('[BODY]', JSON.stringify(req.body, null, 2));
+  }
+  next();
+});
+
 connectDB()
   .then(async () => {
     console.log('Database connected successfully');
@@ -106,6 +114,8 @@ app.use('/api/v1/expenses/:restaurantSlug', expensesRoute);
 app.use('/api/v1/analytics', analyticsRoutes);
 app.use('/api/v1/settings', settingsRouter);
 app.use('/api/v1/features', featureAccessRoute);
+import chatRoute from './src/routes/chat.route.js';
+app.use('/api/v1/chat', chatRoute);
 
 app.get('/', (req, res) => {
   res.send('Hello World!');
