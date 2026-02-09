@@ -18,6 +18,7 @@ export const checkFeatureAccess = async (req, res) => {
                     arModels: false,
                     kds: false,
                     analytics: false,
+                    chatbot: true,
                 },
                 limits: {
                     maxDishes: 0,
@@ -62,6 +63,7 @@ export const checkFeatureAccess = async (req, res) => {
                 arModels: false,
                 kds: false,
                 analytics: false,
+                chatbot: true,
             },
             limits: plan.limits || {
                 maxDishes: 0,
