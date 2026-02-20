@@ -2,6 +2,9 @@ import { Order } from '../models/order.models.js';
 import { Ingredient } from '../models/ingredient.model.js';
 import Expense from '../models/expense.model.js';
 import { Dish } from '../models/dish.models.js';
+import { DishStats } from '../models/dishStats.model.js';
+import { DishPairStats } from '../models/dishPairStats.model.js';
+import { Restaurant } from '../models/restaurant.models.js';
 
 import mongoose from 'mongoose';
 
@@ -461,5 +464,227 @@ export const getDetailedAnalytics = async (restaurantId, timeRange = 'week') => 
       byCategory: expenseMetrics,
     },
   };
+};
+
+// ============================================================================
+// UPSELL ANALYTICS AGGREGATION
+// ============================================================================
+
+/**
+ * Aggregate dish statistics from order history for a specific restaurant
+ * @param {ObjectId} restaurantId - The restaurant ID to aggregate stats for
+ */
+export const aggregateDishStats = async (restaurantId) => {
+  try {
+    console.log(`[Analytics] Aggregating dish stats for restaurant: ${restaurantId}`);
+
+    // Get all completed orders for this restaurant
+    const orders = await Order.find({
+      restaurantId,
+      orderStatus: 'Completed'
+    });
+
+    if (orders.length === 0) {
+      console.log(`[Analytics] No completed orders found for restaurant ${restaurantId}`);
+      return;
+    }
+
+    // Calculate cutoff date for last 30 days
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    // Aggregate stats per dish
+    const dishStatsMap = new Map();
+
+    for (const order of orders) {
+      const isRecent = order.createdAt >= thirtyDaysAgo;
+
+      for (const item of order.orderItems) {
+        if (!item.dishId) continue;
+
+        const dishIdStr = item.dishId.toString();
+
+        if (!dishStatsMap.has(dishIdStr)) {
+          dishStatsMap.set(dishIdStr, {
+            dishId: item.dishId,
+            totalOrders: 0,
+            totalRevenue: 0,
+            last30DaysOrders: 0,
+          });
+        }
+
+        const stats = dishStatsMap.get(dishIdStr);
+        stats.totalOrders += item.quantity;
+        stats.totalRevenue += item.lineTotal;
+
+        if (isRecent) {
+          stats.last30DaysOrders += item.quantity;
+        }
+      }
+    }
+
+    // Upsert stats into database
+    const bulkOps = [];
+    for (const [dishIdStr, stats] of dishStatsMap) {
+      const avgOrderValue = stats.totalOrders > 0
+        ? Math.round(stats.totalRevenue / stats.totalOrders)
+        : 0;
+
+      bulkOps.push({
+        updateOne: {
+          filter: { restaurantId, dishId: stats.dishId },
+          update: {
+            $set: {
+              totalOrders: stats.totalOrders,
+              totalRevenue: stats.totalRevenue,
+              avgOrderValue,
+              last30DaysOrders: stats.last30DaysOrders,
+              lastUpdated: new Date(),
+            }
+          },
+          upsert: true,
+        }
+      });
+    }
+
+    if (bulkOps.length > 0) {
+      await DishStats.bulkWrite(bulkOps);
+      console.log(`[Analytics] Updated stats for ${bulkOps.length} dishes`);
+    }
+
+  } catch (error) {
+    console.error(`[Analytics] Error aggregating dish stats:`, error);
+    throw error;
+  }
+};
+
+/**
+ * Aggregate dish pairing statistics from order history
+ * @param {ObjectId} restaurantId - The restaurant ID to aggregate pair stats for
+ */
+export const aggregateDishPairStats = async (restaurantId) => {
+  try {
+    console.log(`[Analytics] Aggregating dish pair stats for restaurant: ${restaurantId}`);
+
+    // Get all completed orders with 2+ items
+    const orders = await Order.find({
+      restaurantId,
+      orderStatus: 'Completed',
+      'orderItems.1': { $exists: true } // Has at least 2 items
+    });
+
+    if (orders.length === 0) {
+      console.log(`[Analytics] No multi-item orders found for restaurant ${restaurantId}`);
+      return;
+    }
+
+    // Count pairs and track main dish totals
+    const pairCountMap = new Map();
+    const mainDishTotals = new Map();
+
+    for (const order of orders) {
+      const dishIds = order.orderItems
+        .filter(item => item.dishId)
+        .map(item => item.dishId.toString());
+
+      // Create pairs (mainDish, pairedDish)
+      for (let i = 0; i < dishIds.length; i++) {
+        const mainDishId = dishIds[i];
+
+        // Track total orders for main dish
+        mainDishTotals.set(
+          mainDishId,
+          (mainDishTotals.get(mainDishId) || 0) + 1
+        );
+
+        // Create pairs with other dishes in the same order
+        for (let j = 0; j < dishIds.length; j++) {
+          if (i === j) continue; // Skip pairing with itself
+
+          const pairedDishId = dishIds[j];
+          const pairKey = `${mainDishId}|${pairedDishId}`;
+
+          pairCountMap.set(
+            pairKey,
+            (pairCountMap.get(pairKey) || 0) + 1
+          );
+        }
+      }
+    }
+
+    // Calculate percentages and prepare bulk operations
+    const bulkOps = [];
+    for (const [pairKey, pairCount] of pairCountMap) {
+      const [mainDishIdStr, pairedDishIdStr] = pairKey.split('|');
+      const mainDishTotal = mainDishTotals.get(mainDishIdStr) || 1;
+      const pairPercentage = Math.round((pairCount / mainDishTotal) * 100);
+
+      bulkOps.push({
+        updateOne: {
+          filter: {
+            restaurantId,
+            mainDishId: mainDishIdStr,
+            pairedDishId: pairedDishIdStr,
+          },
+          update: {
+            $set: {
+              pairCount,
+              pairPercentage,
+              lastUpdated: new Date(),
+            }
+          },
+          upsert: true,
+        }
+      });
+    }
+
+    if (bulkOps.length > 0) {
+      await DishPairStats.bulkWrite(bulkOps);
+      console.log(`[Analytics] Updated ${bulkOps.length} dish pair stats`);
+    }
+
+  } catch (error) {
+    console.error(`[Analytics] Error aggregating dish pair stats:`, error);
+    throw error;
+  }
+};
+
+/**
+ * Run nightly aggregation for all active restaurants
+ */
+export const runNightlyAggregation = async () => {
+  try {
+    console.log('[Analytics] Starting nightly aggregation...');
+    const startTime = Date.now();
+
+    // Get all active restaurants
+    const restaurants = await Restaurant.find({
+      subscriptionStatus: { $in: ['active', 'trialing'] }
+    });
+
+    console.log(`[Analytics] Found ${restaurants.length} active restaurants`);
+
+    let successCount = 0;
+    let errorCount = 0;
+
+    for (const restaurant of restaurants) {
+      try {
+        await aggregateDishStats(restaurant._id);
+        await aggregateDishPairStats(restaurant._id);
+        successCount++;
+      } catch (error) {
+        console.error(`[Analytics] Failed for restaurant ${restaurant._id}:`, error.message);
+        errorCount++;
+      }
+    }
+
+    const duration = ((Date.now() - startTime) / 1000).toFixed(2);
+    console.log(`[Analytics] Nightly aggregation completed in ${duration}s`);
+    console.log(`[Analytics] Success: ${successCount}, Errors: ${errorCount}`);
+
+  } catch (error) {
+    console.error('[Analytics] Fatal error in nightly aggregation:', error);
+    throw error;
+  }
 };
 

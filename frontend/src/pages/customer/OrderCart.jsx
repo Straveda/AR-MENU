@@ -410,10 +410,12 @@
 
 // ------------------------------Light below-----------------------------
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useOrder } from "../../context/OrderContext";
 import { useTenant } from "../../context/TenantProvider";
+import upsellApi from "../../api/upsellApi";
+import UpsellCard from "../../components/customer/UpsellCard";
 
 export default function OrderCart() {
     const navigate = useNavigate();
@@ -422,9 +424,33 @@ export default function OrderCart() {
     const [tableInput, setTableInput] = useState("");
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
+    const [recommendations, setRecommendations] = useState([]);
 
     const subtotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     const total = subtotal;
+
+    // Fetch recommendations when cart items change
+    useEffect(() => {
+        const fetchRecommendations = async () => {
+            if (!slug) return;
+            try {
+                const dishIds = items.map(item => item.dishId);
+                const res = await upsellApi.getCartRecommendations(slug, dishIds, subtotal);
+                if (res.success) {
+                    setRecommendations(res.data);
+                }
+            } catch (err) {
+                console.error("Failed to fetch cart recommendations", err);
+            }
+        };
+
+        // Debounce slightly to avoid rapid calls
+        const timer = setTimeout(() => {
+            fetchRecommendations();
+        }, 300);
+
+        return () => clearTimeout(timer);
+    }, [items, subtotal, slug]);
 
     const handlePlaceOrder = async () => {
         if (!tableInput.trim()) {
@@ -547,6 +573,18 @@ export default function OrderCart() {
                             </div>
                         ))}
                     </div>
+
+                    {/* Recommendations Section */}
+                    {recommendations.length > 0 && (
+                        <div className="mb-8">
+                            <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest mb-4">Complete Your Meal</h3>
+                            <div className="flex flex-col gap-4 sm:flex-row sm:overflow-x-auto sm:pb-4 sm:-mx-4 sm:px-4 sm:scrollbar-hide">
+                                {recommendations.map(rec => (
+                                    <UpsellCard key={rec._id} recommendation={rec} />
+                                ))}
+                            </div>
+                        </div>
+                    )}
 
                     {/* Right Column: Sticky Summary */}
                     <div className="w-full lg:w-[380px] lg:sticky lg:top-32 space-y-6">

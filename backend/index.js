@@ -7,6 +7,7 @@ import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import { validateMeshyConfig } from './src/config/meshy.config.js';
 import { resumePendingPolls } from './src/services/pollingService.js';
+import { initializeCronJobs } from './src/jobs/cron.jobs.js';
 
 dotenv.config();
 
@@ -82,6 +83,7 @@ connectDB()
     console.log('Database connected successfully');
     validateMeshyConfig();
     await resumePendingPolls();
+    initializeCronJobs();
   })
   .catch((error) => {
     console.error('Database connection failed:', error);
@@ -100,6 +102,7 @@ import expensesRoute from './src/routes/expenses.route.js';
 import analyticsRoutes from './src/routes/analytics.routes.js';
 import settingsRouter from './src/routes/settings.route.js';
 import featureAccessRoute from './src/routes/featureAccess.route.js';
+import upsellRoute from './src/routes/upsell.route.js';
 
 app.use('/api/v1/dishes', dishRoute);
 app.use('/api/v1/orders', orderRoute);
@@ -114,6 +117,7 @@ app.use('/api/v1/expenses/:restaurantSlug', expensesRoute);
 app.use('/api/v1/analytics', analyticsRoutes);
 app.use('/api/v1/settings', settingsRouter);
 app.use('/api/v1/features', featureAccessRoute);
+app.use('/api/v1/upsell', upsellRoute);
 import chatRoute from './src/routes/chat.route.js';
 app.use('/api/v1/chat', chatRoute);
 

@@ -46,6 +46,17 @@ const orderSchema = new mongoose.Schema(
         price: { type: Number },
         quantity: { type: Number },
         lineTotal: { type: Number },
+        // Upsell tracking
+        source: {
+          type: String,
+          enum: ['MENU', 'UPSELL', 'SEARCH'],
+          default: 'MENU',
+        },
+        upsellRuleId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'UpsellRule',
+        },
+        originalPrice: { type: Number },
       },
     ],
 
