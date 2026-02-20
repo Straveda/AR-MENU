@@ -6,6 +6,7 @@ import { StockMovement } from '../models/stockMovement.model.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { io } from '../../index.js';
+import { invalidateGSTCache } from '../services/reports.service.js';
 
 const loginKds = async (req, res) => {
   try {
@@ -206,6 +207,7 @@ const updateKdsOrderStatus = async (req, res) => {
     // --- AUTOMATED STOCK DEDUCTION END ---
 
     await order.save();
+    await invalidateGSTCache(restaurant._id);
 
     io.to(`ORDER_ROOM_${restaurant._id}_${order.orderCode}`).emit('order_status_updated', order);
 

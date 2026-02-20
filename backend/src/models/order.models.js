@@ -63,6 +63,28 @@ const orderSchema = new mongoose.Schema(
     subtotal: { type: Number },
     total: { type: Number },
 
+    // Reports module fields
+    paymentMode: {
+      type: String,
+      enum: ['CASH', 'CARD', 'UPI', 'RAZORPAY'],
+      default: 'CASH',
+    },
+    taxAmount: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+    source: {
+      type: String,
+      enum: ['POS', 'SWIGGY', 'ZOMATO'],
+      default: 'POS',
+    },
+    settlementId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'RazorpaySettlement',
+      default: null,
+    },
+
     orderStatus: {
       type: String,
       enum: ['Pending', 'Preparing', 'Ready', 'Completed', 'Cancelled'],
@@ -73,5 +95,11 @@ const orderSchema = new mongoose.Schema(
   },
   { timestamps: true },
 );
+
+// Indexes for Reports module
+orderSchema.index({ restaurantId: 1, createdAt: -1 });
+orderSchema.index({ restaurantId: 1, source: 1 });
+orderSchema.index({ restaurantId: 1, settlementId: 1 });
+orderSchema.index({ restaurantId: 1, paymentMode: 1 });
 
 export const Order = mongoose.model('Order', orderSchema);

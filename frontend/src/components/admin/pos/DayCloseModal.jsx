@@ -16,7 +16,7 @@ export default function DayCloseModal({ orders, onClose }) {
         });
 
         const totalSales = todayOrders.reduce((sum, o) => sum + (o.total || 0), 0);
-        const taxCollected = totalSales * 0.18 / 1.18;
+        const taxCollected = todayOrders.reduce((sum, o) => sum + (o.taxAmount || 0), 0);
 
         // Dynamic Payment Mode Summary (Real Data)
         // Since payment method is not currently tracked/returned by API, we count all as "Untracked" for now

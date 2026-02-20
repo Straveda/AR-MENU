@@ -77,7 +77,7 @@ export default function POSBilling() {
         ).length;
 
         const todaysSales = todayOrders.reduce((sum, o) => sum + (o.total || 0), 0);
-        const taxCollected = todaysSales * 0.18; // Assuming 18% tax
+        const taxCollected = todayOrders.reduce((sum, o) => sum + (o.taxAmount || 0), 0);
 
         // Payment split - Note: Payment methods are not currently tracked in orders
         // This is placeholder data until payment method tracking is implemented

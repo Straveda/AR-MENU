@@ -93,11 +93,11 @@ export default function BillDetailsModal({ bill, onClose }) {
                 <div class="totals">
                     <div class="total-row">
                         <span>Subtotal:</span>
-                        <span>₹${(bill.total / 1.18).toFixed(2)}</span>
+                        <span>₹${(bill.subtotal || (bill.total / 1.18)).toFixed(2)}</span>
                     </div>
                     <div class="total-row">
                         <span>Tax (18%):</span>
-                        <span>₹${(bill.total * 0.18 / 1.18).toFixed(2)}</span>
+                        <span>₹${(bill.taxAmount || (bill.total - (bill.total / 1.18))).toFixed(2)}</span>
                     </div>
                     <div class="total-row grand">
                         <span>TOTAL:</span>
@@ -124,8 +124,8 @@ export default function BillDetailsModal({ bill, onClose }) {
         showSuccess("Printing bill...");
     };
 
-    const subtotal = bill.total / 1.18;
-    const tax = bill.total * 0.18 / 1.18;
+    const subtotal = bill.subtotal || (bill.total / 1.18);
+    const tax = bill.taxAmount || (bill.total - subtotal);
 
     return (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={onClose}>
@@ -160,8 +160,8 @@ export default function BillDetailsModal({ bill, onClose }) {
                     <div className="flex justify-between text-sm">
                         <span className="text-slate-500">Status:</span>
                         <span className={`px-2 py-1 rounded-md text-xs font-bold ${bill.orderStatus === 'Delivered'
-                                ? 'bg-green-100 text-green-700'
-                                : 'bg-amber-100 text-amber-700'
+                            ? 'bg-green-100 text-green-700'
+                            : 'bg-amber-100 text-amber-700'
                             }`}>
                             {bill.orderStatus === 'Delivered' ? 'Paid' : 'Pending'}
                         </span>
