@@ -1,6 +1,7 @@
 import { Order } from '../models/order.models.js';
 import { Dish } from '../models/dish.models.js';
 import { io } from '../../index.js';
+import { invalidateGSTCache } from '../services/reports.service.js';
 
 const generateOrderCode = () => {
   let choose = 'ABCDEFGHIJKLMPQRSTUVWXYZ1234567890';
@@ -69,13 +70,17 @@ const createOrder = async (req, res) => {
 
     const orderCode = generateOrderCode();
 
+    const taxAmount = parseFloat((subtotal * 0.18).toFixed(2));
+    const total = parseFloat((subtotal + taxAmount).toFixed(2));
+
     const newOrder = await Order.create({
       restaurantId: restaurant._id,
       orderCode,
       tableNumber,
       orderItems: formattedItems,
       subtotal,
-      total: subtotal,
+      total,
+      taxAmount,
       orderStatus: 'Pending',
       history: [
         {
@@ -86,6 +91,7 @@ const createOrder = async (req, res) => {
     });
 
     io.to(`KDS_ROOM_${restaurant._id}`).emit('order_created', newOrder);
+    await invalidateGSTCache(restaurant._id);
 
     return res.status(201).json({
       success: true,

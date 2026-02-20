@@ -40,6 +40,7 @@ import ExpensesPage from '../pages/admin/ExpensesPage.jsx';
 import OrderManagement from '../pages/admin/OrderManagement.jsx';
 import POSBilling from '../pages/admin/POSBilling.jsx';
 import Settings from '../pages/admin/Settings.jsx';
+import Reports from '../pages/admin/Reports.jsx';
 import NotFound from '../pages/NotFound.jsx';
 
 const AppRouter = () => {
@@ -85,6 +86,7 @@ const AppRouter = () => {
                                                     <Route path="/admin/expenses" element={<ExpensesPage />} />
                                                     <Route path="/admin/orders" element={<OrderManagement />} />
                                                     <Route path="/admin/pos" element={<POSBilling />} />
+                                                    <Route path="/admin/reports" element={<Reports />} />
                                                     <Route path="/admin/settings" element={<Settings />} />
                                                 </Route>
                                             </Route>

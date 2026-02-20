@@ -100,6 +100,7 @@ import expensesRoute from './src/routes/expenses.route.js';
 import analyticsRoutes from './src/routes/analytics.routes.js';
 import settingsRouter from './src/routes/settings.route.js';
 import featureAccessRoute from './src/routes/featureAccess.route.js';
+import reportsRouter from './src/routes/reports.route.js';
 
 app.use('/api/v1/dishes', dishRoute);
 app.use('/api/v1/orders', orderRoute);
@@ -114,6 +115,7 @@ app.use('/api/v1/expenses/:restaurantSlug', expensesRoute);
 app.use('/api/v1/analytics', analyticsRoutes);
 app.use('/api/v1/settings', settingsRouter);
 app.use('/api/v1/features', featureAccessRoute);
+app.use('/api/v1/reports', reportsRouter);
 import chatRoute from './src/routes/chat.route.js';
 app.use('/api/v1/chat', chatRoute);
 
