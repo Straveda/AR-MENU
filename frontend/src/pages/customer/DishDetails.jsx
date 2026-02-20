@@ -1383,6 +1383,7 @@ import axiosClient from "../../api/axiosClient";
 import { useOrder } from "../../context/OrderContext";
 import { useToast } from "../../components/common/Toast/ToastContext";
 import { useTenant } from "../../context/TenantProvider";
+import upsellApi from "../../api/upsellApi";
 
 export default function DishDetails() {
   const { id } = useParams();
@@ -1418,12 +1419,22 @@ export default function DishDetails() {
     }
   };
 
-  const handleAddRecommendationToOrder = (recDish) => {
+  const handleAddRecommendationToOrder = (recDish, discountedPrice = null) => {
     if (suspended) {
       showError("Ordering is temporarily unavailable.");
       return;
     }
-    addItem(recDish, 1);
+
+    // If a discounted price is provided, create a modified dish object with that price
+    const dishToAdd = discountedPrice !== null && discountedPrice !== recDish.price
+      ? { ...recDish, price: discountedPrice }
+      : recDish;
+
+    addItem(dishToAdd, 1, {
+      upsellRuleId: recDish.ruleId,
+      source: 'UPSELL',
+      originalPrice: recDish.price
+    });
     showSuccess(`Added 1 x ${recDish.name} to order!`);
   };
 
@@ -1461,13 +1472,25 @@ export default function DishDetails() {
       const { data } = await axiosClient.get(`/dishes/r/${slug}/dishes/${id}`);
       setDish(data.data.dish);
 
+      // Try fetching smart upsell recommendations first
       try {
+        const upsellRes = await upsellApi.getRecommendationsForDish(slug, id, 'VIEW_DISH');
+        if (upsellRes.success && upsellRes.data.length > 0) {
+          setRecommendations(upsellRes.data);
+        } else {
+          // Fallback to "People Also Ordered"
+          const recData = await axiosClient.get(`/dishes/r/${slug}/dishes/${id}/also-ordered`);
+          if (recData.data.success) {
+            setRecommendations(recData.data.data); // These will be standard dish objects
+          }
+        }
+      } catch (recError) {
+        console.error("Error fetching recommendations:", recError);
+        // Fallback on error
         const recData = await axiosClient.get(`/dishes/r/${slug}/dishes/${id}/also-ordered`);
         if (recData.data.success) {
           setRecommendations(recData.data.data);
         }
-      } catch (recError) {
-        console.error("Error fetching recommendations:", recError);
       }
 
     } catch (error) {
@@ -1718,41 +1741,65 @@ export default function DishDetails() {
                 <h3 className="text-lg font-black text-slate-900 mb-4">People Also Ordered With This Dish</h3>
                 <div className="overflow-x-auto pb-4 -mx-4 px-4 scrollbar-hide">
                   <div className="flex gap-4 w-max">
-                    {recommendations.map((recDish) => (
-                      <div key={recDish._id} className="w-40 bg-white rounded-2xl border border-slate-100 overflow-hidden shrink-0 hover:border-amber-400 transition-all shadow-md group">
-                        <div
-                          className="h-28 w-full bg-slate-50 cursor-pointer overflow-hidden"
-                          onClick={() => navigate(`/r/${slug}/dish/${recDish._id}`)}
-                        >
-                          {recDish.imageUrl ? (
-                            <img src={recDish.imageUrl} alt={recDish.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center text-2xl opacity-30">🍽️</div>
-                          )}
-                        </div>
-                        <div className="p-3">
-                          <h4
-                            className="text-sm font-black text-slate-900 truncate cursor-pointer hover:text-amber-600 transition-colors"
-                            onClick={() => navigate(`/r/${slug}/dish/${recDish._id}`)}
+                    {recommendations.map((recDish) => {
+                      const isSmartRec = recDish.recommendedDish;
+                      const dish = isSmartRec ? recDish.recommendedDish : recDish;
+                      const message = isSmartRec ? recDish.message : "Popular with this item";
+                      const finalPrice = isSmartRec && recDish.discountPercentage > 0
+                        ? Math.round(dish.price * (1 - recDish.discountPercentage / 100))
+                        : dish.price;
+
+                      return (
+                        <div key={dish._id} className="w-48 bg-white rounded-2xl border border-slate-100 overflow-hidden shrink-0 hover:border-amber-400 transition-all shadow-md group">
+                          <div
+                            className="h-32 w-full bg-slate-50 cursor-pointer overflow-hidden relative"
+                            onClick={() => navigate(`/r/${slug}/dish/${dish._id}`)}
                           >
-                            {recDish.name}
-                          </h4>
-                          <div className="mt-2 flex items-center justify-between">
-                            <span className="text-sm font-black text-amber-600">₹{recDish.price}</span>
-                            <button
-                              onClick={() => handleAddRecommendationToOrder(recDish)}
-                              className="bg-amber-100 hover:bg-amber-500 hover:text-white text-amber-600 p-1.5 rounded-lg transition-all shadow-sm active:scale-95"
-                              title="Add to Order"
-                              disabled={suspended}
+                            {dish.imageUrl ? (
+                              <img src={dish.imageUrl} alt={dish.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center text-2xl opacity-30">🍽️</div>
+                            )}
+                            {isSmartRec && recDish.discountPercentage > 0 && (
+                              <div className="absolute top-2 left-2 bg-red-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded shadow-sm z-10">
+                                {recDish.discountPercentage}% OFF
+                              </div>
+                            )}
+                          </div>
+                          <div className="p-3">
+                            <h4
+                              className="text-sm font-black text-slate-900 truncate cursor-pointer hover:text-amber-600 transition-colors"
+                              onClick={() => navigate(`/r/${slug}/dish/${dish._id}`)}
                             >
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 4v16m8-8H4" />
-                              </svg>
-                            </button>
+                              {dish.name}
+                            </h4>
+                            {isSmartRec && message && (
+                              <p className="text-[10px] text-slate-500 italic leading-tight mt-1 line-clamp-2">
+                                "{message}"
+                              </p>
+                            )}
+                            <div className="mt-2 flex items-center justify-between">
+                              <div className="flex flex-col">
+                                <span className="text-sm font-black text-amber-600">₹{finalPrice}</span>
+                                {isSmartRec && recDish.discountPercentage > 0 && (
+                                  <span className="text-[10px] text-slate-400 line-through">₹{dish.price}</span>
+                                )}
+                              </div>
+                              <button
+                                onClick={() => handleAddRecommendationToOrder(dish, finalPrice)}
+                                className="bg-amber-100 hover:bg-amber-500 hover:text-white text-amber-600 p-1.5 rounded-lg transition-all shadow-sm active:scale-95"
+                                title="Add to Order"
+                                disabled={suspended}
+                              >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 4v16m8-8H4" />
+                                </svg>
+                              </button>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               </div>
