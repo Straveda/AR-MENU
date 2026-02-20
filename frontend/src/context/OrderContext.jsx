@@ -15,8 +15,18 @@ function orderReducer(state, action) {
             return { ...state, tableNumber: action.payload };
 
         case "ADD_ITEM": {
-            const { dish, quantity } = action.payload;
-            const existingItemIndex = state.items.findIndex(item => item.dishId === dish._id);
+            const { dish, quantity, upsellRuleId, source, originalPrice } = action.payload;
+            // Check if item exists with SAME dishId AND SAME upsellRuleId (to separate regular items from upsell items if needed, or just merge)
+            // For simplicity, if it's the same dish, we merge, but we might lose track of which specific one was the upsell if mixed.
+            // Better approach: If it's an upsell, it might have a different price or just track it. 
+            // Let's assume merging is fine, but we update the metadata to reflect the latest addition source if meaningful.
+            // Actually, if a user adds a dish manually, then adds it via upsell, they are just adding quantity. 
+            // But if the upsell has a DISCOUNT, it effectively is a different item price-wise. 
+            // The system handles price in the item. 
+
+            const existingItemIndex = state.items.findIndex(item =>
+                item.dishId === dish._id && item.price === dish.price
+            );
 
             if (existingItemIndex > -1) {
                 const newItems = [...state.items];
@@ -33,7 +43,10 @@ function orderReducer(state, action) {
                         name: dish.name,
                         price: dish.price,
                         image: dish.imageUrl,
-                        quantity: quantity
+                        quantity: quantity,
+                        upsellRuleId: upsellRuleId || null,
+                        source: source || 'MENU',
+                        originalPrice: originalPrice || null
                     }
                 ]
             };
@@ -73,8 +86,17 @@ export function OrderProvider({ children }) {
     const [state, dispatch] = useReducer(orderReducer, initialState);
     const { slug } = useTenant();
 
-    const addItem = (dish, quantity) => {
-        dispatch({ type: "ADD_ITEM", payload: { dish, quantity } });
+    const addItem = (dish, quantity, metadata = {}) => {
+        dispatch({
+            type: "ADD_ITEM",
+            payload: {
+                dish,
+                quantity,
+                upsellRuleId: metadata.upsellRuleId,
+                source: metadata.source,
+                originalPrice: metadata.originalPrice
+            }
+        });
     };
 
     const removeItem = (dishId) => {
@@ -114,7 +136,11 @@ export function OrderProvider({ children }) {
                 dishId: item.dishId,
                 quantity: item.quantity,
                 name: item.name,
-                price: item.price
+                price: item.price,
+                // Pass metadata to backend
+                upsellRuleId: item.upsellRuleId,
+                source: item.source,
+                originalPrice: item.originalPrice
             }))
         };
 
@@ -122,14 +148,14 @@ export function OrderProvider({ children }) {
             const response = await axiosClient.post(`/orders/r/${slug}/create`, payload);
             if (response.data.success || response.data.data?.orderCode) {
                 clearOrder();
-                
+
                 return response.data.data || response.data;
             } else {
                 throw new Error(response.data.message || "Failed to place order");
             }
         } catch (error) {
             console.error("Place Order Error:", error);
-            
+
             throw error;
         }
     };

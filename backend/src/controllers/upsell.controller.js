@@ -1,0 +1,625 @@
+import { UpsellRule } from '../models/upsellRule.model.js';
+import { GeneratedRecommendation } from '../models/generatedRecommendation.model.js';
+import { DishStats } from '../models/dishStats.model.js';
+import { DishPairStats } from '../models/dishPairStats.model.js';
+import { Dish } from '../models/dish.models.js';
+import { Order } from '../models/order.models.js';
+import mongoose from 'mongoose';
+
+// Get dashboard stats
+export const getStats = async (req, res) => {
+    try {
+        const restaurantId = req.restaurant._id;
+
+        // Count active rules
+        const activeRulesCount = await UpsellRule.countDocuments({
+            restaurantId,
+            isActive: true,
+        });
+
+        // Calculate real revenue generated from upsell recommendations
+        // Get all accepted recommendations for this restaurant
+        const acceptedRecommendations = await GeneratedRecommendation.find({
+            restaurantId,
+            status: 'ACCEPTED',
+        }).populate('secondaryDishId');
+
+        let revenueGenerated = 0;
+        for (const rec of acceptedRecommendations) {
+            if (rec.secondaryDishId && rec.secondaryDishId.price) {
+                const dishPrice = rec.secondaryDishId.price;
+                const discount = rec.discountPercentage || 0;
+                const finalPrice = dishPrice * (1 - discount / 100);
+                revenueGenerated += finalPrice;
+            }
+        }
+
+        // Calculate conversion rate
+        const totalRecommendations = await GeneratedRecommendation.countDocuments({
+            restaurantId,
+        });
+        const avgConversion = totalRecommendations > 0
+            ? ((acceptedRecommendations.length / totalRecommendations) * 100).toFixed(1)
+            : 0;
+
+        // Calculate average bill increase from dish stats
+        const dishStats = await DishStats.find({ restaurantId }).limit(100);
+        const avgBillIncrease = dishStats.length > 0
+            ? Math.round(dishStats.reduce((sum, stat) => sum + stat.avgOrderValue, 0) / dishStats.length)
+            : 0;
+
+        const stats = {
+            revenueGenerated: Math.round(revenueGenerated),
+            avgConversion: parseFloat(avgConversion),
+            avgBillIncrease,
+            activeRules: activeRulesCount,
+        };
+
+        return res.status(200).json({
+            success: true,
+            data: stats,
+        });
+    } catch (error) {
+        console.error('Error in getStats:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Failed to fetch stats',
+            error: error.message,
+        });
+    }
+};
+
+// Get all rules with optional filters
+export const getRules = async (req, res) => {
+    try {
+        const restaurantId = req.restaurant._id;
+        const { ruleType, isActive } = req.query;
+
+        const filter = { restaurantId };
+
+        if (ruleType) {
+            filter.ruleType = ruleType;
+        }
+
+        if (isActive !== undefined) {
+            filter.isActive = isActive === 'true';
+        }
+
+        const rules = await UpsellRule.find(filter)
+            .populate('mainDishId', 'name price category')
+            .populate('secondaryDishId', 'name price category')
+            .sort({ createdAt: -1 });
+
+        // Add mock conversion and revenue data
+        const rulesWithStats = rules.map(rule => ({
+            ...rule.toObject(),
+            conversion: Math.random() * 40 + 10, // Mock: 10-50%
+            revenue: Math.floor(Math.random() * 10000 + 1000), // Mock: 1000-11000
+        }));
+
+        return res.status(200).json({
+            success: true,
+            data: rulesWithStats,
+        });
+    } catch (error) {
+        console.error('Error in getRules:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Failed to fetch rules',
+            error: error.message,
+        });
+    }
+};
+
+// Create new rule
+export const createRule = async (req, res) => {
+    try {
+        const restaurantId = req.restaurant._id;
+        const {
+            ruleType,
+            ruleName,
+            mainDishId,
+            secondaryDishId,
+            minMainOrders,
+            maxSecondaryOrders,
+            minPairPercentage,
+            discountPercentage,
+            cartMinValue,
+        } = req.body;
+
+        // Validation
+        if (!ruleType || !ruleName) {
+            return res.status(400).json({
+                success: false,
+                message: 'Rule type and name are required',
+            });
+        }
+
+        // Create rule
+        const rule = new UpsellRule({
+            restaurantId,
+            ruleType,
+            ruleName,
+            mainDishId: mainDishId || null,
+            secondaryDishId: secondaryDishId || null,
+            minMainOrders: minMainOrders || null,
+            maxSecondaryOrders: maxSecondaryOrders || null,
+            minPairPercentage: minPairPercentage || null,
+            discountPercentage: discountPercentage || 0,
+            cartMinValue: cartMinValue || null,
+            isActive: true,
+        });
+
+        await rule.save();
+
+        // Populate dish details
+        await rule.populate('mainDishId', 'name price category');
+        await rule.populate('secondaryDishId', 'name price category');
+
+        return res.status(201).json({
+            success: true,
+            message: 'Rule created successfully',
+            data: rule,
+        });
+    } catch (error) {
+        console.error('Error in createRule:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Failed to create rule',
+            error: error.message,
+        });
+    }
+};
+
+// Update rule
+export const updateRule = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const restaurantId = req.restaurant._id;
+
+        const rule = await UpsellRule.findOne({ _id: id, restaurantId });
+
+        if (!rule) {
+            return res.status(404).json({
+                success: false,
+                message: 'Rule not found',
+            });
+        }
+
+        // Update fields
+        const allowedUpdates = [
+            'ruleName',
+            'mainDishId',
+            'secondaryDishId',
+            'minMainOrders',
+            'maxSecondaryOrders',
+            'minPairPercentage',
+            'discountPercentage',
+            'cartMinValue',
+            'isActive',
+        ];
+
+        allowedUpdates.forEach(field => {
+            if (req.body[field] !== undefined) {
+                rule[field] = req.body[field];
+            }
+        });
+
+        await rule.save();
+        await rule.populate('mainDishId', 'name price category');
+        await rule.populate('secondaryDishId', 'name price category');
+
+        return res.status(200).json({
+            success: true,
+            message: 'Rule updated successfully',
+            data: rule,
+        });
+    } catch (error) {
+        console.error('Error in updateRule:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Failed to update rule',
+            error: error.message,
+        });
+    }
+};
+
+// Delete rule
+export const deleteRule = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const restaurantId = req.restaurant._id;
+
+        const rule = await UpsellRule.findOneAndDelete({ _id: id, restaurantId });
+
+        if (!rule) {
+            return res.status(404).json({
+                success: false,
+                message: 'Rule not found',
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: 'Rule deleted successfully',
+        });
+    } catch (error) {
+        console.error('Error in deleteRule:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Failed to delete rule',
+            error: error.message,
+        });
+    }
+};
+
+// Toggle rule active status
+export const toggleRule = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const restaurantId = req.restaurant._id;
+
+        const rule = await UpsellRule.findOne({ _id: id, restaurantId });
+
+        if (!rule) {
+            return res.status(404).json({
+                success: false,
+                message: 'Rule not found',
+            });
+        }
+
+        rule.isActive = !rule.isActive;
+        await rule.save();
+
+        return res.status(200).json({
+            success: true,
+            message: `Rule ${rule.isActive ? 'activated' : 'deactivated'} successfully`,
+            data: { isActive: rule.isActive },
+        });
+    } catch (error) {
+        console.error('Error in toggleRule:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Failed to toggle rule',
+            error: error.message,
+        });
+    }
+};
+
+// Generate AI explanation for a rule
+export const updateRuleExplanation = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const restaurantId = req.restaurant._id;
+
+        const rule = await UpsellRule.findOne({ _id: id, restaurantId })
+            .populate('mainDishId', 'name description')
+            .populate('secondaryDishId', 'name description');
+
+        if (!rule) {
+            return res.status(404).json({
+                success: false,
+                message: 'Rule not found',
+            });
+        }
+
+        if (!rule.mainDishId || !rule.secondaryDishId) {
+            return res.status(400).json({
+                success: false,
+                message: 'Rule must have both main and secondary dishes to generate explanation',
+            });
+        }
+
+        // Dynamically import AI service
+        const { generateUpsellExplanation } = await import('../services/ai.service.js');
+
+        // Generate explanation
+        const explanation = await generateUpsellExplanation(
+            rule.mainDishId,
+            rule.secondaryDishId,
+            rule.ruleType
+        );
+
+        // Update rule
+        rule.aiExplanation = explanation;
+        await rule.save();
+
+        return res.status(200).json({
+            success: true,
+            data: { aiExplanation: explanation },
+        });
+
+    } catch (error) {
+        console.error('Error in updateRuleExplanation:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Failed to generate explanation',
+            error: error.message,
+        });
+    }
+};
+
+// Get AI-powered suggestions (mock for now)
+export const getSuggestions = async (req, res) => {
+    try {
+        const restaurantId = req.restaurant._id;
+
+        // Get some popular dishes for suggestions
+        const dishes = await Dish.find({ restaurantId, available: true })
+            .sort({ orderCount: -1 })
+            .limit(10);
+
+        // Mock suggestions
+        const suggestions = [
+            {
+                id: 'suggestion_1',
+                type: 'HIGH_POTENTIAL_PAIRING',
+                title: 'High Potential Pairing',
+                description: dishes[0] && dishes[1]
+                    ? `${dishes[0].name} is popular but rarely paired with ${dishes[1].name}. Potential revenue: ₹2,880/month`
+                    : 'Analyze order patterns to find high-potential pairings',
+                mainDish: dishes[0] || null,
+                suggestedDish: dishes[1] || null,
+                icon: '📈',
+            },
+            {
+                id: 'suggestion_2',
+                type: 'POPULAR_COMBO',
+                title: 'Popular Combo',
+                description: dishes[2] && dishes[3]
+                    ? `${dishes[2].name} and ${dishes[3].name} are ordered together 68% of the time`
+                    : 'Create combo deals based on frequently paired items',
+                mainDish: dishes[2] || null,
+                suggestedDish: dishes[3] || null,
+                icon: '🔥',
+            },
+            {
+                id: 'suggestion_3',
+                type: 'DESSERT_PUSH',
+                title: 'Dessert Push',
+                description: 'Only 12% of orders include dessert. Add cart-based upsell for orders above ₹500',
+                mainDish: null,
+                suggestedDish: dishes[4] || null,
+                icon: '🍰',
+            },
+        ];
+
+        return res.status(200).json({
+            success: true,
+            data: suggestions,
+        });
+    } catch (error) {
+        console.error('Error in getSuggestions:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Failed to fetch suggestions',
+            error: error.message,
+        });
+    }
+};
+
+// Get dishes for dropdown (simplified)
+export const getDishes = async (req, res) => {
+    try {
+        const restaurantId = req.restaurant._id;
+
+        const dishes = await Dish.find({ restaurantId, available: true })
+            .select('name price category')
+            .sort({ name: 1 });
+
+        return res.status(200).json({
+            success: true,
+            data: dishes,
+        });
+    } catch (error) {
+        console.error('Error in getDishes:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Failed to fetch dishes',
+            error: error.message,
+        });
+    }
+};
+
+// Get recommendations for a specific dish (customer-facing)
+export const getRecommendationsForDish = async (req, res) => {
+    try {
+        const { dishId } = req.params;
+        const { context = 'VIEW_DISH' } = req.query;
+        const restaurantId = req.restaurant._id;
+
+        // Validate dishId
+        if (!mongoose.Types.ObjectId.isValid(dishId)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid dish ID',
+            });
+        }
+
+        // Find active rules for this dish
+        const rules = await UpsellRule.find({
+            restaurantId,
+            mainDishId: dishId,
+            isActive: true,
+        })
+            .populate('secondaryDishId', 'name price imageUrl category available')
+            .sort({ createdAt: -1 })
+            .limit(5);
+
+        // Filter out rules where secondary dish is unavailable
+        const availableRules = rules.filter(
+            rule => rule.secondaryDishId && rule.secondaryDishId.available !== false
+        );
+
+        // Transform to recommendation format
+        const recommendations = availableRules.map(rule => {
+            const message = generateRecommendationMessage(rule);
+
+            return {
+                _id: rule._id,
+                ruleId: rule._id,
+                ruleName: rule.ruleName,
+                ruleType: rule.ruleType,
+                recommendedDish: rule.secondaryDishId,
+                message: rule.aiExplanation || message,
+                discountPercentage: rule.discountPercentage || 0,
+                priority: 1,
+            };
+        });
+
+        return res.status(200).json({
+            success: true,
+            data: recommendations,
+        });
+    } catch (error) {
+        console.error('Error in getRecommendationsForDish:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Failed to fetch recommendations',
+            error: error.message,
+        });
+    }
+};
+
+// Get recommendations based on cart contents
+export const getRecommendationsForCart = async (req, res) => {
+    try {
+        const { cartItems, cartTotal } = req.body; // Expects { cartItems: [dishId1, dishId2], cartTotal: number }
+        const restaurantId = req.restaurant._id;
+
+        if (!cartItems || !Array.isArray(cartItems) || cartItems.length === 0) {
+            return res.status(200).json({ success: true, data: [] });
+        }
+
+        // 1. Find rules triggered by items in cart (Specific pairings)
+        const itemRules = await UpsellRule.find({
+            restaurantId,
+            mainDishId: { $in: cartItems },
+            isActive: true,
+        }).populate('secondaryDishId', 'name price imageUrl category available');
+
+        // 2. Find rules triggered by cart value (Thresholds)
+        let thresholdRules = [];
+        if (cartTotal > 0) {
+            thresholdRules = await UpsellRule.find({
+                restaurantId,
+                ruleType: 'CART_THRESHOLD',
+                cartMinValue: { $lte: cartTotal },
+                isActive: true,
+            }).populate('secondaryDishId', 'name price imageUrl category available');
+        }
+
+        // Combine and Filter
+        const allRules = [...itemRules, ...thresholdRules];
+
+        // Filter out unavailable dishes and items ALREADY in cart
+        const filteredRules = allRules.filter(rule => {
+            if (!rule.secondaryDishId || rule.secondaryDishId.available === false) return false;
+            // Exclude if the recommended dish is already in the cart
+            if (cartItems.includes(rule.secondaryDishId._id.toString())) return false;
+            return true;
+        });
+
+        // Deduplicate by recommended dish (Pick best rule per dish)
+        const uniqueRecommendations = [];
+        const seenDishes = new Set();
+
+        for (const rule of filteredRules) {
+            const dishId = rule.secondaryDishId._id.toString();
+            if (!seenDishes.has(dishId)) {
+
+                const message = generateRecommendationMessage(rule);
+
+                uniqueRecommendations.push({
+                    _id: rule._id,
+                    ruleId: rule._id,
+                    ruleName: rule.ruleName,
+                    ruleType: rule.ruleType,
+                    recommendedDish: rule.secondaryDishId,
+                    message: rule.aiExplanation || message,
+                    discountPercentage: rule.discountPercentage || 0,
+                    priority: rule.ruleType === 'CART_THRESHOLD' ? 2 : 1, // Prioritize specific pairings
+                });
+                seenDishes.add(dishId);
+            }
+        }
+
+        // Sort by priority and limit
+        uniqueRecommendations.sort((a, b) => a.priority - b.priority);
+
+        return res.status(200).json({
+            success: true,
+            data: uniqueRecommendations.slice(0, 3), // Return top 3
+        });
+    } catch (error) {
+        console.error('Error in getRecommendationsForCart:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Failed to fetch cart recommendations',
+            error: error.message,
+        });
+    }
+};
+
+// Helper function to generate recommendation messages
+const generateRecommendationMessage = (rule) => {
+    const dishName = rule.secondaryDishId?.name || 'this item';
+    const discount = rule.discountPercentage;
+
+    switch (rule.ruleType) {
+        case 'FREQUENT_PAIR':
+            if (discount > 0) {
+                return `Most people also add ${dishName} with this! Get ${discount}% off when you add both.`;
+            }
+            return `Most people also add ${dishName} with this!`;
+
+        case 'LOW_ATTACHMENT':
+            if (discount > 0) {
+                return `Complete your meal with ${dishName}! ${discount}% off when ordered together.`;
+            }
+            return `Complete your meal with ${dishName}!`;
+
+        case 'COMBO_DISCOUNT':
+            return `Save ${discount}% when you order this combo with ${dishName}!`;
+
+        case 'CART_THRESHOLD':
+            if (discount > 0) {
+                return `Add ${dishName} to unlock ${discount}% off your order!`;
+            }
+            return `Add ${dishName} to complete your order!`;
+
+        default:
+            return `Try ${dishName} with your order!`;
+    }
+};
+
+// Manual trigger for analytics aggregation (for testing)
+export const triggerAnalytics = async (req, res) => {
+    try {
+        const restaurantId = req.restaurant._id;
+
+        console.log(`[Manual Trigger] Starting analytics aggregation for restaurant: ${restaurantId}`);
+
+        // Import aggregation functions
+        const { aggregateDishStats, aggregateDishPairStats } = await import('../services/analytics.service.js');
+
+        // Run aggregation for this restaurant
+        await aggregateDishStats(restaurantId);
+        await aggregateDishPairStats(restaurantId);
+
+        console.log(`[Manual Trigger] Analytics aggregation completed successfully`);
+
+        return res.status(200).json({
+            success: true,
+            message: 'Analytics aggregation completed successfully',
+        });
+    } catch (error) {
+        console.error('[Manual Trigger] Error triggering analytics:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Failed to trigger analytics aggregation',
+            error: error.message,
+        });
+    }
+};
+

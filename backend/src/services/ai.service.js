@@ -283,3 +283,84 @@ INSTRUCTIONS:
         return "I encountered an error processing your request. Please try again.";
     }
 };
+
+/**
+ * Generate a persuasive upsell explanation using Gemini
+ * @param {Object} mainDish - The main dish object
+ * @param {Object} secondaryDish - The recommended dish object
+ * @param {String} ruleType - Type of rule (PAIRING, COMBO, etc.)
+ * @returns {Promise<String>} - Generated explanation text
+ */
+export const generateUpsellExplanation = async (mainDish, secondaryDish, ruleType) => {
+    try {
+        if (!process.env.GEMINI_API_KEY) {
+            console.warn('[AI Service] GEMINI_API_KEY not found. Returning default message.');
+            return getDefaultMessage(secondaryDish.name);
+        }
+
+        console.log(`[AI Service] Generating explanation for ${mainDish.name} + ${secondaryDish.name}`);
+
+        const prompt = createUpsellPrompt(mainDish, secondaryDish, ruleType);
+
+        // Use the existing model instance
+        const result = await model.generateContent(prompt);
+        const response = await result.response;
+        const text = response.text().trim();
+
+        // Ensure the response isn't too long (max 120 chars for UI)
+        if (text.length > 120) {
+            return text.substring(0, 117) + '...';
+        }
+
+        return text;
+    } catch (error) {
+        console.error('[AI Service] Error generating explanation:', error);
+        return getDefaultMessage(secondaryDish.name);
+    }
+};
+
+/**
+ * Create a context-aware prompt based on dish details and rule type
+ */
+const createUpsellPrompt = (mainDish, secondaryDish, ruleType) => {
+    const mainDesc = mainDish.description ? `(Description: ${mainDish.description})` : '';
+    const secDesc = secondaryDish.description ? `(Description: ${secondaryDish.description})` : '';
+
+    let specificInstruction = '';
+
+    switch (ruleType) {
+        case 'FREQUENT_PAIR':
+        case 'LOW_ATTACHMENT':
+            specificInstruction = `Explain why ${secondaryDish.name} pairs well with ${mainDish.name} based on their flavors.`;
+            break;
+        case 'COMBO_DISCOUNT':
+            specificInstruction = `Highlight the value of ordering ${secondaryDish.name} with ${mainDish.name} as a combo.`;
+            break;
+        case 'CART_THRESHOLD':
+            specificInstruction = `Suggest adding ${secondaryDish.name} to complete the meal.`;
+            break;
+        default:
+            specificInstruction = `Recommend ${secondaryDish.name} as a great addition to ${mainDish.name}.`;
+    }
+
+    return `
+    Act as a digital waiter recommending a dish.
+    Main Dish: ${mainDish.name} ${mainDesc}
+    Recommended Dish: ${secondaryDish.name} ${secDesc}
+    
+    Task: ${specificInstruction}
+    
+    Constraints:
+    - Keep it very short, under 15 words.
+    - Be persuasive and appetizing.
+    - Do not use quotes.
+    - Direct address to the customer (e.g., "Try...", "Pair with...").
+    `;
+};
+
+/**
+ * Fallback message if AI generation fails
+ */
+const getDefaultMessage = (dishName) => {
+    return `Try adding ${dishName} to your order!`;
+};

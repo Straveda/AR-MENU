@@ -19,6 +19,7 @@ function AdminLayoutContent() {
     { label: "Menu Management", path: "/admin/menu", icon: "menu" },
     { label: "Orders", path: "/admin/orders", icon: "orders" },
     { label: "POS & Billing", path: "/admin/pos", icon: "pos" },
+    { label: "Smart Upsell", path: "/admin/smart-upsell", icon: "upsell" },
     { label: "Inventory", path: "/admin/inventory", icon: "inventory" },
     { label: "Staff", path: "/admin/staff", icon: "staff" },
     { label: "Expenses", path: "/admin/expenses", icon: "expenses" },
@@ -184,6 +185,9 @@ function NavIcon({ name }) {
     reports: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+    upsell: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
       </svg>
     ),
 
