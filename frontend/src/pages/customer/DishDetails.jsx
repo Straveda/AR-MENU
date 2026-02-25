@@ -1384,6 +1384,7 @@ import { useOrder } from "../../context/OrderContext";
 import { useToast } from "../../components/common/Toast/ToastContext";
 import { useTenant } from "../../context/TenantProvider";
 import upsellApi from "../../api/upsellApi";
+import { useMenuTheme } from "../../hooks/useMenuTheme";
 
 export default function DishDetails() {
   const { id } = useParams();
@@ -1391,6 +1392,7 @@ export default function DishDetails() {
   const { slug } = useTenant();
   const { addItem } = useOrder();
   const { showSuccess, showError } = useToast();
+  useMenuTheme(slug);
   const [dish, setDish] = useState(null);
 
   const normalizeCategory = (category) => {
@@ -1440,12 +1442,12 @@ export default function DishDetails() {
 
   const getTagColor = (tag) => {
     const tagLower = tag.toLowerCase();
-    if (tagLower.includes('spicy')) return 'bg-red-50 text-red-700 border-red-100';
-    if (tagLower.includes('vegan')) return 'bg-emerald-50 text-emerald-700 border-emerald-100';
-    if (tagLower.includes('vegetarian')) return 'bg-green-50 text-green-700 border-green-100';
-    if (tagLower.includes('gluten')) return 'bg-yellow-50 text-yellow-700 border-yellow-100';
-    if (tagLower.includes('hot')) return 'bg-orange-50 text-orange-700 border-orange-100';
-    return 'bg-slate-50 text-slate-700 border-slate-200';
+    if (tagLower.includes('spicy')) return 'bg-transparent text-red-600 border-red-600/50';
+    if (tagLower.includes('vegan')) return 'bg-transparent text-emerald-600 border-emerald-600/50';
+    if (tagLower.includes('vegetarian')) return 'bg-transparent text-green-600 border-green-600/50';
+    if (tagLower.includes('gluten')) return 'bg-transparent text-yellow-600 border-yellow-600/50';
+    if (tagLower.includes('hot')) return 'bg-transparent text-orange-600 border-orange-600/50';
+    return 'bg-transparent text-slate-500 border-slate-500/50';
   };
 
   // Function to get unique tags (excluding category if it's in tags)
@@ -1544,10 +1546,10 @@ export default function DishDetails() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--menu-bg)', color: 'var(--menu-secondary)', fontFamily: 'var(--menu-font)' }}>
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-600 mx-auto"></div>
-          <p className="text-slate-500 mt-3 font-medium">Loading dish details...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto" style={{ borderColor: 'var(--menu-primary)' }}></div>
+          <p className="mt-3 font-medium" style={{ color: 'var(--menu-secondary)', opacity: 0.7 }}>Loading dish details...</p>
         </div>
       </div>
     );
@@ -1555,18 +1557,19 @@ export default function DishDetails() {
 
   if (!dish) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-        <div className="text-center max-w-md mx-auto p-6 bg-white rounded-3xl shadow-xl border border-slate-100">
-          <div className="w-16 h-16 bg-amber-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-amber-100">
-            <svg className="w-8 h-8 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--menu-bg)', color: 'var(--menu-secondary)', fontFamily: 'var(--menu-font)' }}>
+        <div className="text-center max-w-md mx-auto p-6 rounded-3xl shadow-xl border" style={{ background: 'var(--menu-bg)', borderColor: 'var(--menu-accent)' }}>
+          <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 border" style={{ background: 'var(--menu-accent)', borderColor: 'var(--menu-accent)' }}>
+            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--menu-primary)' }}>
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
             </svg>
           </div>
-          <h3 className="text-xl font-bold text-slate-900 mb-2">Dish Not Found</h3>
-          <p className="text-slate-600 mb-4">The dish you're looking for doesn't exist or has been removed.</p>
+          <h3 className="text-xl font-bold mb-2">Dish Not Found</h3>
+          <p className="opacity-70 mb-4">The dish you're looking for doesn't exist or has been removed.</p>
           <button
             onClick={() => navigate(`/r/${slug}/menu`)}
-            className="bg-amber-500 hover:bg-amber-600 text-white px-6 py-2 rounded-lg transition-all shadow-md font-bold"
+            className="px-6 py-2 rounded-lg transition-all shadow-md font-bold"
+            style={{ background: 'var(--menu-primary)', color: 'var(--menu-primary-text)' }}
           >
             Back to Menu
           </button>
@@ -1579,7 +1582,7 @@ export default function DishDetails() {
   const uniqueTags = getUniqueTags();
 
   return (
-    <div className="bg-white">
+    <div style={{ background: 'var(--menu-bg)', color: 'var(--menu-secondary)', fontFamily: 'var(--menu-font)', minHeight: '100vh' }}>
       {suspended && (
         <div className="bg-red-600 text-white px-4 py-3 text-center shadow-lg sticky top-0 z-50 border-b border-red-400/20">
           <p className="font-bold flex items-center justify-center gap-2">
@@ -1590,11 +1593,12 @@ export default function DishDetails() {
       )}
 
       {/* Header */}
-      <div className={`bg-white/95 backdrop-blur-xl border-b border-slate-200 sticky ${suspended ? 'top-12' : 'top-0'} z-20 shadow-sm`}>
+      <div className={`backdrop-blur-xl border-b sticky ${suspended ? 'top-12' : 'top-0'} z-20 shadow-sm`} style={{ background: 'var(--menu-bg)', borderColor: 'var(--menu-accent)', opacity: 0.98 }}>
         <div className="max-w-7xl mx-auto px-4 py-3">
           <button
             onClick={() => navigate(`/r/${slug}/menu`)}
-            className="flex items-center gap-2 text-amber-600 hover:text-amber-700 font-bold transition-colors group"
+            className="flex items-center gap-2 font-bold transition-colors group"
+            style={{ color: 'var(--menu-primary)' }}
           >
             <svg className="w-5 h-5 transform group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -1611,7 +1615,7 @@ export default function DishDetails() {
           {/* Left Column - Image and AR */}
           <div className="w-full lg:w-1/2">
             <div className="sticky top-24 space-y-6">
-              <div className="relative aspect-square md:aspect-4/3 w-full bg-slate-50 rounded-3xl overflow-hidden shadow-xl border border-slate-100">
+              <div className="relative aspect-square md:aspect-4/3 w-full rounded-3xl overflow-hidden shadow-xl border" style={{ background: 'var(--menu-bg)', borderColor: 'var(--menu-accent)' }}>
                 {!imageError && dish.imageUrl ? (
                   <img
                     src={dish.imageUrl}
@@ -1638,7 +1642,7 @@ export default function DishDetails() {
               </div>
 
               {/* AR Button */}
-              <div className="bg-slate-50 rounded-2xl p-1 shadow-md border border-slate-100">
+              <div className="rounded-2xl p-1 shadow-md border" style={{ background: 'var(--menu-bg)', borderColor: 'var(--menu-accent)' }}>
                 {arStatus.color === "green" ? (
                   <button
                     onClick={arStatus.action}
@@ -1673,7 +1677,7 @@ export default function DishDetails() {
             {/* Header Info */}
             <div>
               <div className="flex items-center gap-3 mb-4 flex-wrap">
-                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider bg-amber-100 text-amber-700 border border-amber-200">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider border shadow-sm" style={{ background: 'transparent', color: 'var(--menu-primary)', borderColor: 'var(--menu-primary)' }}>
                   {normalizeCategory(dish.category)}
                 </span>
                 {uniqueTags.map((tag, idx) => (
@@ -1683,38 +1687,41 @@ export default function DishDetails() {
                 ))}
               </div>
 
-              <h1 className="text-3xl md:text-4xl font-black text-slate-900 mb-4">
+              <h1 className="text-3xl md:text-4xl font-black mb-4" style={{ color: 'var(--menu-secondary)' }}>
                 {dish.name}
               </h1>
 
-              <div className="flex items-baseline gap-4 py-4 border-b border-slate-100">
-                <span className="text-3xl md:text-4xl font-black text-amber-600">₹{dish.price}</span>
+              <div className="flex items-baseline gap-4 py-4 border-b" style={{ borderColor: 'var(--menu-accent)' }}>
+                <span className="text-3xl md:text-4xl font-black" style={{ color: 'var(--menu-primary)' }}>₹{dish.price}</span>
                 {dish.portionSize && (
-                  <span className="text-sm text-slate-400 font-bold">/ {dish.portionSize}</span>
+                  <span className="text-sm font-bold" style={{ color: 'var(--menu-secondary)', opacity: 0.5 }}>/ {dish.portionSize}</span>
                 )}
               </div>
             </div>
 
             {/* Mobile Add to Order */}
-            <div className={`lg:hidden mb-6 pb-6 border-b border-slate-100 ${(!dish.available || suspended) ? 'opacity-50 pointer-events-none' : ''}`}>
+            <div className={`lg:hidden mb-6 pb-6 border-b ${(!dish.available || suspended) ? 'opacity-50 pointer-events-none' : ''}`} style={{ borderColor: 'var(--menu-accent)' }}>
               <div className="flex flex-col gap-4">
-                <div className="flex items-center justify-between bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 shadow-md">
+                <div className="flex items-center justify-between border rounded-xl px-4 py-3 shadow-md" style={{ background: 'var(--menu-bg)', borderColor: 'var(--menu-accent)' }}>
                   <button
                     onClick={() => setQuantity(q => Math.max(1, q - 1))}
-                    className="w-10 h-10 flex items-center justify-center text-xl font-black text-slate-500 hover:text-amber-600 transition-colors rounded-lg hover:bg-white shadow-sm disabled:opacity-30"
+                    className="w-10 h-10 flex items-center justify-center text-xl font-black transition-colors rounded-lg shadow-sm disabled:opacity-30"
+                    style={{ color: 'var(--menu-secondary)' }}
                     disabled={quantity <= 1}
                   >-</button>
-                  <span className="text-xl font-black text-slate-900 w-8 text-center">{quantity}</span>
+                  <span className="text-xl font-black w-8 text-center" style={{ color: 'var(--menu-secondary)' }}>{quantity}</span>
                   <button
                     onClick={() => setQuantity(q => q + 1)}
-                    className="w-10 h-10 flex items-center justify-center text-xl font-black text-slate-500 hover:text-amber-600 transition-colors rounded-lg hover:bg-white shadow-sm"
+                    className="w-10 h-10 flex items-center justify-center text-xl font-black transition-colors rounded-lg shadow-sm"
+                    style={{ color: 'var(--menu-secondary)' }}
                   >+</button>
                 </div>
 
                 <button
                   onClick={handleAddToOrder}
                   disabled={suspended || !dish.available}
-                  className={`w-full text-lg font-black py-4 px-8 rounded-xl shadow-lg transition-all transform flex items-center justify-center gap-3 ${suspended || !dish.available ? 'bg-slate-200 text-slate-400 cursor-not-allowed' : 'bg-amber-500 hover:bg-amber-600 text-white hover:-translate-y-1 hover:shadow-xl shadow-amber-200'}`}
+                  className={`w-full text-lg font-black py-4 px-8 rounded-xl shadow-lg transition-all transform flex items-center justify-center gap-3 ${suspended || !dish.available ? 'opacity-40 cursor-not-allowed' : 'hover:-translate-y-1'}`}
+                  style={suspended || !dish.available ? { background: 'var(--menu-accent)', color: 'var(--menu-secondary)' } : { background: 'var(--menu-primary)', color: 'var(--menu-primary-text)' }}
                 >
                   <span>{suspended ? 'Ordering Unavailable' : 'Add to Order'}</span>
                   {!suspended && dish.available && <span className="bg-black/10 px-2.5 py-0.5 rounded-lg text-sm">₹{dish.price * quantity}</span>}
@@ -1738,7 +1745,7 @@ export default function DishDetails() {
             {/* Recommendations */}
             {recommendations.length > 0 && (
               <div className="py-4">
-                <h3 className="text-lg font-black text-slate-900 mb-4">People Also Ordered With This Dish</h3>
+                <h3 className="text-lg font-black mb-4" style={{ color: 'var(--menu-secondary)' }}>People Also Ordered With This Dish</h3>
                 <div className="overflow-x-auto pb-4 -mx-4 px-4 scrollbar-hide">
                   <div className="flex gap-4 w-max">
                     {recommendations.map((recDish) => {
@@ -1750,9 +1757,11 @@ export default function DishDetails() {
                         : dish.price;
 
                       return (
-                        <div key={dish._id} className="w-48 bg-white rounded-2xl border border-slate-100 overflow-hidden shrink-0 hover:border-amber-400 transition-all shadow-md group">
+                        <div key={dish._id} className="w-48 rounded-2xl border overflow-hidden shrink-0 transition-all shadow-md group"
+                          style={{ background: 'var(--menu-bg)', borderColor: 'var(--menu-accent)' }}>
                           <div
-                            className="h-32 w-full bg-slate-50 cursor-pointer overflow-hidden relative"
+                            className="h-32 w-full cursor-pointer overflow-hidden relative"
+                            style={{ background: 'var(--menu-accent)' }}
                             onClick={() => navigate(`/r/${slug}/dish/${dish._id}`)}
                           >
                             {dish.imageUrl ? (
@@ -1768,7 +1777,8 @@ export default function DishDetails() {
                           </div>
                           <div className="p-3">
                             <h4
-                              className="text-sm font-black text-slate-900 truncate cursor-pointer hover:text-amber-600 transition-colors"
+                              className="text-sm font-black truncate cursor-pointer transition-colors"
+                              style={{ color: 'var(--menu-secondary)' }}
                               onClick={() => navigate(`/r/${slug}/dish/${dish._id}`)}
                             >
                               {dish.name}
@@ -1780,14 +1790,15 @@ export default function DishDetails() {
                             )}
                             <div className="mt-2 flex items-center justify-between">
                               <div className="flex flex-col">
-                                <span className="text-sm font-black text-amber-600">₹{finalPrice}</span>
+                                <span className="text-sm font-black" style={{ color: 'var(--menu-primary)' }}>₹{finalPrice}</span>
                                 {isSmartRec && recDish.discountPercentage > 0 && (
                                   <span className="text-[10px] text-slate-400 line-through">₹{dish.price}</span>
                                 )}
                               </div>
                               <button
                                 onClick={() => handleAddRecommendationToOrder(dish, finalPrice)}
-                                className="bg-amber-100 hover:bg-amber-500 hover:text-white text-amber-600 p-1.5 rounded-lg transition-all shadow-sm active:scale-95"
+                                className="p-1.5 rounded-lg transition-all shadow-sm active:scale-95 border"
+                                style={{ background: 'var(--menu-accent)', color: 'var(--menu-primary)', borderColor: 'var(--menu-accent)' }}
                                 title="Add to Order"
                                 disabled={suspended}
                               >
@@ -1809,12 +1820,13 @@ export default function DishDetails() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {dish.ingredients?.length > 0 && (
                 <div>
-                  <h3 className="text-lg font-black text-slate-900 mb-3 flex items-center gap-2">
+                  <h3 className="text-lg font-black mb-3 flex items-center gap-2" style={{ color: 'var(--menu-secondary)' }}>
                     <span>🥬</span> Ingredients
                   </h3>
                   <div className="flex flex-wrap gap-2">
                     {dish.ingredients.map((ing, i) => (
-                      <span key={i} className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-700 font-bold shadow-sm">
+                      <span key={i} className="px-3 py-1.5 border rounded-xl text-sm font-bold shadow-sm"
+                        style={{ background: 'transparent', borderColor: 'var(--menu-primary)', color: 'var(--menu-primary)' }}>
                         {ing}
                       </span>
                     ))}
@@ -1823,10 +1835,11 @@ export default function DishDetails() {
               )}
 
               <div>
-                <h3 className="text-lg font-black text-slate-900 mb-3 flex items-center gap-2">
+                <h3 className="text-lg font-black mb-3 flex items-center gap-2" style={{ color: 'var(--menu-secondary)' }}>
                   <span>ℹ️</span> Dietary Info
                 </h3>
-                <div className="bg-blue-50 border border-blue-100 p-4 rounded-xl text-sm text-blue-800 leading-snug shadow-sm font-bold">
+                <div className="p-4 rounded-xl text-sm leading-snug shadow-sm font-bold border"
+                  style={{ background: 'transparent', borderColor: 'var(--menu-primary)', color: 'var(--menu-primary)' }}>
                   Specific allergies? Please verify with staff. Kitchen handles common allergens.
                 </div>
               </div>
@@ -1834,49 +1847,52 @@ export default function DishDetails() {
 
             {/* Nutritional Info */}
             {dish.nutritionalInfo && (
-              <div className="bg-slate-50 p-5 rounded-2xl border border-slate-100 shadow-md">
-                <h3 className="text-lg font-black text-slate-900 mb-4">Nutritional Facts</h3>
-                <div className="grid grid-cols-4 gap-2 text-center divide-x divide-slate-200">
+              <div className="p-5 rounded-2xl border shadow-md" style={{ background: 'transparent', borderColor: 'var(--menu-primary)' }}>
+                <h3 className="text-lg font-black mb-4" style={{ color: 'var(--menu-secondary)' }}>Nutritional Facts</h3>
+                <div className="grid grid-cols-4 gap-2 text-center divide-x" style={{ borderColor: 'var(--menu-accent)' }}>
                   <div>
-                    <div className="text-2xl font-black text-amber-600">{dish.nutritionalInfo.calories || 0}</div>
-                    <div className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Cals</div>
+                    <div className="text-2xl font-black" style={{ color: 'var(--menu-primary)' }}>{dish.nutritionalInfo.calories || 0}</div>
+                    <div className="text-[10px] font-black uppercase tracking-wider" style={{ color: 'var(--menu-secondary)', opacity: 0.5 }}>Cals</div>
                   </div>
                   <div>
-                    <div className="text-2xl font-black text-slate-800">{dish.nutritionalInfo.protein || 0}g</div>
-                    <div className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Protein</div>
+                    <div className="text-2xl font-black" style={{ color: 'var(--menu-secondary)' }}>{dish.nutritionalInfo.protein || 0}g</div>
+                    <div className="text-[10px] font-black uppercase tracking-wider" style={{ color: 'var(--menu-secondary)', opacity: 0.5 }}>Protein</div>
                   </div>
                   <div>
-                    <div className="text-2xl font-black text-slate-800">{dish.nutritionalInfo.carbs || 0}g</div>
-                    <div className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Carbs</div>
+                    <div className="text-2xl font-black" style={{ color: 'var(--menu-secondary)' }}>{dish.nutritionalInfo.carbs || 0}g</div>
+                    <div className="text-[10px] font-black uppercase tracking-wider" style={{ color: 'var(--menu-secondary)', opacity: 0.5 }}>Carbs</div>
                   </div>
                   <div>
-                    <div className="text-2xl font-black text-slate-800">{dish.nutritionalInfo.sugar || 0}g</div>
-                    <div className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Sugar</div>
+                    <div className="text-2xl font-black" style={{ color: 'var(--menu-secondary)' }}>{dish.nutritionalInfo.sugar || 0}g</div>
+                    <div className="text-[10px] font-black uppercase tracking-wider" style={{ color: 'var(--menu-secondary)', opacity: 0.5 }}>Sugar</div>
                   </div>
                 </div>
               </div>
             )}
 
             {/* Desktop Add to Order */}
-            <div className={`hidden lg:block mt-8 pt-8 border-t border-slate-100 ${(!dish.available || suspended) ? 'opacity-50 pointer-events-none' : ''}`}>
+            <div className={`hidden lg:block mt-8 pt-8 border-t ${(!dish.available || suspended) ? 'opacity-50 pointer-events-none' : ''}`} style={{ borderColor: 'var(--menu-accent)' }}>
               <div className="flex flex-col sm:flex-row gap-4">
-                <div className="flex items-center justify-between bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 sm:w-40 shadow-md">
+                <div className="flex items-center justify-between border rounded-xl px-4 py-2 sm:w-40 shadow-md" style={{ background: 'var(--menu-bg)', borderColor: 'var(--menu-accent)' }}>
                   <button
                     onClick={() => setQuantity(q => Math.max(1, q - 1))}
-                    className="w-10 h-10 flex items-center justify-center text-xl font-black text-slate-500 hover:text-amber-600 transition-colors rounded-lg hover:bg-white shadow-sm disabled:opacity-30"
+                    className="w-10 h-10 flex items-center justify-center text-xl font-black transition-colors rounded-lg shadow-sm disabled:opacity-30"
+                    style={{ color: 'var(--menu-secondary)' }}
                     disabled={quantity <= 1}
                   >-</button>
-                  <span className="font-black text-xl text-slate-900 w-8 text-center">{quantity}</span>
+                  <span className="font-black text-xl w-8 text-center" style={{ color: 'var(--menu-secondary)' }}>{quantity}</span>
                   <button
                     onClick={() => setQuantity(q => q + 1)}
-                    className="w-10 h-10 flex items-center justify-center text-xl font-black text-slate-500 hover:text-amber-600 transition-colors rounded-lg hover:bg-white shadow-sm"
+                    className="w-10 h-10 flex items-center justify-center text-xl font-black transition-colors rounded-lg shadow-sm"
+                    style={{ color: 'var(--menu-secondary)' }}
                   >+</button>
                 </div>
 
                 <button
                   onClick={handleAddToOrder}
                   disabled={suspended || !dish.available}
-                  className={`flex-1 text-lg font-black py-4 px-8 rounded-xl shadow-lg transition-all transform flex items-center justify-center gap-3 ${suspended || !dish.available ? 'bg-slate-200 text-slate-400 cursor-not-allowed' : 'bg-amber-500 hover:bg-amber-600 text-white hover:-translate-y-1 hover:shadow-xl shadow-amber-200'}`}
+                  className={`flex-1 text-lg font-black py-4 px-8 rounded-xl shadow-lg transition-all transform flex items-center justify-center gap-3 ${suspended || !dish.available ? 'opacity-40 cursor-not-allowed' : 'hover:-translate-y-1'}`}
+                  style={suspended || !dish.available ? { background: 'var(--menu-accent)', color: 'var(--menu-secondary)' } : { background: 'var(--menu-primary)', color: 'var(--menu-primary-text)' }}
                 >
                   <span>{suspended ? 'Ordering Unavailable' : 'Add to Order'}</span>
                   {!suspended && dish.available && <span className="bg-black/10 px-2.5 py-0.5 rounded-lg text-sm">₹{dish.price * quantity}</span>}

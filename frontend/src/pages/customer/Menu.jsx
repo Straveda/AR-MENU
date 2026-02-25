@@ -962,10 +962,13 @@ import { useTenant } from "../../context/TenantProvider";
 import { useToast } from "../../components/common/Toast/ToastContext";
 import Loading from "../../components/common/Loading";
 import EmptyState from "../../components/common/EmptyState";
+import { useMenuTheme } from "../../hooks/useMenuTheme";
 
 export default function Menu() {
   const navigate = useNavigate();
   const { slug } = useTenant();
+  // Fetch and apply the restaurant's saved theme (CSS vars) — no-op if fails
+  useMenuTheme(slug);
   const { items, addItem, updateQuantity } = useOrder();
   const { showSuccess, showError } = useToast();
   const [dishes, setDishes] = useState([]);
@@ -1081,7 +1084,13 @@ export default function Menu() {
   }
 
   return (
-    <div className="bg-white">
+    <div className="min-h-screen" style={{ background: 'var(--menu-bg)', fontFamily: 'var(--menu-font)' }}>
+      <style>{`
+        :root {
+          --menu-font-size-base: var(--menu-font-size, 16px);
+        }
+        .menu-container { font-size: var(--menu-font-size-base); }
+      `}</style>
       {suspended && (
         <div className="bg-red-600 text-white px-4 py-3 text-center shadow-md sticky top-0 z-50">
           <p className="font-bold flex items-center justify-center gap-2 text-sm md:text-base">
@@ -1093,18 +1102,25 @@ export default function Menu() {
       )}
 
       {/* Fixed Header */}
-      <div className={`bg-white/80 backdrop-blur-md border-b border-slate-100 sticky ${suspended ? 'top-16' : 'top-0'} z-40 shadow-sm transition-all duration-300`}>
+      <div className={`border-b sticky ${suspended ? 'top-16' : 'top-0'} z-40 shadow-sm transition-all duration-300`}
+        style={{
+          background: 'var(--menu-bg)',
+          borderColor: 'var(--menu-accent)',
+          backdropFilter: 'blur(12px)',
+          opacity: 0.95
+        }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16 md:h-20">
             {/* Logo */}
             <div className="flex items-center gap-2 md:gap-3">
-              <div className="w-9 h-9 md:w-11 md:h-11 bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl flex items-center justify-center text-white font-bold text-lg md:text-2xl shadow-lg shadow-amber-500/20">
+              <div className="w-9 h-9 md:w-11 md:h-11 rounded-xl flex items-center justify-center text-white font-bold text-lg md:text-2xl shadow-lg"
+                style={{ background: 'var(--menu-primary)' }}>
                 {restaurant?.name?.charAt(0) || "R"}
               </div>
-              <h1 className="text-lg md:text-2xl font-black text-slate-800 tracking-tight">
+              <h1 className="text-lg md:text-2xl font-black tracking-tight" style={{ color: 'var(--menu-secondary)' }}>
                 {restaurant?.name || (
                   <>
-                    Restaurant<span className="text-amber-600">AR</span>
+                    Restaurant<span style={{ color: 'var(--menu-primary)' }}>AR</span>
                   </>
                 )}
               </h1>
@@ -1115,9 +1131,15 @@ export default function Menu() {
               {/* Track Order Button Desktop */}
               <button
                 onClick={() => navigate(`/r/${slug}/track-order`)}
-                className="px-4 py-2 text-sm font-bold text-amber-700 bg-amber-50 hover:bg-amber-100 rounded-full border border-amber-100 transition-all shadow-sm hidden sm:flex items-center gap-2 active:scale-95"
+                className="px-4 py-2 text-sm font-bold rounded-full border transition-all shadow-sm hidden sm:flex items-center gap-2 active:scale-95"
+                style={{
+                  color: 'var(--menu-primary)',
+                  background: 'var(--menu-bg)',
+                  borderColor: 'var(--menu-primary)',
+                  filter: 'brightness(1.1)'
+                }}
               >
-                <svg className="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--menu-primary)' }}>
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                 </svg>
                 Track Order
@@ -1126,7 +1148,12 @@ export default function Menu() {
               {/* Track Order Button Mobile */}
               <button
                 onClick={() => navigate(`/r/${slug}/track-order`)}
-                className="p-2.5 text-amber-600 bg-slate-50 hover:bg-amber-50 rounded-full border border-slate-100 sm:hidden transition-all active:scale-95"
+                className="p-2.5 rounded-full border sm:hidden transition-all active:scale-95"
+                style={{
+                  color: 'var(--menu-primary)',
+                  background: 'var(--menu-bg)',
+                  borderColor: 'var(--menu-accent)'
+                }}
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
@@ -1136,13 +1163,19 @@ export default function Menu() {
               {/* Cart Button */}
               <button
                 onClick={() => navigate(`/r/${slug}/cart`)}
-                className="group relative p-2.5 text-slate-600 hover:text-amber-600 transition-all bg-slate-50 hover:bg-amber-50 rounded-full border border-slate-100 hover:border-amber-100 shadow-sm"
+                className="group relative p-2.5 transition-all rounded-full border shadow-sm"
+                style={{
+                  color: 'var(--menu-secondary)',
+                  background: 'var(--menu-bg)',
+                  borderColor: 'var(--menu-accent)'
+                }}
               >
                 <svg className="w-5 h-5 md:w-6 md:h-6 transition-transform group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                 </svg>
                 {cartItemCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-amber-600 text-white text-[10px] md:text-xs font-black min-w-[20px] h-5 flex items-center justify-center rounded-full shadow-lg ring-2 ring-white px-1.5 animate-bounce-slight">
+                  <span className="absolute -top-1 -right-1 text-[10px] md:text-xs font-black min-w-[20px] h-5 flex items-center justify-center rounded-full shadow-lg ring-2 ring-white px-1.5 animate-bounce-slight"
+                    style={{ background: 'var(--menu-primary)', color: 'var(--menu-primary-text)' }}>
                     {cartItemCount}
                   </span>
                 )}
@@ -1153,12 +1186,13 @@ export default function Menu() {
       </div>
 
       {/* Compact Search and Filter Section */}
-      <div className={`sticky ${suspended ? 'top-32 md:top-36' : 'top-16 md:top-20'} z-30 bg-white/90 backdrop-blur-xl border-b border-slate-100 shadow-sm`}>
+      <div className={`sticky ${suspended ? 'top-32 md:top-36' : 'top-16 md:top-20'} z-30 border-b shadow-sm transition-all`}
+        style={{ background: 'var(--menu-bg)', borderColor: 'var(--menu-accent)', opacity: 0.98 }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 md:py-6">
           {/* Top Row: Our Menu + Search + Filter Button */}
           <div className="flex items-center gap-3 md:gap-6 mb-1">
             {/* Our Menu Title */}
-            <h2 className="text-xl md:text-3xl font-black text-slate-800 whitespace-nowrap hidden lg:block">
+            <h2 className="text-xl md:text-3xl font-black whitespace-nowrap hidden lg:block" style={{ color: 'var(--menu-secondary)' }}>
               Our Menu
             </h2>
 
@@ -1169,10 +1203,16 @@ export default function Menu() {
                 placeholder="Search favorite dishes..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-11 pr-10 py-3 md:py-4 bg-slate-50 border border-slate-100 rounded-full focus:outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 focus:bg-white shadow-inner text-slate-800 placeholder-slate-400 transition-all text-sm md:text-base font-medium"
+                className="w-full pl-11 pr-10 py-3 md:py-4 border rounded-full focus:outline-none focus:ring-4 shadow-inner transition-all text-sm md:text-base font-medium"
+                style={{
+                  background: 'transparent',
+                  borderColor: 'var(--menu-secondary)',
+                  color: 'var(--menu-secondary)',
+                  '--tw-ring-color': 'rgba(var(--menu-primary-rgb), 0.1)'
+                }}
               />
               <div className="absolute left-4 top-1/2 -translate-y-1/2">
-                <svg className="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--menu-primary)' }}>
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
               </div>
@@ -1191,10 +1231,12 @@ export default function Menu() {
             {/* Filter Button */}
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className={`flex items-center gap-2 px-4 md:px-8 py-3 md:py-4 rounded-full font-bold text-sm transition-all shadow-md border whitespace-nowrap active:scale-95 ${showFilters || activeCategory !== "all" || sortOption !== "recommended"
-                ? "bg-amber-600 text-white border-amber-500 shadow-amber-200"
-                : "bg-white text-slate-700 border-slate-100 hover:border-amber-400 hover:text-amber-600"
-                }`}
+              className={`flex items-center gap-2 px-4 md:px-8 py-3 md:py-4 rounded-full font-bold text-sm transition-all shadow-md border whitespace-nowrap active:scale-95`}
+              style={{
+                background: (showFilters || activeCategory !== "all" || sortOption !== "recommended") ? 'var(--menu-primary)' : 'var(--menu-bg)',
+                color: (showFilters || activeCategory !== "all" || sortOption !== "recommended") ? 'white' : 'var(--menu-secondary)',
+                borderColor: (showFilters || activeCategory !== "all" || sortOption !== "recommended") ? 'var(--menu-primary)' : 'var(--menu-accent)'
+              }}
             >
               <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
@@ -1213,12 +1255,17 @@ export default function Menu() {
             <div className="mt-4 pt-4 border-t border-slate-50 space-y-4 md:space-y-6 animate-fade-in-scale">
               {/* Sort Dropdown */}
               <div className="flex items-center gap-4">
-                <label className="text-sm font-bold text-slate-500 whitespace-nowrap">Sort by:</label>
+                <label className="text-sm font-bold whitespace-nowrap" style={{ color: 'var(--menu-secondary)', opacity: 0.6 }}>Sort by:</label>
                 <div className="relative flex-1">
                   <select
                     value={sortOption}
                     onChange={(e) => setSortOption(e.target.value)}
-                    className="appearance-none w-full pl-5 pr-10 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-slate-700 focus:outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 font-bold cursor-pointer transition-all text-sm"
+                    className="appearance-none w-full pl-5 pr-10 py-3 rounded-2xl font-bold cursor-pointer transition-all text-sm"
+                    style={{
+                      background: 'var(--menu-accent)',
+                      borderColor: 'var(--menu-accent)',
+                      color: 'var(--menu-secondary)'
+                    }}
                   >
                     {sortOptions.map(option => (
                       <option key={option.value} value={option.value} className="bg-white font-medium">
@@ -1226,7 +1273,7 @@ export default function Menu() {
                       </option>
                     ))}
                   </select>
-                  <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none text-amber-600">
+                  <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none" style={{ color: 'var(--menu-primary)' }}>
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                     </svg>
@@ -1236,16 +1283,18 @@ export default function Menu() {
 
               {/* Categories */}
               <div>
-                <label className="text-sm font-bold text-slate-500 mb-3 block">Menu Sections:</label>
+                <label className="text-sm font-bold mb-3 block" style={{ color: 'var(--menu-secondary)', opacity: 0.6 }}>Menu Sections:</label>
                 <div className="flex flex-wrap gap-2.5">
                   {categories.map(category => (
                     <button
                       key={category}
                       onClick={() => setActiveCategory(category)}
-                      className={`px-5 py-2.5 rounded-full whitespace-nowrap text-xs md:text-sm font-bold transition-all duration-300 border shadow-sm active:scale-95 ${activeCategory === category
-                        ? "bg-slate-50 text-amber-700 border-amber-300 ring-2 ring-amber-100 scale-105"
-                        : "bg-white text-slate-600 border-slate-100 hover:border-amber-200 hover:bg-slate-50 hover:text-amber-600"
-                        }`}
+                      className={`px-5 py-2.5 rounded-full whitespace-nowrap text-xs md:text-sm font-bold transition-all duration-300 border shadow-sm active:scale-95`}
+                      style={{
+                        background: activeCategory === category ? 'var(--menu-primary)' : 'var(--menu-accent)',
+                        color: activeCategory === category ? 'white' : 'var(--menu-secondary)',
+                        borderColor: activeCategory === category ? 'var(--menu-primary)' : 'var(--menu-accent)'
+                      }}
                     >
                       {category === 'all' ? '✨ All' : normalizeCategory(category)}
                     </button>
@@ -1290,14 +1339,15 @@ export default function Menu() {
             {Object.entries(dishesByCategory).map(([category, categoryDishes]) => (
               <div key={category} className="animate-fade-in">
                 {/* Category Header */}
-                <div className="flex items-center justify-between mb-6 md:mb-8 pb-4 border-b border-slate-100">
+                <div className="flex items-center justify-between mb-6 md:mb-8 pb-4 border-b" style={{ borderColor: 'var(--menu-accent)' }}>
                   <div className="flex items-center gap-3">
-                    <div className="w-2 h-8 bg-amber-500 rounded-full"></div>
-                    <h3 className="text-2xl md:text-3xl font-black text-slate-800 tracking-tight">
+                    <div className="w-2 h-8 rounded-full" style={{ background: 'var(--menu-primary)' }}></div>
+                    <h3 className="text-2xl md:text-3xl font-black tracking-tight" style={{ color: 'var(--menu-secondary)' }}>
                       {category}
                     </h3>
                   </div>
-                  <span className="text-xs md:text-sm font-black text-amber-700 bg-slate-50 px-4 py-2 rounded-full border border-slate-100 shadow-sm">
+                  <span className="text-xs md:text-sm font-black px-4 py-2 rounded-full border shadow-sm"
+                    style={{ background: 'transparent', color: 'var(--menu-primary)', borderColor: 'var(--menu-primary)' }}>
                     {categoryDishes.length} {categoryDishes.length === 1 ? 'Delight' : 'Delights'}
                   </span>
                 </div>
@@ -1308,7 +1358,12 @@ export default function Menu() {
                     <div
                       key={dish._id}
                       onClick={() => navigate(`/r/${slug}/dish/${dish._id}`)}
-                      className="group bg-white rounded-[2rem] hover:shadow-[0_20px_50px_rgba(251,191,36,0.15)] cursor-pointer overflow-hidden border border-slate-100 hover:border-amber-200 flex flex-col h-full transition-all duration-500 hover:-translate-y-2 relative"
+                      className="group rounded-[2rem] hover:shadow-xl cursor-pointer overflow-hidden border flex flex-col h-full transition-all duration-500 hover:-translate-y-2 relative"
+                      style={{
+                        background: 'var(--menu-bg)',
+                        borderColor: 'var(--menu-accent)',
+                        boxShadow: '0 10px 30px -10px rgba(0,0,0,0.1)'
+                      }}
                     >
                       {/* Image Section */}
                       <div className="relative overflow-hidden bg-slate-50 h-52 md:h-56 shrink-0">
@@ -1329,15 +1384,17 @@ export default function Menu() {
                         )}
 
                         {/* Price Tag Floating */}
-                        <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-full shadow-lg border border-white/50 z-20">
-                          <span className="text-sm font-black text-amber-600">₹{dish.price}</span>
+                        <div className="absolute top-4 right-4 backdrop-blur-md px-3 py-1.5 rounded-full shadow-lg border z-20"
+                          style={{ background: 'var(--menu-bg)', borderColor: 'var(--menu-accent)', opacity: 0.9 }}>
+                          <span className="text-sm font-black" style={{ color: 'var(--menu-primary)' }}>₹{dish.price}</span>
                         </div>
                       </div>
 
                       {/* Info Section */}
                       <div className="p-5 md:p-6 flex flex-col flex-1">
                         <div className="mb-4">
-                          <h4 className="text-lg font-black text-slate-800 group-hover:text-amber-600 transition-colors leading-tight mb-2 min-h-[2.5rem] line-clamp-2">
+                          <h4 className="text-lg font-black transition-colors leading-tight mb-2 min-h-[2.5rem] line-clamp-2"
+                            style={{ color: 'var(--menu-secondary)' }}>
                             {dish.name}
                           </h4>
 
@@ -1355,7 +1412,8 @@ export default function Menu() {
                         </div>
 
                         {dish.description && (
-                          <p className="text-slate-500 text-sm md:text-sm line-clamp-2 mb-6 font-medium leading-relaxed">
+                          <p className="text-sm md:text-sm line-clamp-2 mb-6 font-medium leading-relaxed"
+                            style={{ color: 'var(--menu-secondary)', opacity: 0.7 }}>
                             {dish.description}
                           </p>
                         )}
@@ -1369,16 +1427,18 @@ export default function Menu() {
                             >
                               <button
                                 onClick={() => updateQuantity(dish._id, getItemQuantity(dish._id) - 1)}
-                                className="w-10 h-10 flex items-center justify-center rounded-xl bg-white shadow-sm border border-slate-100 text-amber-600 font-black hover:bg-slate-50 transition-all active:scale-90"
+                                className="w-10 h-10 flex items-center justify-center rounded-xl shadow-sm border font-black transition-all active:scale-90"
+                                style={{ background: 'var(--menu-bg)', color: 'var(--menu-primary)', borderColor: 'var(--menu-accent)' }}
                               >
                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M20 12H4" />
                                 </svg>
                               </button>
-                              <span className="font-black text-amber-800 text-base">{getItemQuantity(dish._id)}</span>
+                              <span className="font-black text-base" style={{ color: 'var(--menu-secondary)' }}>{getItemQuantity(dish._id)}</span>
                               <button
                                 onClick={() => updateQuantity(dish._id, getItemQuantity(dish._id) + 1)}
-                                className="w-10 h-10 flex items-center justify-center rounded-xl bg-white shadow-sm border border-slate-100 text-amber-600 font-black hover:bg-slate-50 transition-all active:scale-90"
+                                className="w-10 h-10 flex items-center justify-center rounded-xl shadow-sm border font-black transition-all active:scale-90"
+                                style={{ background: 'var(--menu-bg)', color: 'var(--menu-primary)', borderColor: 'var(--menu-accent)' }}
                               >
                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 4v16m8-8H4" />
@@ -1393,9 +1453,13 @@ export default function Menu() {
                               }}
                               disabled={!dish.available || suspended}
                               className={`flex-1 flex items-center justify-center gap-2 py-3.5 rounded-2xl font-black text-xs md:text-sm transition-all shadow-md active:scale-95 ${!dish.available || suspended
-                                ? 'bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200 shadow-none'
-                                : 'bg-gradient-to-r from-amber-500 to-orange-600 text-white hover:shadow-amber-500/30'
+                                ? 'cursor-not-allowed opacity-50'
+                                : ''
                                 }`}
+                              style={{
+                                background: (!dish.available || suspended) ? 'var(--menu-accent)' : 'var(--menu-primary)',
+                                color: (!dish.available || suspended) ? 'var(--menu-secondary)' : 'var(--menu-primary-text)'
+                              }}
                             >
                               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 4v16m8-8H4" />
@@ -1409,7 +1473,12 @@ export default function Menu() {
                               e.stopPropagation();
                               navigate(`/r/${slug}/dish/${dish._id}`);
                             }}
-                            className="p-3.5 rounded-2xl bg-slate-50 border border-slate-100 text-slate-400 hover:text-amber-600 hover:bg-slate-50 hover:border-amber-100 transition-all shadow-sm active:scale-95"
+                            className="p-3.5 rounded-2xl border transition-all shadow-sm active:scale-95"
+                            style={{
+                              background: 'transparent',
+                              borderColor: 'var(--menu-secondary)',
+                              color: 'var(--menu-secondary)'
+                            }}
                           >
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -1427,8 +1496,9 @@ export default function Menu() {
         )}
 
         {/* Footer Info */}
-        <div className="mt-2 md:mt-24 text-center bg-white rounded-3xl p-5 shadow-sm border border-slate-100 max-w-2xl mx-auto">
-          <p className="text-sm md:text-base text-slate-500 mb-3 font-medium">
+        <div className="mt-2 md:mt-24 text-center rounded-3xl p-5 shadow-sm border max-w-2xl mx-auto"
+          style={{ background: 'var(--menu-bg)', borderColor: 'var(--menu-accent)' }}>
+          <p className="text-sm md:text-base mb-3 font-medium" style={{ color: 'var(--menu-secondary)', opacity: 0.6 }}>
             💫 All prices include applicable taxes. Please inform our captain of any dietary restrictions or allergies.
           </p>
         </div>

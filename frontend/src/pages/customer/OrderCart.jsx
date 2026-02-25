@@ -416,10 +416,12 @@ import { useOrder } from "../../context/OrderContext";
 import { useTenant } from "../../context/TenantProvider";
 import upsellApi from "../../api/upsellApi";
 import UpsellCard from "../../components/customer/UpsellCard";
+import { useMenuTheme } from "../../hooks/useMenuTheme";
 
 export default function OrderCart() {
     const navigate = useNavigate();
     const { slug } = useTenant();
+    useMenuTheme(slug);
     const { items, removeItem, updateQuantity, placeOrder, clearOrder } = useOrder();
     const [tableInput, setTableInput] = useState("");
     const [loading, setLoading] = useState(false);
@@ -481,7 +483,7 @@ export default function OrderCart() {
 
     if (items.length === 0) {
         return (
-            <div className="min-h-screen bg-white flex flex-col items-center justify-center p-4">
+            <div className="min-h-screen flex flex-col items-center justify-center p-4" style={{ background: 'var(--menu-bg)', color: 'var(--menu-secondary)', fontFamily: 'var(--menu-font)' }}>
                 <div className="bg-white p-8 text-center max-w-sm w-full border border-slate-100 rounded-3xl shadow-xl animate-fade-in-scale">
                     <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6 border border-slate-100">
                         <span className="text-4xl">🛒</span>
@@ -490,7 +492,8 @@ export default function OrderCart() {
                     <p className="text-slate-500 mb-6 font-medium">Looks like you haven't added any delicious dishes yet.</p>
                     <button
                         onClick={() => navigate(`/r/${slug}/menu`)}
-                        className="w-full bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-black py-4 px-6 rounded-2xl transition-all shadow-lg shadow-amber-500/20 active:scale-95"
+                        className="w-full font-black py-4 px-6 rounded-2xl transition-all shadow-lg active:scale-95"
+                        style={{ background: 'var(--menu-primary)', color: 'var(--menu-primary-text)' }}
                     >
                         Browse Menu
                     </button>
@@ -500,9 +503,9 @@ export default function OrderCart() {
     }
 
     return (
-        <div className="min-h-screen bg-white pb-32">
+        <div className="min-h-screen pb-32" style={{ background: 'var(--menu-bg)', color: 'var(--menu-secondary)', fontFamily: 'var(--menu-font)' }}>
             {/* Header */}
-            <div className="bg-white/80 backdrop-blur-md border-b border-slate-100 sticky top-0 z-10 shadow-sm">
+            <div className="backdrop-blur-md border-b sticky top-0 z-10 shadow-sm" style={{ background: 'var(--menu-bg)', borderColor: 'var(--menu-accent)', opacity: 0.98 }}>
                 <div className="max-w-3xl mx-auto px-4 py-4 flex items-center justify-between">
                     <button
                         onClick={() => navigate(-1)}
@@ -512,7 +515,7 @@ export default function OrderCart() {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
                         </svg>
                     </button>
-                    <h1 className="text-xl font-black text-slate-800 tracking-tight">Checkout Order</h1>
+                    <h1 className="text-xl font-black tracking-tight" style={{ color: 'var(--menu-secondary)' }}>Checkout Order</h1>
                     <div className="w-10"></div> {/* Spacer */}
                 </div>
             </div>
@@ -643,7 +646,8 @@ export default function OrderCart() {
                     <button
                         onClick={handlePlaceOrder}
                         disabled={loading}
-                        className={`flex-1 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-black py-4 px-8 rounded-[2rem] shadow-lg shadow-amber-500/20 transition-all transform active:scale-95 flex justify-center items-center gap-3 border border-amber-500/20 ${loading ? 'opacity-80 cursor-wait' : ''}`}
+                        className={`flex-1 font-black py-4 px-8 rounded-[2rem] shadow-lg transition-all transform active:scale-95 flex justify-center items-center gap-3 border ${loading ? 'opacity-80 cursor-wait' : 'hover:-translate-y-0.5'}`}
+                        style={{ background: 'var(--menu-primary)', color: 'var(--menu-primary-text)', borderColor: 'var(--menu-primary)' }}
                     >
                         {loading ? (
                             <>

@@ -778,6 +778,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import axiosClient from "../../api/axiosClient";
 import "@google/model-viewer";
+import { useMenuTheme } from "../../hooks/useMenuTheme";
 
 // Ingredient icon mapping
 const ingredientIcons = {
@@ -871,6 +872,8 @@ export default function ARViewer() {
     const [displayMode, setDisplayMode] = useState('nutrition'); // 'nutrition', 'ingredients', or 'hidden'
     const [isIOS, setIsIOS] = useState(false);
 
+    useMenuTheme(slug);
+
     useEffect(() => {
         setIsIOS(/iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream);
     }, []);
@@ -917,10 +920,10 @@ export default function ARViewer() {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+            <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--menu-bg)', color: 'var(--menu-secondary)', fontFamily: 'var(--menu-font)' }}>
                 <div className="text-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-600 mx-auto"></div>
-                    <p className="text-slate-600 mt-3 font-medium">Loading AR experience...</p>
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto" style={{ borderColor: 'var(--menu-primary)' }}></div>
+                    <p className="mt-3 font-medium" style={{ color: 'var(--menu-secondary)' }}>Loading AR experience...</p>
                 </div>
             </div>
         );
@@ -928,18 +931,19 @@ export default function ARViewer() {
 
     if (!dish || arError) {
         return (
-            <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+            <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--menu-bg)', color: 'var(--menu-secondary)', fontFamily: 'var(--menu-font)' }}>
                 <div className="text-center max-w-md mx-auto p-6">
-                    <div className="w-16 h-16 bg-amber-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-amber-100">
-                        <svg className="w-8 h-8 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 border" style={{ background: 'var(--menu-accent)', borderColor: 'var(--menu-accent)' }}>
+                        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--menu-primary)' }}>
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
                         </svg>
                     </div>
-                    <h3 className="text-xl font-bold text-slate-900 mb-2">AR Model Error</h3>
-                    <p className="text-slate-600 mb-4">Unable to load the AR experience for this dish.</p>
+                    <h3 className="text-xl font-bold mb-2">AR Model Error</h3>
+                    <p className="mb-4 opacity-70">Unable to load the AR experience for this dish.</p>
                     <button
                         onClick={() => navigate(`/r/${slug}/menu`)}
-                        className="bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white px-8 py-2.5 rounded-xl font-bold transition-all shadow-lg shadow-amber-500/20"
+                        className="px-8 py-2.5 rounded-xl font-bold transition-all shadow-lg active:scale-95"
+                        style={{ background: 'var(--menu-primary)', color: 'var(--menu-primary-text)' }}
                     >
                         Back to Menu
                     </button>
@@ -950,19 +954,20 @@ export default function ARViewer() {
 
     if (dish.modelStatus !== "completed") {
         return (
-            <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+            <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--menu-bg)', color: 'var(--menu-secondary)', fontFamily: 'var(--menu-font)' }}>
                 <div className="text-center max-w-md mx-auto p-6">
-                    <div className="w-16 h-16 bg-yellow-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-yellow-100">
-                        <svg className="w-8 h-8 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 border" style={{ background: 'var(--menu-accent)', borderColor: 'var(--menu-accent)' }}>
+                        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--menu-primary)' }}>
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                     </div>
-                    <h3 className="text-xl font-bold text-slate-900 mb-2">AR Model Processing</h3>
-                    <p className="text-slate-600 mb-2">The 3D model for this dish is still being generated.</p>
-                    <p className="text-sm text-slate-500 mb-4 font-medium">This usually takes a few minutes. Please check back later.</p>
+                    <h3 className="text-xl font-bold mb-2">AR Model Processing</h3>
+                    <p className="mb-2 opacity-70">The 3D model for this dish is still being generated.</p>
+                    <p className="text-sm mb-4 font-medium opacity-50">This usually takes a few minutes. Please check back later.</p>
                     <button
                         onClick={() => navigate(`/r/${slug}/menu`)}
-                        className="bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white px-8 py-2.5 rounded-xl font-bold transition-all shadow-lg shadow-amber-500/20"
+                        className="px-8 py-2.5 rounded-xl font-bold transition-all shadow-lg active:scale-95"
+                        style={{ background: 'var(--menu-primary)', color: 'var(--menu-primary-text)' }}
                     >
                         Back to Menu
                     </button>
@@ -992,11 +997,12 @@ export default function ARViewer() {
     const nutrientPositions = calculateCircularPositions(activeNutrients.length);
 
     return (
-        <div className="h-screen bg-white flex flex-col font-sans overflow-hidden">
+        <div className="h-screen flex flex-col font-sans overflow-hidden" style={{ background: 'var(--menu-bg)', color: 'var(--menu-secondary)', fontFamily: 'var(--menu-font)' }}>
             {/* Floating Back Button */}
             <button
                 onClick={() => navigate(`/r/${slug}/menu`)}
-                className="absolute top-4 left-4 z-50 bg-white/80 backdrop-blur-md shadow-lg px-4 py-2 rounded-full flex items-center gap-2 text-sm font-bold text-slate-600 hover:text-amber-600 transition-all active:scale-95 border border-slate-100"
+                className="absolute top-4 left-4 z-50 backdrop-blur-md shadow-lg px-4 py-2 rounded-full flex items-center gap-2 text-sm font-bold transition-all active:scale-95 border"
+                style={{ background: 'var(--menu-bg)', color: 'var(--menu-secondary)', borderColor: 'var(--menu-accent)' }}
             >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -1025,10 +1031,12 @@ export default function ARViewer() {
                         {/* Hide All / Show Toggle */}
                         <button
                             onClick={() => setDisplayMode(displayMode === 'hidden' ? 'nutrition' : 'hidden')}
-                            className={`backdrop-blur-md px-3 py-2 rounded-full shadow-lg border text-xs font-bold active:scale-95 transition-all flex items-center justify-center ${displayMode === 'hidden'
-                                ? 'bg-amber-100/90 border-amber-200 text-amber-700'
-                                : 'bg-white/80 border-slate-100 text-slate-600 hover:text-amber-600'
-                                }`}
+                            className={`backdrop-blur-md px-3 py-2 rounded-full shadow-lg border text-xs font-bold active:scale-95 transition-all flex items-center justify-center`}
+                            style={{
+                                background: displayMode === 'hidden' ? 'var(--menu-primary)' : 'var(--menu-bg)',
+                                color: displayMode === 'hidden' ? 'var(--menu-primary-text)' : 'var(--menu-secondary)',
+                                borderColor: 'var(--menu-accent)'
+                            }}
                         >
                             {displayMode === 'hidden' ? '👁️ Show' : '👁️ Hide'}
                         </button>
@@ -1037,7 +1045,8 @@ export default function ARViewer() {
                         {displayMode !== 'hidden' && (
                             <button
                                 onClick={() => setDisplayMode(displayMode === 'nutrition' ? 'ingredients' : 'nutrition')}
-                                className="bg-white/80 backdrop-blur-md px-4 py-2 rounded-full shadow-lg border border-slate-100 text-xs font-bold text-slate-600 active:scale-95 transition-all flex items-center gap-1.5 hover:text-amber-600"
+                                className="backdrop-blur-md px-4 py-2 rounded-full shadow-lg border text-xs font-bold active:scale-95 transition-all flex items-center gap-1.5"
+                                style={{ background: 'var(--menu-bg)', color: 'var(--menu-secondary)', borderColor: 'var(--menu-accent)' }}
                             >
                                 {displayMode === 'nutrition' ? '🥗 Ingredients' : '📊 Nutrition'}
                             </button>
@@ -1070,7 +1079,8 @@ export default function ARViewer() {
                     {/* Native AR Button - Positioned Customly */}
                     <button
                         slot="ar-button"
-                        className="absolute bottom-6 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-amber-500 to-orange-600 text-white px-6 py-2.5 md:px-8 md:py-3 rounded-full font-bold shadow-2xl flex items-center gap-2 z-50 animate-bounce-slight hover:from-amber-600 hover:to-orange-700 transition-all border border-amber-500/30"
+                        className="absolute bottom-6 left-1/2 transform -translate-x-1/2 px-6 py-2.5 md:px-8 md:py-3 rounded-full font-bold shadow-2xl flex items-center gap-2 z-50 animate-bounce-slight transition-all border"
+                        style={{ background: 'var(--menu-primary)', color: 'var(--menu-primary-text)', borderColor: 'var(--menu-accent)' }}
                     >
                         <span className="text-lg md:text-xl">✨</span>
                         <span className="text-sm md:text-base">View in AR</span>
@@ -1089,12 +1099,12 @@ export default function ARViewer() {
                                 slot={`hotspot-ingredient-${index}`}
                                 data-position={ingredientPositions[index]}
                                 data-normal="0m 1m 0m"
-                                className="bg-white rounded-full w-12 h-12 md:w-16 md:h-16 flex items-center justify-center shadow-xl border-2 border-slate-100 pointer-events-none transform -translate-x-1/2 -translate-y-1/2"
-                                style={{ border: 'none' }}
+                                className="rounded-full w-12 h-12 md:w-16 md:h-16 flex items-center justify-center shadow-xl pointer-events-none transform -translate-x-1/2 -translate-y-1/2 border"
+                                style={{ background: 'var(--menu-bg)', borderColor: 'var(--menu-accent)' }}
                             >
                                 <div className="text-center leading-none flex flex-col items-center justify-center">
                                     <div className="text-base md:text-xl mb-0.5">{getIngredientIcon(ingredient)}</div>
-                                    <div className="text-[7px] md:text-[9px] font-bold text-slate-800 uppercase tracking-tight max-w-[40px] md:max-w-[55px] truncate">{ingredient}</div>
+                                    <div className="text-[7px] md:text-[9px] font-bold uppercase tracking-tight max-w-[40px] md:max-w-[55px] truncate" style={{ color: 'var(--menu-secondary)' }}>{ingredient}</div>
                                 </div>
                             </button>
                         ))
@@ -1107,15 +1117,16 @@ export default function ARViewer() {
                             slot={`hotspot-${nutrient.key}`}
                             data-position={nutrientPositions[index]}
                             data-normal="0m 1m 0m"
-                            className="hotspot-card" // Keeping class but overriding style via inline if needed or relying on parent
+                            className="hotspot-card"
                             style={{ border: 'none' }}
                         >
-                            <div className="bg-white rounded-full w-12 h-12 md:w-16 md:h-16 flex flex-col items-center justify-center shadow-xl border-2 border-slate-100">
+                            <div className="rounded-full w-12 h-12 md:w-16 md:h-16 flex flex-col items-center justify-center shadow-xl border"
+                                style={{ background: 'var(--menu-bg)', borderColor: 'var(--menu-accent)' }}>
                                 <div className="text-base md:text-xl mb-0.5">{nutrient.icon}</div>
-                                <div className="text-[10px] md:text-xs font-bold text-slate-900 leading-none">
+                                <div className="text-[10px] md:text-xs font-bold leading-none" style={{ color: 'var(--menu-secondary)' }}>
                                     {nutrient.value}{nutrient.unit || ''}
                                 </div>
-                                <div className="text-[6px] md:text-[8px] text-slate-600 uppercase font-bold leading-none">{nutrient.label}</div>
+                                <div className="text-[6px] md:text-[8px] uppercase font-bold leading-none" style={{ color: 'var(--menu-secondary)', opacity: 0.7 }}>{nutrient.label}</div>
                             </div>
                         </button>
                     ))}
@@ -1125,45 +1136,46 @@ export default function ARViewer() {
             </div>
 
             {/* Bottom Info Sheet - Light Theme */}
-            <div className="bg-white/95 backdrop-blur-xl rounded-t-[2.5rem] md:rounded-[2.5rem] shadow-2xl border-t md:border border-slate-100 z-40 shrink-0 relative md:max-w-4xl md:mx-auto md:mb-8 md:w-[calc(100%-4rem)]">
-                {/* <div className="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mt-4 mb-2"></div> */}
+            <div className="rounded-t-[2.5rem] md:rounded-[2.5rem] shadow-2xl border-t md:border z-40 shrink-0 relative md:max-w-4xl md:mx-auto md:mb-8 md:w-[calc(100%-4rem)]"
+                style={{ background: 'var(--menu-bg)', borderColor: 'var(--menu-accent)' }}>
                 <div className="px-6 pb-6 pt-6">
                     <div className="flex justify-between items-start mb-5">
                         <div>
-                            <span className="inline-block text-[10px] font-bold tracking-widest text-amber-600 uppercase bg-slate-50 px-2.5 py-1 rounded-lg mb-2 border border-slate-100">
+                            <span className="inline-block text-[10px] font-bold tracking-widest uppercase px-2.5 py-1 rounded-lg mb-2 border"
+                                style={{ background: 'var(--menu-accent)', color: 'var(--menu-secondary)', borderColor: 'var(--menu-accent)' }}>
                                 {dish.category}
                             </span>
-                            <h1 className="text-2xl font-black text-slate-900 leading-tight">
+                            <h1 className="text-2xl font-black leading-tight" style={{ color: 'var(--menu-secondary)' }}>
                                 {dish.name}
                             </h1>
                         </div>
                         <div className="text-right">
-                            <span className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-500 to-orange-600">₹{dish.price}</span>
+                            <span className="text-2xl font-black" style={{ color: 'var(--menu-primary)' }}>₹{dish.price}</span>
                         </div>
                     </div>
 
                     <div className="grid grid-cols-2 gap-4 mb-6">
-                        <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100 shadow-sm">
-                            <h3 className="text-xs font-bold text-slate-800 mb-2 flex items-center gap-2">
-                                <svg className="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div className="rounded-2xl p-4 border shadow-sm" style={{ background: 'var(--menu-accent)', borderColor: 'var(--menu-accent)', opacity: 0.8 }}>
+                            <h3 className="text-xs font-bold mb-2 flex items-center gap-2" style={{ color: 'var(--menu-secondary)' }}>
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--menu-primary)' }}>
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
                                 Instructions
                             </h3>
-                            <ul className="text-[10px] text-slate-600 space-y-1.5 font-semibold leading-tight">
+                            <ul className="text-[10px] space-y-1.5 font-semibold leading-tight" style={{ color: 'var(--menu-secondary)' }}>
                                 <li className="flex gap-2"><span>1.</span><span>Click "View in AR"</span></li>
                                 <li className="flex gap-2"><span>2.</span><span>Point camera at surface</span></li>
                                 <li className="flex gap-2"><span>3.</span><span>Tap to place dish</span></li>
                             </ul>
                         </div>
-                        <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100 shadow-sm">
-                            <h3 className="text-xs font-bold text-slate-800 mb-2 flex items-center gap-2">
-                                <svg className="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div className="rounded-2xl p-4 border shadow-sm" style={{ background: 'var(--menu-accent)', borderColor: 'var(--menu-accent)', opacity: 0.8 }}>
+                            <h3 className="text-xs font-bold mb-2 flex items-center gap-2" style={{ color: 'var(--menu-secondary)' }}>
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--menu-primary)' }}>
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                                 </svg>
                                 Pro Tips
                             </h3>
-                            <ul className="text-[10px] text-slate-600 space-y-1.5 font-semibold leading-tight">
+                            <ul className="text-[10px] space-y-1.5 font-semibold leading-tight" style={{ color: 'var(--menu-secondary)' }}>
                                 <li>• Pinch to resize / zoom</li>
                                 <li>• Drag to rotate dish</li>
                                 <li>• Bright lighting works best</li>

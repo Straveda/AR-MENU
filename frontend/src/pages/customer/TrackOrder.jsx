@@ -538,11 +538,13 @@ import axiosClient from "../../api/axiosClient";
 import { useSocket } from "../../context/SocketProvider";
 import { useTenant } from "../../context/TenantProvider";
 import { useNavigate } from "react-router-dom";
+import { useMenuTheme } from "../../hooks/useMenuTheme";
 
 export default function TrackOrderV2() {
     const { socket, connect, disconnect, joinRoom, leaveRoom } = useSocket();
     const { slug } = useTenant();
     const navigate = useNavigate();
+    useMenuTheme(slug);
 
     const [orderCode, setOrderCode] = useState("");
     const [orderData, setOrderData] = useState(null);
@@ -653,11 +655,11 @@ export default function TrackOrderV2() {
     };
 
     return (
-        <div className="min-h-screen bg-white">
+        <div className="min-h-screen" style={{ background: 'var(--menu-bg)', color: 'var(--menu-secondary)', fontFamily: 'var(--menu-font)' }}>
             {/* Header */}
-            <div className="bg-white/80 backdrop-blur-md border-b border-slate-100 sticky top-0 z-30 shadow-sm">
+            <div className="backdrop-blur-md border-b sticky top-0 z-30 shadow-sm" style={{ background: 'var(--menu-bg)', borderColor: 'var(--menu-accent)', opacity: 0.98 }}>
                 <div className="max-w-7xl mx-auto px-4 py-8 md:py-10 flex flex-col items-center text-center">
-                    <h1 className="text-3xl md:text-5xl font-black text-slate-800 tracking-tight mb-3">
+                    <h1 className="text-3xl md:text-5xl font-black tracking-tight mb-3" style={{ color: 'var(--menu-secondary)' }}>
                         Track Your Order
                     </h1>
                     <p className="text-slate-500 font-medium max-w-lg mx-auto">
@@ -694,7 +696,8 @@ export default function TrackOrderV2() {
                         <button
                             type="submit"
                             disabled={loading || !orderCode.trim()}
-                            className="w-full bg-slate-900 hover:bg-slate-800 text-white font-black py-4.5 rounded-2xl shadow-xl shadow-slate-200 transition-all transform active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex justify-center items-center gap-3 border border-slate-700"
+                            className="w-full font-black py-4 rounded-2xl shadow-xl transition-all transform active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex justify-center items-center gap-3 border"
+                            style={{ background: 'var(--menu-primary)', color: 'var(--menu-primary-text)', borderColor: 'var(--menu-primary)' }}
                         >
                             {loading ? (
                                 <>

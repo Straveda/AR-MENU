@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { getIngredients, getStockMovements, createIngredient, updateIngredient, adjustStock } from "../../api/inventoryApi";
+import { getIngredients, getStockMovements, createIngredient, updateIngredient, adjustStock, getVendors } from "../../api/inventoryApi";
 import Loading from "../../components/common/Loading";
 import { useToast } from "../../components/common/Toast/ToastContext";
 import IngredientMasterTab from "../../components/admin/inventory/IngredientMasterTab";
@@ -18,6 +18,7 @@ export default function Inventory() {
     deadStockCount: 0,
     topConsumed: 'N/A'
   });
+  const [vendors, setVendors] = useState([]);
 
   // Simplified fetch without pagination for now as per previous logic, or restore pagination if needed.
   // The separated components might handle pagination internally or we pass props.
@@ -27,14 +28,16 @@ export default function Inventory() {
     if (!silent) setLoading(true);
     try {
       // Parallel fetch for overview
-      const [ingRes, movRes] = await Promise.all([
+      const [ingRes, movRes, venRes] = await Promise.all([
         getIngredients({ limit: 100 }), // Fetching more for master list
-        getStockMovements({ limit: 20 })
+        getStockMovements({ limit: 20 }),
+        getVendors()
       ]);
 
       setIngredients(ingRes.data.data.ingredients);
       setSummary(ingRes.data.data.summary);
       setMovements(movRes.data.data.movements);
+      setVendors(venRes.data.data);
 
     } catch (error) {
       showError("Failed to load inventory data");
@@ -157,6 +160,7 @@ export default function Inventory() {
             onAdd={handleAddIngredient}
             onUpdate={handleUpdateIngredient}
             onAdjust={handleStockAdjustmentWrapper}
+            vendors={vendors}
           />
         )}
         {activeTab === "recipes" && (
