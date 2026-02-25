@@ -42,6 +42,7 @@ import POSBilling from '../pages/admin/POSBilling.jsx';
 import Settings from '../pages/admin/Settings.jsx';
 import Reports from '../pages/admin/Reports.jsx';
 import SmartUpsell from '../pages/admin/SmartUpsell.jsx';
+import Appearance from '../pages/admin/Appearance.jsx';
 import NotFound from '../pages/NotFound.jsx';
 
 const AppRouter = () => {
@@ -90,6 +91,7 @@ const AppRouter = () => {
                                                     <Route path="/admin/reports" element={<Reports />} />
                                                     <Route path="/admin/smart-upsell" element={<SmartUpsell />} />
                                                     <Route path="/admin/settings" element={<Settings />} />
+                                                    <Route path="/admin/appearance" element={<Appearance />} />
                                                 </Route>
                                             </Route>
                                         </Route>

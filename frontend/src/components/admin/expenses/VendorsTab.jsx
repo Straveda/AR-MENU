@@ -22,13 +22,12 @@ export default function VendorsTab() {
     status: "ACTIVE"
   });
 
-  const restaurantSlug = user?.restaurantId?.slug;
+  // const restaurantSlug = user?.restaurantId?.slug; (No longer needed)
 
   const fetchVendors = async () => {
-    if (!restaurantSlug) return;
     try {
       setLoading(true);
-      const res = await getVendors(restaurantSlug);
+      const res = await getVendors();
       setVendors(res.data.data || []);
     } catch (error) {
       showError("Failed to fetch vendors");
@@ -39,7 +38,7 @@ export default function VendorsTab() {
 
   useEffect(() => {
     fetchVendors();
-  }, [restaurantSlug]);
+  }, []);
 
   const handleOpenModal = (vendor = null) => {
     if (vendor) {
@@ -73,10 +72,10 @@ export default function VendorsTab() {
     e.preventDefault();
     try {
       if (editingVendor) {
-        await updateVendor(restaurantSlug, editingVendor._id, formData);
+        await updateVendor(editingVendor._id, formData);
         showSuccess("Vendor updated successfully");
       } else {
-        await createVendor(restaurantSlug, formData);
+        await createVendor(formData);
         showSuccess("Vendor created successfully");
       }
       fetchVendors();

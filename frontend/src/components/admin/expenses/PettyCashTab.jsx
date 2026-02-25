@@ -39,19 +39,18 @@ export default function PettyCashTab() {
     expenseType: "" // Description
   });
 
-  const restaurantSlug = user?.restaurantId?.slug;
+  // const restaurantSlug = user?.restaurantId?.slug; (No longer needed)
 
   const fetchData = async () => {
-    if (!restaurantSlug) return;
     try {
       setLoading(true);
       const [expRes, venRes] = await Promise.all([
-        getExpenses(restaurantSlug, {
+        getExpenses({
           paymentMode: "CASH", // Only cash transactions
           page: pagination.page,
           limit: pagination.limit
         }),
-        getVendors(restaurantSlug)
+        getVendors()
       ]);
 
       setExpenses(expRes.data.data.expenses || []);
@@ -73,7 +72,7 @@ export default function PettyCashTab() {
 
   useEffect(() => {
     fetchData();
-  }, [restaurantSlug, pagination.page, pagination.limit]);
+  }, [pagination.page, pagination.limit]);
 
   const handleOpenModal = (mode) => {
     setModalMode(mode);
@@ -102,7 +101,7 @@ export default function PettyCashTab() {
         expenseType: formData.expenseType || (modalMode === "ADD_CASH" ? "Cash Addition" : "Petty Cash Expense")
       };
 
-      await createExpense(restaurantSlug, payload);
+      await createExpense(payload);
       showSuccess(modalMode === "ADD_CASH" ? "Cash added successfully" : "Expense recorded successfully");
       setShowModal(false);
       fetchData();

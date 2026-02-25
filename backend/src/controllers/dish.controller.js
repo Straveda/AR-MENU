@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import { Dish } from '../models/dish.models.js';
 import { Order } from '../models/order.models.js';
+import { Plan } from '../models/plan.models.js';
 import { storageService } from '../services/storage/StorageService.js';
 import { subscriptionService } from '../services/subscriptionService.js';
 import { createImageTo3DTask, getTaskStatus } from '../services/meshyService.js';

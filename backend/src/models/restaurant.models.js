@@ -98,6 +98,24 @@ const restaurantSchema = new mongoose.Schema(
         default: false,
       },
     },
+
+    menuTheme: {
+      preset: {
+        type: String,
+        enum: ['holoplate-classic', 'dark-luxury', 'modern-cafe', 'fast-food', 'minimal'],
+        default: 'holoplate-classic',
+      },
+      colors: {
+        primary: { type: String, default: '#f59e0b' },
+        secondary: { type: String, default: '#1e293b' },
+        accent: { type: String, default: '#d97706' },
+        background: { type: String, default: '#ffffff' },
+      },
+      typography: {
+        fontFamily: { type: String, default: 'Inter' },
+        fontSize: { type: String, enum: ['small', 'medium', 'large'], default: 'medium' },
+      },
+    },
   },
   { timestamps: true },
 );

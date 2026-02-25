@@ -40,15 +40,14 @@ export default function ExpensesTab() {
     expenseDate: new Date().toISOString().split('T')[0]
   });
 
-  const restaurantSlug = user?.restaurantId?.slug;
+  // const restaurantSlug = user?.restaurantId?.slug; (No longer needed)
 
   const fetchData = async () => {
-    if (!restaurantSlug) return;
     try {
       setLoading(true);
       const [expRes, venRes] = await Promise.all([
-        getExpenses(restaurantSlug, { ...filters, page: pagination.page, limit: pagination.limit }),
-        getVendors(restaurantSlug)
+        getExpenses({ ...filters, page: pagination.page, limit: pagination.limit }),
+        getVendors()
       ]);
 
       setExpenses(expRes.data.data.expenses || []);
@@ -68,12 +67,12 @@ export default function ExpensesTab() {
 
   useEffect(() => {
     fetchData();
-  }, [restaurantSlug, pagination.page, pagination.limit, filters]);
+  }, [pagination.page, pagination.limit, filters]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await createExpense(restaurantSlug, formData);
+      await createExpense(formData);
       showSuccess("Expense recorded successfully");
       setShowModal(false);
       setFormData({

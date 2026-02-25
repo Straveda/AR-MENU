@@ -2,7 +2,7 @@ import { useState } from "react";
 import EmptyState from "../../common/EmptyState";
 import Modal from "../../common/Modal";
 
-export default function IngredientMasterTab({ ingredients, onAdd, onUpdate, onAdjust, loading }) {
+export default function IngredientMasterTab({ ingredients, onAdd, onUpdate, onAdjust, loading, vendors }) {
     const [showAddModal, setShowAddModal] = useState(false);
     const [showAdjustModal, setShowAdjustModal] = useState(false);
     const [selectedIngredient, setSelectedIngredient] = useState(null);
@@ -48,6 +48,7 @@ export default function IngredientMasterTab({ ingredients, onAdd, onUpdate, onAd
                                 if (success) handleCloseModal();
                             }}
                             onCancel={handleCloseModal}
+                            vendors={vendors}
                         />
                     </Modal>
                 )}
@@ -146,6 +147,7 @@ export default function IngredientMasterTab({ ingredients, onAdd, onUpdate, onAd
                             if (success) handleCloseModal();
                         }}
                         onCancel={handleCloseModal}
+                        vendors={vendors}
                     />
                 </Modal>
             )}
@@ -170,7 +172,7 @@ export default function IngredientMasterTab({ ingredients, onAdd, onUpdate, onAd
     );
 }
 
-function IngredientForm({ initialData, onSubmit, onCancel }) {
+function IngredientForm({ initialData, onSubmit, onCancel, vendors = [] }) {
     const [formData, setFormData] = useState(initialData || {
         name: "",
         category: "General",
@@ -265,13 +267,18 @@ function IngredientForm({ initialData, onSubmit, onCancel }) {
                 )}
                 <div className={initialData ? "col-span-2" : ""}>
                     <label className="block text-xs font-semibold text-slate-500 mb-1 ml-1">Supplier / Vendor</label>
-                    <input
-                        type="text"
-                        className="input-standard w-full"
+                    <select
+                        className="input-standard w-full appearance-none bg-white"
                         value={formData.supplier}
                         onChange={(e) => setFormData({ ...formData, supplier: e.target.value })}
-                        placeholder="e.g. Fresh Farms"
-                    />
+                    >
+                        <option value="">Select Vendor</option>
+                        {vendors.map(vendor => (
+                            <option key={vendor._id} value={vendor.name}>
+                                {vendor.name}
+                            </option>
+                        ))}
+                    </select>
                 </div>
             </div>
 

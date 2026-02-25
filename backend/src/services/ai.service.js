@@ -359,8 +359,76 @@ const createUpsellPrompt = (mainDish, secondaryDish, ruleType) => {
 };
 
 /**
- * Fallback message if AI generation fails
+ * Generate a custom menu theme from a restaurant vibe description
+ * @param {string} vibeDescription - User's description of restaurant atmosphere
+ * @returns {Promise<Object>} - A theme object with colors and typography
  */
-const getDefaultMessage = (dishName) => {
-    return `Try adding ${dishName} to your order!`;
+export const generateTheme = async (vibeDescription) => {
+    if (!model) {
+        throw new Error('AI model not initialized. Check GEMINI_API_KEY.');
+    }
+
+    const prompt = `
+You are a professional restaurant branding and UI design expert.
+A restaurant owner described their vibe as: "${vibeDescription}"
+
+Create a beautiful, cohesive menu theme for them. Return ONLY a valid JSON object — no explanations, no markdown code fences, no extra text.
+
+The JSON must exactly follow this structure:
+{
+  "colors": {
+    "primary": "<main brand color as hex, used for buttons and highlights>",
+    "secondary": "<text color as hex — use #ffffff for dark backgrounds, #1e293b for light backgrounds>",
+    "accent": "<subtle supporting color as hex, used for card borders and subtle highlights>",
+    "background": "<page background color as hex>"
+  },
+  "typography": {
+    "fontFamily": "<one of exactly: Inter, Playfair Display, Poppins, Montserrat, Open Sans, Lato, Nunito, Raleway>",
+    "fontSize": "<one of exactly: small, medium, large>"
+  }
+}
+
+Design guidance:
+- "primary" should be visually striking and match the vibe described.
+- "background" and "secondary" (text) must have strong contrast (WCAG AA).
+- "accent" should be subtle — a lighter/muted version of primary or background.
+- Choose typography that matches the atmosphere (e.g., Playfair Display for luxury, Poppins for modern).
+- Use "large" fontSize for high-end vibes and "small" for minimal/technical ones.
+
+Return ONLY the JSON. No comments. No explanation. No markdown.
+`;
+
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    let raw = response.text().trim();
+
+    // Strip markdown code fences if present
+    raw = raw.replace(/^```[a-z]*\n?/i, '').replace(/```$/i, '').trim();
+
+    let theme;
+    try {
+        theme = JSON.parse(raw);
+    } catch (parseError) {
+        console.error('[AI Theme] Failed to parse Gemini response:', raw);
+        throw new Error('AI returned an invalid theme. Please try a different description.');
+    }
+
+    // Basic validation
+    if (!theme.colors || !theme.typography) {
+        throw new Error('AI returned an incomplete theme. Please try a different description.');
+    }
+
+    // Ensure fontFamily is valid
+    const validFonts = ['Inter', 'Playfair Display', 'Poppins', 'Montserrat', 'Open Sans', 'Lato', 'Nunito', 'Raleway'];
+    if (!validFonts.includes(theme.typography.fontFamily)) {
+        theme.typography.fontFamily = 'Inter';
+    }
+
+    // Ensure fontSize is valid
+    const validSizes = ['small', 'medium', 'large'];
+    if (!validSizes.includes(theme.typography.fontSize)) {
+        theme.typography.fontSize = 'medium';
+    }
+
+    return theme;
 };

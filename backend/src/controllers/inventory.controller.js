@@ -6,7 +6,7 @@ import { ApiError } from '../utils/ApiError.js';
 import mongoose from 'mongoose';
 
 export const createIngredient = asyncHandler(async (req, res) => {
-  const { name, unit, minStockLevel, costPerUnit, supplier } = req.body;
+  const { name, unit, minStockLevel, costPerUnit, supplier, currentStock, category } = req.body;
   const restaurantId = req.restaurant?._id;
 
   if (!name || !unit) {
@@ -21,12 +21,25 @@ export const createIngredient = asyncHandler(async (req, res) => {
   const ingredient = await Ingredient.create({
     name,
     unit,
+    category: category || 'General',
     minStockLevel: minStockLevel || 0,
     costPerUnit: costPerUnit || 0,
     supplier,
     restaurantId,
-    currentStock: 0,
+    currentStock: currentStock || 0,
   });
+
+  // Track initial stock in movements
+  if (currentStock > 0) {
+    await StockMovement.create({
+      ingredientId: ingredient._id,
+      action: 'ADD',
+      quantity: Number(currentStock),
+      reason: 'PURCHASE',
+      performedBy: req.user?._id,
+      restaurantId,
+    });
+  }
 
   return res.status(201).json(new ApiResponse(201, ingredient, 'Ingredient created successfully'));
 });
@@ -100,11 +113,11 @@ export const getIngredients = asyncHandler(async (req, res) => {
 export const updateIngredient = asyncHandler(async (req, res) => {
   const { id } = req.params;
   const restaurantId = req.restaurant?._id;
-  const { name, unit, minStockLevel, costPerUnit, supplier } = req.body;
+  const { name, unit, minStockLevel, costPerUnit, supplier, category } = req.body;
 
   const ingredient = await Ingredient.findOneAndUpdate(
     { _id: id, restaurantId },
-    { name, unit, minStockLevel, costPerUnit, supplier },
+    { name, unit, minStockLevel, costPerUnit, supplier, category },
     { new: true, runValidators: true },
   );
 
