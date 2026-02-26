@@ -333,13 +333,7 @@ export default function Appearance() {
         <div className="min-h-screen bg-slate-50">
             {/* ── Page Header ── */}
             <div className="mb-5">
-                <nav className="flex items-center gap-1.5 text-xs text-slate-400 mb-3">
-                    <span>Admin</span>
-                    <span>›</span>
-                    <span>Appearance</span>
-                    <span>›</span>
-                    <span className="text-slate-700 font-medium">Menu Theme</span>
-                </nav>
+
 
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div>

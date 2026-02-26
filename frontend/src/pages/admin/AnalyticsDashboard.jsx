@@ -55,24 +55,47 @@ export default function AnalyticsDashboard() {
   const { sales, operations, inventory, expenses, menu, plan } = data;
 
   // Real Chart Logic
-  const trendLabels = sales.revenueTrend?.map(item => {
-    const date = new Date(item._id);
-    return date.toLocaleDateString('en-US', { weekday: 'short' });
-  }) || [];
+  // Current Week (Monday - Sunday) Chart Logic
+  const weekDays = Array.from({ length: 7 }, (_, i) => {
+    const today = new Date();
+    const day = today.getDay();
+    const diff = (day === 0) ? 6 : day - 1;
+    const monday = new Date(today);
+    monday.setDate(today.getDate() - diff);
+    monday.setHours(0, 0, 0, 0);
 
-  const trendData = sales.revenueTrend?.map(item => item.revenue) || [];
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    return d;
+  });
+
+  const trendLabels = weekDays.map(date =>
+    date.toLocaleDateString('en-US', { weekday: 'short' })
+  );
+
+  const trendData = weekDays.map(date => {
+    const dateStr = date.toISOString().split('T')[0];
+    const dayData = sales.revenueTrend?.find(item => item._id === dateStr);
+    return dayData ? dayData.revenue : 0;
+  });
+
   const totalWeeklyRevenue = trendData.reduce((a, b) => a + b, 0);
 
   const chartData = {
-    labels: trendLabels.length > 0 ? trendLabels : ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+    labels: trendLabels,
     datasets: [{
       label: 'Weekly Revenue',
-      data: trendData.length > 0 ? trendData : [0, 0, 0, 0, 0, 0, 0],
+      data: trendData,
       borderColor: '#06b6d4',
       backgroundColor: 'rgba(6, 182, 212, 0.1)',
       fill: true,
       tension: 0.4,
-      pointRadius: 0
+      pointRadius: 4,
+      pointHoverRadius: 6,
+      pointHitRadius: 10,
+      pointBackgroundColor: '#06b6d4',
+      pointBorderColor: '#fff',
+      pointBorderWidth: 2
     }]
   };
 
@@ -109,28 +132,28 @@ export default function AnalyticsDashboard() {
           title="Today's Orders"
           value={sales.ordersToday}
           trend={`${sales.ordersToday > 0 ? 'Orders received today' : 'No orders yet'}`}
-          icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" /></svg>}
+          icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" /></svg>}
           accent="indigo"
         />
         <StatCard
           title="Today's Revenue"
           value={`₹${sales.revenueToday.toLocaleString()}`}
           trend={`${sales.revenueToday > 0 ? 'Earnings for today' : 'Waiting for sales'}`}
-          icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>}
+          icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>}
           accent="emerald"
         />
         <StatCard
           title="Active Tables"
           value={operations.activeTablesCount}
           trend="Tables with open orders"
-          icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>}
+          icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>}
           accent="blue"
         />
         <StatCard
           title="Avg. Order Value"
           value={`₹${sales.avgOrderValue}`}
           trend="Overall average"
-          icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>}
+          icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>}
           accent="purple"
         />
       </div>
@@ -208,20 +231,20 @@ export default function AnalyticsDashboard() {
 
 function StatCard({ title, value, trend, icon, accent }) {
   const bgs = {
-    indigo: "bg-indigo-50 text-indigo-600",
-    emerald: "bg-emerald-50 text-emerald-600",
-    blue: "bg-blue-50 text-blue-600",
-    purple: "bg-purple-50 text-purple-600",
+    indigo: "bg-indigo-100 text-indigo-600",
+    emerald: "bg-emerald-100 text-emerald-600",
+    blue: "bg-blue-100 text-blue-600",
+    purple: "bg-purple-100 text-purple-600",
   };
 
   return (
-    <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm hover:border-slate-300 transition-all group">
+    <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm hover:border-slate-300 transition-all group">
       <div className="flex items-start justify-between mb-4">
-        <div>
+        <div className="flex-1">
           <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{title}</p>
           <h3 className="text-2xl font-black text-slate-900 tracking-tight">{value}</h3>
         </div>
-        <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${bgs[accent]}`}>
+        <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${bgs[accent]}`}>
           {icon}
         </div>
       </div>

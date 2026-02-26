@@ -1582,7 +1582,7 @@ export default function DishDetails() {
   const uniqueTags = getUniqueTags();
 
   return (
-    <div style={{ background: 'var(--menu-bg)', color: 'var(--menu-secondary)', fontFamily: 'var(--menu-font)', minHeight: '100vh' }}>
+    <div style={{ background: 'var(--menu-bg)', color: 'var(--menu-secondary)', fontFamily: 'var(--menu-font)', minHeight: '100dvh' }}>
       {suspended && (
         <div className="bg-red-600 text-white px-4 py-3 text-center shadow-lg sticky top-0 z-50 border-b border-red-400/20">
           <p className="font-bold flex items-center justify-center gap-2">
@@ -1609,7 +1609,7 @@ export default function DishDetails() {
       </div>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto p-4 md:p-10 lg:p-12 pb-0">
+      <div className="max-w-7xl mx-auto p-3 md:p-8 lg:p-10 pb-0">
         <div className="flex flex-col lg:flex-row gap-10 xl:gap-20">
 
           {/* Left Column - Image and AR */}
@@ -1687,12 +1687,12 @@ export default function DishDetails() {
                 ))}
               </div>
 
-              <h1 className="text-3xl md:text-4xl font-black mb-4" style={{ color: 'var(--menu-secondary)' }}>
+              <h1 className="text-xl md:text-3xl font-black mb-3" style={{ color: 'var(--menu-secondary)' }}>
                 {dish.name}
               </h1>
 
               <div className="flex items-baseline gap-4 py-4 border-b" style={{ borderColor: 'var(--menu-accent)' }}>
-                <span className="text-3xl md:text-4xl font-black" style={{ color: 'var(--menu-primary)' }}>₹{dish.price}</span>
+                <span className="text-xl md:text-3xl font-black" style={{ color: 'var(--menu-primary)' }}>₹{dish.price}</span>
                 {dish.portionSize && (
                   <span className="text-sm font-bold" style={{ color: 'var(--menu-secondary)', opacity: 0.5 }}>/ {dish.portionSize}</span>
                 )}
@@ -1720,7 +1720,7 @@ export default function DishDetails() {
                 <button
                   onClick={handleAddToOrder}
                   disabled={suspended || !dish.available}
-                  className={`w-full text-lg font-black py-4 px-8 rounded-xl shadow-lg transition-all transform flex items-center justify-center gap-3 ${suspended || !dish.available ? 'opacity-40 cursor-not-allowed' : 'hover:-translate-y-1'}`}
+                  className={`w-full text-sm font-black py-3 px-5 rounded-xl shadow-lg transition-all transform flex items-center justify-center gap-3 ${suspended || !dish.available ? 'opacity-40 cursor-not-allowed' : 'hover:-translate-y-1'}`}
                   style={suspended || !dish.available ? { background: 'var(--menu-accent)', color: 'var(--menu-secondary)' } : { background: 'var(--menu-primary)', color: 'var(--menu-primary-text)' }}
                 >
                   <span>{suspended ? 'Ordering Unavailable' : 'Add to Order'}</span>
@@ -1851,19 +1851,19 @@ export default function DishDetails() {
                 <h3 className="text-lg font-black mb-4" style={{ color: 'var(--menu-secondary)' }}>Nutritional Facts</h3>
                 <div className="grid grid-cols-4 gap-2 text-center divide-x" style={{ borderColor: 'var(--menu-accent)' }}>
                   <div>
-                    <div className="text-2xl font-black" style={{ color: 'var(--menu-primary)' }}>{dish.nutritionalInfo.calories || 0}</div>
+                    <div className="text-lg font-black" style={{ color: 'var(--menu-primary)' }}>{dish.nutritionalInfo.calories || 0}</div>
                     <div className="text-[10px] font-black uppercase tracking-wider" style={{ color: 'var(--menu-secondary)', opacity: 0.5 }}>Cals</div>
                   </div>
                   <div>
-                    <div className="text-2xl font-black" style={{ color: 'var(--menu-secondary)' }}>{dish.nutritionalInfo.protein || 0}g</div>
+                    <div className="text-lg font-black" style={{ color: 'var(--menu-secondary)' }}>{dish.nutritionalInfo.protein || 0}g</div>
                     <div className="text-[10px] font-black uppercase tracking-wider" style={{ color: 'var(--menu-secondary)', opacity: 0.5 }}>Protein</div>
                   </div>
                   <div>
-                    <div className="text-2xl font-black" style={{ color: 'var(--menu-secondary)' }}>{dish.nutritionalInfo.carbs || 0}g</div>
+                    <div className="text-lg font-black" style={{ color: 'var(--menu-secondary)' }}>{dish.nutritionalInfo.carbs || 0}g</div>
                     <div className="text-[10px] font-black uppercase tracking-wider" style={{ color: 'var(--menu-secondary)', opacity: 0.5 }}>Carbs</div>
                   </div>
                   <div>
-                    <div className="text-2xl font-black" style={{ color: 'var(--menu-secondary)' }}>{dish.nutritionalInfo.sugar || 0}g</div>
+                    <div className="text-lg font-black" style={{ color: 'var(--menu-secondary)' }}>{dish.nutritionalInfo.sugar || 0}g</div>
                     <div className="text-[10px] font-black uppercase tracking-wider" style={{ color: 'var(--menu-secondary)', opacity: 0.5 }}>Sugar</div>
                   </div>
                 </div>
@@ -1891,7 +1891,7 @@ export default function DishDetails() {
                 <button
                   onClick={handleAddToOrder}
                   disabled={suspended || !dish.available}
-                  className={`flex-1 text-lg font-black py-4 px-8 rounded-xl shadow-lg transition-all transform flex items-center justify-center gap-3 ${suspended || !dish.available ? 'opacity-40 cursor-not-allowed' : 'hover:-translate-y-1'}`}
+                  className={`flex-1 text-base font-black py-3 px-6 rounded-xl shadow-lg transition-all transform flex items-center justify-center gap-3 ${suspended || !dish.available ? 'opacity-40 cursor-not-allowed' : 'hover:-translate-y-1'}`}
                   style={suspended || !dish.available ? { background: 'var(--menu-accent)', color: 'var(--menu-secondary)' } : { background: 'var(--menu-primary)', color: 'var(--menu-primary-text)' }}
                 >
                   <span>{suspended ? 'Ordering Unavailable' : 'Add to Order'}</span>

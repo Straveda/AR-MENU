@@ -14,8 +14,13 @@ export const getDashboardAnalytics = async (restaurantId) => {
   today.setHours(0, 0, 0, 0);
 
   const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-  const sevenDaysAgo = new Date(today);
-  sevenDaysAgo.setDate(today.getDate() - 6);
+
+  // Calculate Start of Current Week (Monday)
+  const day = today.getDay();
+  const diff = (day === 0) ? 6 : day - 1;
+  const startOfWeek = new Date(today);
+  startOfWeek.setDate(today.getDate() - diff);
+  startOfWeek.setHours(0, 0, 0, 0);
 
   // Sales Metrics
   const salesMetrics = await Order.aggregate([
@@ -64,7 +69,7 @@ export const getDashboardAnalytics = async (restaurantId) => {
     {
       $match: {
         restaurantId: rId,
-        createdAt: { $gte: sevenDaysAgo },
+        createdAt: { $gte: startOfWeek },
         orderStatus: { $ne: 'Cancelled' },
       },
     },
@@ -373,7 +378,7 @@ export const getDetailedAnalytics = async (restaurantId, timeRange = 'week') => 
     { $sort: { _id: 1 } },
   ]);
 
-  // Key Metrics
+  // Key Metrics for Current Period
   const totalOrders = await Order.countDocuments({
     restaurantId: rId,
     createdAt: { $gte: startDate },
@@ -385,7 +390,7 @@ export const getDetailedAnalytics = async (restaurantId, timeRange = 'week') => 
     orderStatus: 'Completed',
   });
 
-  const totalRevenue = await Order.aggregate([
+  const totalRevenueData = await Order.aggregate([
     {
       $match: {
         restaurantId: rId,
@@ -401,9 +406,66 @@ export const getDetailedAnalytics = async (restaurantId, timeRange = 'week') => 
     },
   ]);
 
-  const avgOrderValue = totalRevenue[0]?.total && completedOrders > 0
-    ? Math.round(totalRevenue[0].total / completedOrders)
+  const totalRevenue = totalRevenueData[0]?.total || 0;
+  const avgOrderValue = totalRevenue && completedOrders > 0
+    ? Math.round(totalRevenue / completedOrders)
     : 0;
+
+  // Calculate Previous Period for Comparison
+  const duration = now.getTime() - startDate.getTime();
+  const prevStartDate = new Date(startDate.getTime() - duration);
+  const prevEndDate = startDate;
+
+  const prevTotalOrders = await Order.countDocuments({
+    restaurantId: rId,
+    createdAt: { $gte: prevStartDate, $lt: prevEndDate },
+  });
+
+  const prevCompletedOrders = await Order.countDocuments({
+    restaurantId: rId,
+    createdAt: { $gte: prevStartDate, $lt: prevEndDate },
+    orderStatus: 'Completed',
+  });
+
+  const prevTotalRevenueData = await Order.aggregate([
+    {
+      $match: {
+        restaurantId: rId,
+        createdAt: { $gte: prevStartDate, $lt: prevEndDate },
+        orderStatus: { $ne: 'Cancelled' },
+      },
+    },
+    {
+      $group: {
+        _id: null,
+        total: { $sum: '$total' },
+      },
+    },
+  ]);
+
+  const prevTotalRevenue = prevTotalRevenueData[0]?.total || 0;
+  const prevAvgOrderValue = prevTotalRevenue && prevCompletedOrders > 0
+    ? Math.round(prevTotalRevenue / prevCompletedOrders)
+    : 0;
+
+  // Helper to calculate percentage growth
+  const getGrowth = (current, previous) => {
+    if (previous === 0) return current > 0 ? 100 : 0;
+    return (((current - previous) / previous) * 100).toFixed(1);
+  };
+
+  const metrics = {
+    totalRevenue,
+    totalOrders,
+    completedOrders,
+    avgOrderValue,
+    growth: {
+      revenue: getGrowth(totalRevenue, prevTotalRevenue),
+      orders: getGrowth(totalOrders, prevTotalOrders),
+      avgOrderValue: getGrowth(avgOrderValue, prevAvgOrderValue),
+      completedOrders: getGrowth(completedOrders, prevCompletedOrders),
+    }
+  };
 
   // Get inventory and expenses data (reuse from dashboard analytics)
   const inventoryMetrics = await Ingredient.aggregate([
@@ -442,12 +504,7 @@ export const getDetailedAnalytics = async (restaurantId, timeRange = 'week') => 
   return {
     timeRange,
     labels,
-    metrics: {
-      totalRevenue: totalRevenue[0]?.total || 0,
-      totalOrders,
-      completedOrders,
-      avgOrderValue,
-    },
+    metrics,
     revenueTrend,
     topItems,
     orderStatus: orderStatusDist,

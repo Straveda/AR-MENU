@@ -139,11 +139,31 @@ export default function Inventory() {
         {/* Actions or Breadcrumbs could go here */}
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <SummaryCard label="Stock Value" value={`₹${summary.totalStockValue.toLocaleString()}`} accent="blue" icon="💰" />
-        <SummaryCard label="Low Stock Alerts" value={summary.lowStockCount} accent="rose" icon="⚠️" />
-        <SummaryCard label="Top Consumed" value={summary.topConsumed || "N/A"} accent="emerald" icon="📉" />
-        <SummaryCard label="Dead Stock" value={summary.deadStockCount} accent="slate" icon="🧊" />
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <SummaryCard
+          label="Stock Value"
+          value={`₹${summary.totalStockValue.toLocaleString()}`}
+          accent="emerald"
+          icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>}
+        />
+        <SummaryCard
+          label="Low Stock Alerts"
+          value={summary.lowStockCount}
+          accent="rose"
+          icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>}
+        />
+        <SummaryCard
+          label="Top Consumed"
+          value={summary.topConsumed || "N/A"}
+          accent="blue"
+          icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>}
+        />
+        <SummaryCard
+          label="Dead Stock"
+          value={summary.deadStockCount}
+          accent="slate"
+          icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>}
+        />
       </div>
 
       <div className="bg-slate-100 p-1 rounded-xl inline-flex">
@@ -180,21 +200,22 @@ export default function Inventory() {
 
 function SummaryCard({ label, value, accent, icon }) {
   const bgs = {
-    blue: "bg-blue-50 text-blue-600",
-    rose: "bg-rose-50 text-rose-600",
-    emerald: "bg-amber-50 text-amber-600",
-    slate: "bg-slate-50 text-slate-600"
+    blue: "bg-blue-100 text-blue-600",
+    rose: "bg-rose-100 text-rose-600",
+    emerald: "bg-emerald-100 text-emerald-600",
+    amber: "bg-amber-100 text-amber-600",
+    slate: "bg-slate-100 text-slate-600"
   }
 
   return (
-    <div className="bg-white py-3 px-4 rounded-xl border border-slate-200 shadow-sm relative overflow-hidden group">
-      <div className="flex items-start gap-3 relative z-10">
-        <div className={`w-9 h-9 rounded-lg flex items-center justify-center text-lg ${bgs[accent]}`}>
-          {icon}
-        </div>
-        <div>
-          <p className="text-slate-500 text-[10px] font-black uppercase tracking-widest mb-0.5">{label}</p>
+    <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm group hover:border-slate-300 transition-all">
+      <div className="flex items-center justify-between">
+        <div className="flex-1">
+          <p className="text-slate-500 text-[10px] font-black uppercase tracking-widest mb-1">{label}</p>
           <h3 className="text-2xl font-black text-slate-900 tracking-tight">{value}</h3>
+        </div>
+        <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${bgs[accent]}`}>
+          {icon}
         </div>
       </div>
     </div>

@@ -1084,7 +1084,7 @@ export default function Menu() {
   }
 
   return (
-    <div className="min-h-screen" style={{ background: 'var(--menu-bg)', fontFamily: 'var(--menu-font)' }}>
+    <div className="min-h-screen min-h-dvh" style={{ background: 'var(--menu-bg)', fontFamily: 'var(--menu-font)' }}>
       <style>{`
         :root {
           --menu-font-size-base: var(--menu-font-size, 16px);
@@ -1203,7 +1203,7 @@ export default function Menu() {
                 placeholder="Search favorite dishes..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-11 pr-10 py-3 md:py-4 border rounded-full focus:outline-none focus:ring-4 shadow-inner transition-all text-sm md:text-base font-medium"
+                className="w-full pl-11 pr-10 py-2.5 md:py-3 border rounded-full focus:outline-none focus:ring-4 shadow-inner transition-all text-sm md:text-base font-medium"
                 style={{
                   background: 'transparent',
                   borderColor: 'var(--menu-secondary)',
@@ -1231,10 +1231,10 @@ export default function Menu() {
             {/* Filter Button */}
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className={`flex items-center gap-2 px-4 md:px-8 py-3 md:py-4 rounded-full font-bold text-sm transition-all shadow-md border whitespace-nowrap active:scale-95`}
+              className={`flex items-center gap-2 px-3 md:px-6 py-2.5 md:py-3 rounded-full font-bold text-sm transition-all shadow-sm border whitespace-nowrap active:scale-95`}
               style={{
-                background: (showFilters || activeCategory !== "all" || sortOption !== "recommended") ? 'var(--menu-primary)' : 'var(--menu-bg)',
-                color: (showFilters || activeCategory !== "all" || sortOption !== "recommended") ? 'white' : 'var(--menu-secondary)',
+                background: 'white',
+                color: (showFilters || activeCategory !== "all" || sortOption !== "recommended") ? 'var(--menu-primary)' : 'var(--menu-secondary)',
                 borderColor: (showFilters || activeCategory !== "all" || sortOption !== "recommended") ? 'var(--menu-primary)' : 'var(--menu-accent)'
               }}
             >
@@ -1243,7 +1243,7 @@ export default function Menu() {
               </svg>
               <span className="hidden sm:inline">Filters</span>
               {(activeCategory !== "all" || sortOption !== "recommended") && (
-                <span className="bg-white/20 text-xs px-2 py-0.5 rounded-full ring-1 ring-white/50">
+                <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'var(--menu-primary)', color: 'white' }}>
                   {(activeCategory !== "all" ? 1 : 0) + (sortOption !== "recommended" ? 1 : 0)}
                 </span>
               )}
@@ -1260,9 +1260,9 @@ export default function Menu() {
                   <select
                     value={sortOption}
                     onChange={(e) => setSortOption(e.target.value)}
-                    className="appearance-none w-full pl-5 pr-10 py-3 rounded-2xl font-bold cursor-pointer transition-all text-sm"
+                    className="appearance-none w-full pl-5 pr-10 py-3 rounded-2xl font-bold cursor-pointer transition-all text-sm border"
                     style={{
-                      background: 'var(--menu-accent)',
+                      background: 'white',
                       borderColor: 'var(--menu-accent)',
                       color: 'var(--menu-secondary)'
                     }}
@@ -1289,11 +1289,12 @@ export default function Menu() {
                     <button
                       key={category}
                       onClick={() => setActiveCategory(category)}
-                      className={`px-5 py-2.5 rounded-full whitespace-nowrap text-xs md:text-sm font-bold transition-all duration-300 border shadow-sm active:scale-95`}
+                      className={`px-3 py-2 rounded-full whitespace-nowrap text-xs font-bold transition-all duration-300 border shadow-sm active:scale-95`}
                       style={{
-                        background: activeCategory === category ? 'var(--menu-primary)' : 'var(--menu-accent)',
-                        color: activeCategory === category ? 'white' : 'var(--menu-secondary)',
-                        borderColor: activeCategory === category ? 'var(--menu-primary)' : 'var(--menu-accent)'
+                        background: activeCategory === category ? 'white' : 'white',
+                        color: activeCategory === category ? 'var(--menu-primary)' : 'var(--menu-secondary)',
+                        borderColor: activeCategory === category ? 'var(--menu-primary)' : 'var(--menu-accent)',
+                        fontWeight: activeCategory === category ? '900' : '700'
                       }}
                     >
                       {category === 'all' ? '✨ All' : normalizeCategory(category)}
@@ -1323,7 +1324,7 @@ export default function Menu() {
       </div>
 
       {/* Content Section */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-10 pb-4">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-3 md:py-8 pb-4">
         {loading ? (
           <Loading message="Preparing our signature menu for you..." />
         ) : filteredDishes.length === 0 ? (
@@ -1335,14 +1336,14 @@ export default function Menu() {
             onAction={() => { setSearchTerm(""); setActiveCategory("all"); }}
           />
         ) : (
-          <div className="space-y-12 md:space-y-16">
+          <div className="space-y-6 md:space-y-12">
             {Object.entries(dishesByCategory).map(([category, categoryDishes]) => (
               <div key={category} className="animate-fade-in">
                 {/* Category Header */}
-                <div className="flex items-center justify-between mb-6 md:mb-8 pb-4 border-b" style={{ borderColor: 'var(--menu-accent)' }}>
+                <div className="flex items-center justify-between mb-3 md:mb-6 pb-2 border-b" style={{ borderColor: 'var(--menu-accent)' }}>
                   <div className="flex items-center gap-3">
                     <div className="w-2 h-8 rounded-full" style={{ background: 'var(--menu-primary)' }}></div>
-                    <h3 className="text-2xl md:text-3xl font-black tracking-tight" style={{ color: 'var(--menu-secondary)' }}>
+                    <h3 className="text-lg md:text-2xl font-black tracking-tight" style={{ color: 'var(--menu-secondary)' }}>
                       {category}
                     </h3>
                   </div>
@@ -1353,7 +1354,7 @@ export default function Menu() {
                 </div>
 
                 {/* Dishes Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6 md:gap-8 lg:gap-10">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3 md:gap-6 lg:gap-8">
                   {categoryDishes.map((dish) => (
                     <div
                       key={dish._id}
@@ -1366,7 +1367,7 @@ export default function Menu() {
                       }}
                     >
                       {/* Image Section */}
-                      <div className="relative overflow-hidden bg-slate-50 h-52 md:h-56 shrink-0">
+                      <div className="relative overflow-hidden bg-slate-50 h-36 md:h-48 shrink-0">
                         <img
                           src={dish.imageUrl}
                           alt={dish.name}
@@ -1391,15 +1392,15 @@ export default function Menu() {
                       </div>
 
                       {/* Info Section */}
-                      <div className="p-5 md:p-6 flex flex-col flex-1">
-                        <div className="mb-4">
-                          <h4 className="text-lg font-black transition-colors leading-tight mb-2 min-h-[2.5rem] line-clamp-2"
+                      <div className="p-3 md:p-5 flex flex-col flex-1">
+                        <div className="mb-2">
+                          <h4 className="text-sm font-black transition-colors leading-tight mb-1 line-clamp-1"
                             style={{ color: 'var(--menu-secondary)' }}>
                             {dish.name}
                           </h4>
 
                           {/* Tags */}
-                          <div className="flex flex-wrap gap-1.5 min-h-[1.5rem]">
+                          <div className="flex flex-wrap gap-1 min-h-[1.2rem]">
                             {dish.tags?.slice(0, 3).map((tag, idx) => (
                               <span
                                 key={idx}
@@ -1412,14 +1413,14 @@ export default function Menu() {
                         </div>
 
                         {dish.description && (
-                          <p className="text-sm md:text-sm line-clamp-2 mb-6 font-medium leading-relaxed"
+                          <p className="text-xs line-clamp-1 mb-2 font-medium leading-relaxed"
                             style={{ color: 'var(--menu-secondary)', opacity: 0.7 }}>
                             {dish.description}
                           </p>
                         )}
 
                         {/* Interactions */}
-                        <div className="mt-auto pt-4 flex items-center gap-3">
+                        <div className="mt-auto pt-2 flex items-center gap-2">
                           {getItemQuantity(dish._id) > 0 ? (
                             <div
                               className="flex-1 flex items-center justify-between bg-slate-50 rounded-2xl p-1.5 border border-slate-100 shadow-inner"
@@ -1427,7 +1428,7 @@ export default function Menu() {
                             >
                               <button
                                 onClick={() => updateQuantity(dish._id, getItemQuantity(dish._id) - 1)}
-                                className="w-10 h-10 flex items-center justify-center rounded-xl shadow-sm border font-black transition-all active:scale-90"
+                                className="w-8 h-8 flex items-center justify-center rounded-xl shadow-sm border font-black transition-all active:scale-90"
                                 style={{ background: 'var(--menu-bg)', color: 'var(--menu-primary)', borderColor: 'var(--menu-accent)' }}
                               >
                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1437,7 +1438,7 @@ export default function Menu() {
                               <span className="font-black text-base" style={{ color: 'var(--menu-secondary)' }}>{getItemQuantity(dish._id)}</span>
                               <button
                                 onClick={() => updateQuantity(dish._id, getItemQuantity(dish._id) + 1)}
-                                className="w-10 h-10 flex items-center justify-center rounded-xl shadow-sm border font-black transition-all active:scale-90"
+                                className="w-8 h-8 flex items-center justify-center rounded-xl shadow-sm border font-black transition-all active:scale-90"
                                 style={{ background: 'var(--menu-bg)', color: 'var(--menu-primary)', borderColor: 'var(--menu-accent)' }}
                               >
                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1452,7 +1453,7 @@ export default function Menu() {
                                 handleAddToCart(dish);
                               }}
                               disabled={!dish.available || suspended}
-                              className={`flex-1 flex items-center justify-center gap-2 py-3.5 rounded-2xl font-black text-xs md:text-sm transition-all shadow-md active:scale-95 ${!dish.available || suspended
+                              className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl font-black text-xs transition-all shadow-md active:scale-95 ${!dish.available || suspended
                                 ? 'cursor-not-allowed opacity-50'
                                 : ''
                                 }`}
@@ -1473,7 +1474,7 @@ export default function Menu() {
                               e.stopPropagation();
                               navigate(`/r/${slug}/dish/${dish._id}`);
                             }}
-                            className="p-3.5 rounded-2xl border transition-all shadow-sm active:scale-95"
+                            className="p-2 rounded-xl border transition-all shadow-sm active:scale-95"
                             style={{
                               background: 'transparent',
                               borderColor: 'var(--menu-secondary)',
