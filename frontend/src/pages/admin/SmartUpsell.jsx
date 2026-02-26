@@ -20,6 +20,7 @@ export default function SmartUpsell() {
     const [suggestions, setSuggestions] = useState([]);
     const [showAddModal, setShowAddModal] = useState(false);
     const [editingRule, setEditingRule] = useState(null);
+    const [suggestionData, setSuggestionData] = useState(null);
 
     useEffect(() => {
         if (user?.restaurantId) {
@@ -45,6 +46,11 @@ export default function SmartUpsell() {
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleCreateRuleFromSuggestion = (suggestion) => {
+        setSuggestionData(suggestion.prefillData);
+        setShowAddModal(true);
     };
 
     const handleToggleRule = async (ruleId) => {
@@ -112,7 +118,8 @@ export default function SmartUpsell() {
         if (activeTab === 'all') return rules;
 
         const typeMap = {
-            'pairings': ['LOW_ATTACHMENT', 'FREQUENT_PAIR'],
+            'frequent': ['FREQUENT_PAIR'],
+            'attachment': ['LOW_ATTACHMENT'],
             'combos': ['COMBO_DISCOUNT'],
             'cart': ['CART_THRESHOLD'],
         };
@@ -132,8 +139,8 @@ export default function SmartUpsell() {
 
     const getRuleTypeLabel = (ruleType) => {
         const labels = {
-            'LOW_ATTACHMENT': 'Pairing',
-            'FREQUENT_PAIR': 'Pairing',
+            'LOW_ATTACHMENT': 'Low Attachment',
+            'FREQUENT_PAIR': 'Frequent Pair',
             'COMBO_DISCOUNT': 'Combo',
             'CART_THRESHOLD': 'Cart Upsell',
         };
@@ -258,13 +265,22 @@ export default function SmartUpsell() {
                         All Rules
                     </button>
                     <button
-                        onClick={() => setActiveTab('pairings')}
-                        className={`px-4 py-3 font-semibold text-sm border-b-2 transition-colors whitespace-nowrap ${activeTab === 'pairings'
+                        onClick={() => setActiveTab('frequent')}
+                        className={`px-4 py-3 font-semibold text-sm border-b-2 transition-colors whitespace-nowrap ${activeTab === 'frequent'
                             ? 'border-amber-500 text-amber-700'
                             : 'border-transparent text-slate-500 hover:text-slate-700'
                             }`}
                     >
-                        WebAR Pairings
+                        Frequent Pairings
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('attachment')}
+                        className={`px-4 py-3 font-semibold text-sm border-b-2 transition-colors whitespace-nowrap ${activeTab === 'attachment'
+                            ? 'border-amber-500 text-amber-700'
+                            : 'border-transparent text-slate-500 hover:text-slate-700'
+                            }`}
+                    >
+                        Low Attachment
                     </button>
                     <button
                         onClick={() => setActiveTab('combos')}
@@ -449,7 +465,10 @@ export default function SmartUpsell() {
                             <div className="text-3xl mb-3">{suggestion.icon}</div>
                             <h3 className="font-bold text-slate-900 mb-2">{suggestion.title}</h3>
                             <p className="text-sm text-slate-600 mb-4 line-clamp-3">{suggestion.description}</p>
-                            <button className="w-full bg-white hover:bg-slate-50 border border-slate-300 text-slate-700 px-4 py-2 rounded-lg font-medium text-sm transition-colors">
+                            <button
+                                onClick={() => handleCreateRuleFromSuggestion(suggestion)}
+                                className="w-full bg-white hover:bg-slate-50 border border-slate-300 text-slate-700 px-4 py-2 rounded-lg font-medium text-sm transition-colors"
+                            >
                                 Create Rule
                             </button>
                         </div>
@@ -463,12 +482,14 @@ export default function SmartUpsell() {
                 onClose={() => {
                     setShowAddModal(false);
                     setEditingRule(null);
+                    setSuggestionData(null);
                 }}
                 onSuccess={() => {
                     fetchData();
                     showSuccess(editingRule ? 'Rule updated successfully' : 'Rule created successfully');
                 }}
                 editRule={editingRule}
+                prefillData={suggestionData}
             />
         </div>
     );

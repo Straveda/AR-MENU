@@ -429,7 +429,8 @@ export default function OrderCart() {
     const [recommendations, setRecommendations] = useState([]);
 
     const subtotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    const total = subtotal;
+    const taxAmount = parseFloat((subtotal * 0.18).toFixed(2));
+    const total = parseFloat((subtotal + taxAmount).toFixed(2));
 
     // Fetch recommendations when cart items change
     useEffect(() => {
@@ -483,7 +484,7 @@ export default function OrderCart() {
 
     if (items.length === 0) {
         return (
-            <div className="min-h-screen flex flex-col items-center justify-center p-4" style={{ background: 'var(--menu-bg)', color: 'var(--menu-secondary)', fontFamily: 'var(--menu-font)' }}>
+            <div className="min-h-screen min-h-dvh flex flex-col items-center justify-center p-4" style={{ background: 'var(--menu-bg)', color: 'var(--menu-secondary)', fontFamily: 'var(--menu-font)' }}>
                 <div className="bg-white p-8 text-center max-w-sm w-full border border-slate-100 rounded-3xl shadow-xl animate-fade-in-scale">
                     <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6 border border-slate-100">
                         <span className="text-4xl">🛒</span>
@@ -503,7 +504,7 @@ export default function OrderCart() {
     }
 
     return (
-        <div className="min-h-screen pb-32" style={{ background: 'var(--menu-bg)', color: 'var(--menu-secondary)', fontFamily: 'var(--menu-font)' }}>
+        <div className="min-h-screen min-h-dvh pb-32" style={{ background: 'var(--menu-bg)', color: 'var(--menu-secondary)', fontFamily: 'var(--menu-font)' }}>
             {/* Header */}
             <div className="backdrop-blur-md border-b sticky top-0 z-10 shadow-sm" style={{ background: 'var(--menu-bg)', borderColor: 'var(--menu-accent)', opacity: 0.98 }}>
                 <div className="max-w-3xl mx-auto px-4 py-4 flex items-center justify-between">
@@ -520,15 +521,15 @@ export default function OrderCart() {
                 </div>
             </div>
 
-            <div className="max-w-7xl mx-auto px-4 py-8 md:py-12">
-                <div className="flex flex-col lg:flex-row gap-8 lg:gap-12 items-start">
+            <div className="max-w-7xl mx-auto px-4 py-4 md:py-8">
+                <div className="flex flex-col lg:flex-row gap-3 lg:gap-12 items-start">
                     {/* Left Column: Cart Items */}
                     <div className="flex-1 w-full lg:max-w-[calc(100%-400px)]">
                         <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest mb-4">Selected Items</h3>
                         {items.map((item) => (
-                            <div key={item.dishId} className="bg-white p-4 border border-slate-100 rounded-3xl flex gap-4 animate-fade-in shadow-sm hover:shadow-md hover:border-amber-200 transition-all">
+                            <div key={item.dishId} className="bg-white p-3 border border-slate-100 rounded-2xl flex gap-3 animate-fade-in shadow-sm hover:shadow-md hover:border-amber-200 transition-all">
                                 {/* Image */}
-                                <div className="w-20 h-20 bg-slate-50 rounded-2xl overflow-hidden shrink-0 border border-slate-100">
+                                <div className="w-16 h-16 bg-slate-50 rounded-xl overflow-hidden shrink-0 border border-slate-100">
                                     {item.image ? (
                                         <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
                                     ) : (
@@ -570,7 +571,7 @@ export default function OrderCart() {
                                                 </svg>
                                             </button>
                                         </div>
-                                        <span className="text-lg font-black text-amber-600">₹{item.price * item.quantity}</span>
+                                        <span className="text-base font-black text-amber-600">₹{item.price * item.quantity}</span>
                                     </div>
                                 </div>
                             </div>
@@ -579,7 +580,7 @@ export default function OrderCart() {
 
                     {/* Recommendations Section */}
                     {recommendations.length > 0 && (
-                        <div className="mb-8">
+                        <div className="mb-3">
                             <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest mb-4">Complete Your Meal</h3>
                             <div className="flex flex-col gap-4 sm:flex-row sm:overflow-x-auto sm:pb-4 sm:-mx-4 sm:px-4 sm:scrollbar-hide">
                                 {recommendations.map(rec => (
@@ -592,7 +593,7 @@ export default function OrderCart() {
                     {/* Right Column: Sticky Summary */}
                     <div className="w-full lg:w-[380px] lg:sticky lg:top-32 space-y-6">
                         {/* Table Number Input */}
-                        <div className="bg-white p-6 border border-slate-100 rounded-3xl shadow-sm">
+                        <div className="bg-white p-4 border border-slate-100 rounded-2xl shadow-sm">
                             <label className="block text-sm font-black text-slate-800 mb-3">
                                 Table Number <span className="text-red-500">*</span>
                             </label>
@@ -601,7 +602,7 @@ export default function OrderCart() {
                                 value={tableInput}
                                 onChange={(e) => setTableInput(e.target.value)}
                                 placeholder="e.g. 5"
-                                className="w-full px-5 py-4 text-xl font-black border border-slate-100 rounded-2xl focus:outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 bg-slate-50 transition-all placeholder:text-slate-300 shadow-inner"
+                                className="w-full px-4 py-3 text-base font-black border border-slate-100 rounded-2xl focus:outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 bg-slate-50 transition-all placeholder:text-slate-300 shadow-inner"
                             />
                             {error && (
                                 <p className="text-red-500 text-sm mt-3 flex items-center gap-1.5 font-bold animate-shake">
@@ -614,7 +615,7 @@ export default function OrderCart() {
                         </div>
 
                         {/* Bill Summary */}
-                        <div className="bg-white p-6 border border-slate-100 rounded-3xl shadow-sm">
+                        <div className="bg-white p-4 border border-slate-100 rounded-2xl shadow-sm">
                             <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest mb-4">Bill Summary</h3>
                             <div className="space-y-4">
                                 <div className="flex justify-between items-center text-slate-600 font-bold">
@@ -625,10 +626,14 @@ export default function OrderCart() {
                                     <span>Service Charge</span>
                                     <span className="bg-emerald-50 px-2 py-0.5 rounded text-[10px] border border-emerald-100 uppercase">Free</span>
                                 </div>
+                                <div className="flex justify-between items-center text-slate-600 font-bold">
+                                    <span>GST (18%)</span>
+                                    <span>₹{taxAmount}</span>
+                                </div>
                                 {/* Divider */}
                                 <div className="border-t border-dashed border-slate-200 my-4 pt-4 flex justify-between items-center">
                                     <span className="text-lg font-black text-slate-800">Total Payable</span>
-                                    <span className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-500 to-orange-600">₹{total}</span>
+                                    <span className="text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-500 to-orange-600">₹{total}</span>
                                 </div>
                             </div>
                         </div>
@@ -656,7 +661,7 @@ export default function OrderCart() {
                             </>
                         ) : (
                             <>
-                                <span className="text-lg">Place Order</span>
+                                <span className="text-base">Place Order</span>
                                 <svg className="w-6 h-6 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M14 5l7 7m0 0l-7 7m7-7H3" />
                                 </svg>

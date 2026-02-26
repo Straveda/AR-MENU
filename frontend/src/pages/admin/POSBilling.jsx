@@ -6,11 +6,17 @@ import { useToast } from "../../components/common/Toast/ToastContext";
 import Loading from "../../components/common/Loading";
 import BillDetailsModal from "../../components/admin/pos/BillDetailsModal";
 import DayCloseModal from "../../components/admin/pos/DayCloseModal";
+import { printBill } from "../../utils/printUtils";
 
 export default function POSBilling() {
     const { user } = useAuth();
     const { socket } = useSocket();
     const { showSuccess, showError, showInfo } = useToast();
+
+    const handlePrint = (bill) => {
+        printBill(bill);
+        showSuccess("Printing bill...");
+    };
 
     const [orders, setOrders] = useState([]);
     const [activeTab, setActiveTab] = useState("open");
@@ -285,7 +291,7 @@ export default function POSBilling() {
                                                 </button>
                                                 {bill.orderStatus === 'Delivered' && (
                                                     <button
-                                                        onClick={() => setSelectedBill(bill)}
+                                                        onClick={() => handlePrint(bill)}
                                                         className="p-1.5 hover:bg-slate-100 rounded transition-colors"
                                                         title="Print Bill"
                                                     >

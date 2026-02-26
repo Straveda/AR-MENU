@@ -355,34 +355,34 @@ function AnalyticsContent() {
             </div>
 
             {/* Key Metrics Cards */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <MetricCard
                     title={timeRange === 'month' ? "Monthly Revenue" : "Revenue"}
                     value={`₹${metrics.totalRevenue?.toLocaleString() || '0'}`}
-                    change="+12.5%"
-                    trend="up"
-                    icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>}
+                    change={`${metrics.growth?.revenue >= 0 ? '+' : ''}${metrics.growth?.revenue}%`}
+                    trend={metrics.growth?.revenue >= 0 ? "up" : "down"}
+                    icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>}
                 />
                 <MetricCard
                     title={timeRange === 'month' ? "Monthly Orders" : "Orders"}
                     value={metrics.totalOrders || '0'}
-                    change="+8.2%"
-                    trend="up"
-                    icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>}
+                    change={`${metrics.growth?.orders >= 0 ? '+' : ''}${metrics.growth?.orders}%`}
+                    trend={metrics.growth?.orders >= 0 ? "up" : "down"}
+                    icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>}
                 />
                 <MetricCard
                     title="Avg Order Value"
                     value={`₹${metrics.avgOrderValue || '0'}`}
-                    change="+3.1%"
-                    trend="up"
-                    icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>}
+                    change={`${metrics.growth?.avgOrderValue >= 0 ? '+' : ''}${metrics.growth?.avgOrderValue}%`}
+                    trend={metrics.growth?.avgOrderValue >= 0 ? "up" : "down"}
+                    icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>}
                 />
                 <MetricCard
                     title="Completed Orders"
                     value={metrics.completedOrders || '0'}
-                    change="+5.3%"
-                    trend="up"
-                    icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>}
+                    change={`${metrics.growth?.completedOrders >= 0 ? '+' : ''}${metrics.growth?.completedOrders}%`}
+                    trend={metrics.growth?.completedOrders >= 0 ? "up" : "down"}
+                    icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>}
                 />
             </div>
 
@@ -475,13 +475,13 @@ function AnalyticsContent() {
 
 function MetricCard({ title, value, change, trend, icon }) {
     return (
-        <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm hover:border-slate-300 transition-all group">
+        <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm hover:border-slate-300 transition-all group">
             <div className="flex items-start justify-between mb-4">
-                <div>
+                <div className="flex-1">
                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{title}</p>
                     <h3 className="text-2xl font-black text-slate-900 tracking-tight">{value}</h3>
                 </div>
-                <div className="w-10 h-10 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center">
+                <div className="w-12 h-12 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center">
                     {icon}
                 </div>
             </div>

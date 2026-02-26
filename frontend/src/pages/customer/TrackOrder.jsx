@@ -655,11 +655,11 @@ export default function TrackOrderV2() {
     };
 
     return (
-        <div className="min-h-screen" style={{ background: 'var(--menu-bg)', color: 'var(--menu-secondary)', fontFamily: 'var(--menu-font)' }}>
+        <div className="min-h-screen min-h-dvh" style={{ background: 'var(--menu-bg)', color: 'var(--menu-secondary)', fontFamily: 'var(--menu-font)' }}>
             {/* Header */}
             <div className="backdrop-blur-md border-b sticky top-0 z-30 shadow-sm" style={{ background: 'var(--menu-bg)', borderColor: 'var(--menu-accent)', opacity: 0.98 }}>
-                <div className="max-w-7xl mx-auto px-4 py-8 md:py-10 flex flex-col items-center text-center">
-                    <h1 className="text-3xl md:text-5xl font-black tracking-tight mb-3" style={{ color: 'var(--menu-secondary)' }}>
+                <div className="max-w-7xl mx-auto px-4 py-4 md:py-8 flex flex-col items-center text-center">
+                    <h1 className="text-xl md:text-3xl font-black tracking-tight mb-2" style={{ color: 'var(--menu-secondary)' }}>
                         Track Your Order
                     </h1>
                     <p className="text-slate-500 font-medium max-w-lg mx-auto">
@@ -668,10 +668,10 @@ export default function TrackOrderV2() {
                 </div>
             </div>
 
-            <div className="max-w-7xl mx-auto px-4 py-10 md:py-16 flex flex-col items-center">
+            <div className="max-w-7xl mx-auto px-4 py-5 md:py-10 flex flex-col items-center">
 
                 {/* Search Form */}
-                <div className="bg-white w-full max-w-xl p-8 md:p-10 border border-slate-100 rounded-[2.5rem] mb-12 shadow-2xl shadow-slate-200/50 animate-slide-up">
+                <div className="bg-white w-full max-w-xl p-4 md:p-8 border border-slate-100 rounded-3xl mb-6 shadow-xl shadow-slate-200/50 animate-slide-up">
                     <form onSubmit={handleTrackOrder} className="flex flex-col gap-6">
                         <div>
                             <label htmlFor="orderCode" className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3 ml-1">
@@ -684,7 +684,7 @@ export default function TrackOrderV2() {
                                     value={orderCode}
                                     onChange={(e) => setOrderCode(e.target.value.toUpperCase())}
                                     placeholder="e.g., DYP9Q"
-                                    className="w-full px-6 py-4 text-2xl font-black border border-slate-100 rounded-2xl focus:outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 bg-slate-50 text-slate-800 placeholder:text-slate-300 transition-all uppercase placeholder:normal-case shadow-inner"
+                                    className="w-full px-4 py-3 text-base font-black border border-slate-100 rounded-2xl focus:outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 bg-slate-50 text-slate-800 placeholder:text-slate-300 transition-all uppercase placeholder:normal-case shadow-inner"
                                 />
                                 <div className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-amber-500 transition-colors">
                                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -706,7 +706,7 @@ export default function TrackOrderV2() {
                                 </>
                             ) : (
                                 <>
-                                    <span className="text-lg">Track Details</span>
+                                    <span className="text-sm">Track Details</span>
                                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M14 5l7 7m0 0l-7 7m7-7H3" />
                                     </svg>
@@ -749,7 +749,7 @@ export default function TrackOrderV2() {
                             </div>
 
                             {/* Top Gradient Card */}
-                            <div className="bg-gradient-to-br from-amber-500 to-orange-600 px-8 py-12 flex justify-between items-center text-white relative">
+                            <div className="bg-gradient-to-br from-amber-500 to-orange-600 px-5 py-8 flex justify-between items-center text-white relative">
                                 {/* Decorative Pattern */}
                                 <div className="absolute inset-0 opacity-10 pointer-events-none overflow-hidden">
                                     <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none">
@@ -759,14 +759,14 @@ export default function TrackOrderV2() {
 
                                 <div className="relative z-10">
                                     <p className="text-amber-100 text-xs font-black uppercase tracking-widest mb-2">Order Identification</p>
-                                    <p className="text-4xl font-black tabular-nums">{orderData.orderCode}</p>
+                                    <p className="text-2xl font-black tabular-nums">{orderData.orderCode}</p>
                                 </div>
                                 <div className="text-right relative z-10">
                                     <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center mb-2 ml-auto backdrop-blur-sm border border-white/30">
                                         <span className="text-2xl">📍</span>
                                     </div>
                                     <p className="text-amber-100 text-xs font-black uppercase tracking-widest mb-1">Table</p>
-                                    <p className="text-3xl font-black">{orderData.tableNumber}</p>
+                                    <p className="text-xl font-black">{orderData.tableNumber}</p>
                                 </div>
                             </div>
 
@@ -786,7 +786,7 @@ export default function TrackOrderV2() {
                             </div>
 
                             {/* Order Content */}
-                            <div className="p-8">
+                            <div className="p-5">
                                 <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-6 border-b border-slate-50 pb-3">Kitchen Ticket</h3>
                                 <div className="space-y-6">
                                     {orderData.orderItems.map((item, index) => (

@@ -18,28 +18,27 @@ export const getStats = async (req, res) => {
         });
 
         // Calculate real revenue generated from upsell recommendations
-        // Get all accepted recommendations for this restaurant
-        const acceptedRecommendations = await GeneratedRecommendation.find({
-            restaurantId,
-            status: 'ACCEPTED',
-        }).populate('secondaryDishId');
-
-        let revenueGenerated = 0;
-        for (const rec of acceptedRecommendations) {
-            if (rec.secondaryDishId && rec.secondaryDishId.price) {
-                const dishPrice = rec.secondaryDishId.price;
-                const discount = rec.discountPercentage || 0;
-                const finalPrice = dishPrice * (1 - discount / 100);
-                revenueGenerated += finalPrice;
+        const upsellRevenueData = await Order.aggregate([
+            { $match: { restaurantId } },
+            { $unwind: '$orderItems' },
+            { $match: { 'orderItems.source': 'UPSELL' } },
+            {
+                $group: {
+                    _id: null,
+                    totalRevenue: { $sum: '$orderItems.lineTotal' },
+                    totalAccepted: { $sum: 1 }
+                }
             }
-        }
+        ]);
 
-        // Calculate conversion rate
-        const totalRecommendations = await GeneratedRecommendation.countDocuments({
-            restaurantId,
-        });
-        const avgConversion = totalRecommendations > 0
-            ? ((acceptedRecommendations.length / totalRecommendations) * 100).toFixed(1)
+        const revenueGenerated = upsellRevenueData.length > 0 ? upsellRevenueData[0].totalRevenue : 0;
+        const totalAccepted = upsellRevenueData.length > 0 ? upsellRevenueData[0].totalAccepted : 0;
+
+        // Calculate conversion rate based on orders
+        // Total orders where any recommendation could have been shown
+        const totalPossibleRecommendations = await Order.countDocuments({ restaurantId });
+        const avgConversion = totalPossibleRecommendations > 0
+            ? ((totalAccepted / totalPossibleRecommendations) * 100).toFixed(1)
             : 0;
 
         // Calculate average bill increase from dish stats
@@ -90,11 +89,42 @@ export const getRules = async (req, res) => {
             .populate('secondaryDishId', 'name price category')
             .sort({ createdAt: -1 });
 
-        // Add mock conversion and revenue data
-        const rulesWithStats = rules.map(rule => ({
-            ...rule.toObject(),
-            conversion: Math.random() * 40 + 10, // Mock: 10-50%
-            revenue: Math.floor(Math.random() * 10000 + 1000), // Mock: 1000-11000
+        // Calculate real stats for each rule
+        const rulesWithStats = await Promise.all(rules.map(async (rule) => {
+            const ruleId = rule._id;
+
+            // Calculate real revenue from successful upsells
+            const ordersWithUpsell = await Order.aggregate([
+                { $match: { restaurantId, 'orderItems.upsellRuleId': ruleId } },
+                { $unwind: '$orderItems' },
+                { $match: { 'orderItems.upsellRuleId': ruleId } },
+                {
+                    $group: {
+                        _id: null,
+                        totalRevenue: { $sum: '$orderItems.lineTotal' },
+                        count: { $sum: 1 }
+                    }
+                }
+            ]);
+
+            const revenue = ordersWithUpsell.length > 0 ? ordersWithUpsell[0].totalRevenue : 0;
+            const acceptedCount = ordersWithUpsell.length > 0 ? ordersWithUpsell[0].count : 0;
+
+            // Simplified conversion: How often this rule is accepted when the main dish is ordered
+            let conversion = 0;
+            if (rule.mainDishId) {
+                const totalMainDishOrders = await Order.countDocuments({
+                    restaurantId,
+                    'orderItems.dishId': rule.mainDishId._id
+                });
+                conversion = totalMainDishOrders > 0 ? (acceptedCount / totalMainDishOrders) * 100 : 0;
+            }
+
+            return {
+                ...rule.toObject(),
+                conversion: parseFloat(conversion.toFixed(1)),
+                revenue: Math.round(revenue),
+            };
         }));
 
         return res.status(200).json({
@@ -339,54 +369,121 @@ export const updateRuleExplanation = async (req, res) => {
     }
 };
 
-// Get AI-powered suggestions (mock for now)
+// Get AI-powered suggestions based on data
 export const getSuggestions = async (req, res) => {
     try {
         const restaurantId = req.restaurant._id;
 
-        // Get some popular dishes for suggestions
-        const dishes = await Dish.find({ restaurantId, available: true })
-            .sort({ orderCount: -1 })
-            .limit(10);
+        // 1. Get High Potential Pairings (from DishPairStats)
+        const topPairs = await DishPairStats.find({ restaurantId })
+            .populate('mainDishId', 'name price')
+            .populate('pairedDishId', 'name price')
+            .sort({ pairPercentage: -1 })
+            .limit(2);
 
-        // Mock suggestions
-        const suggestions = [
-            {
-                id: 'suggestion_1',
-                type: 'HIGH_POTENTIAL_PAIRING',
-                title: 'High Potential Pairing',
-                description: dishes[0] && dishes[1]
-                    ? `${dishes[0].name} is popular but rarely paired with ${dishes[1].name}. Potential revenue: ₹2,880/month`
-                    : 'Analyze order patterns to find high-potential pairings',
-                mainDish: dishes[0] || null,
-                suggestedDish: dishes[1] || null,
+        // 2. Get popular dishes that don't have many active rules
+        const popularDishes = await Dish.find({ restaurantId, available: true })
+            .sort({ orderCount: -1 })
+            .limit(5);
+
+        const activeRules = await UpsellRule.find({ restaurantId }).select('mainDishId');
+        const activeRuleDishIds = new Set(activeRules.map(r => r.mainDishId?.toString()));
+
+        const underservedPopularDish = popularDishes.find(d => !activeRuleDishIds.has(d._id.toString()));
+
+        const suggestions = [];
+
+        // Add suggestion based on pairing data
+        if (topPairs.length > 0) {
+            topPairs.forEach((pair, index) => {
+                if (pair.mainDishId && pair.pairedDishId) {
+                    suggestions.push({
+                        id: `pair_${index}`,
+                        type: 'FREQUENT_PAIR',
+                        title: 'Popular Pairing Found',
+                        description: `${pair.pairPercentage}% of people who order ${pair.mainDishId.name} also add ${pair.pairedDishId.name}! Create a rule to automate this recommendation.`,
+                        icon: '🔥',
+                        prefillData: {
+                            ruleType: 'FREQUENT_PAIR',
+                            ruleName: `${pair.mainDishId.name} + ${pair.pairedDishId.name} Pairing`,
+                            mainDishId: pair.mainDishId._id,
+                            secondaryDishId: pair.pairedDishId._id,
+                            minPairPercentage: pair.pairPercentage
+                        }
+                    });
+                }
+            });
+        }
+
+        // Add suggestion for low attachment pairings (if we have enough data)
+        const lowAttachmentPairs = await DishPairStats.find({
+            restaurantId,
+            pairPercentage: { $lt: 10, $gt: 0 }
+        })
+            .populate('mainDishId', 'name price')
+            .populate('pairedDishId', 'name price')
+            .limit(1);
+
+        if (lowAttachmentPairs.length > 0) {
+            const pair = lowAttachmentPairs[0];
+            suggestions.push({
+                id: 'low_attach_1',
+                type: 'LOW_ATTACHMENT',
+                title: 'Opportunity: Low Attachment',
+                description: `${pair.mainDishId.name} and ${pair.pairedDishId.name} are rarely ordered together (only ${pair.pairPercentage}%). Offer a combo to increase attachment!`,
                 icon: '📈',
-            },
-            {
-                id: 'suggestion_2',
-                type: 'POPULAR_COMBO',
-                title: 'Popular Combo',
-                description: dishes[2] && dishes[3]
-                    ? `${dishes[2].name} and ${dishes[3].name} are ordered together 68% of the time`
-                    : 'Create combo deals based on frequently paired items',
-                mainDish: dishes[2] || null,
-                suggestedDish: dishes[3] || null,
-                icon: '🔥',
-            },
-            {
-                id: 'suggestion_3',
-                type: 'DESSERT_PUSH',
-                title: 'Dessert Push',
-                description: 'Only 12% of orders include dessert. Add cart-based upsell for orders above ₹500',
-                mainDish: null,
-                suggestedDish: dishes[4] || null,
+                prefillData: {
+                    ruleType: 'LOW_ATTACHMENT',
+                    ruleName: `${pair.mainDishId.name} Meal Boost`,
+                    mainDishId: pair.mainDishId._id,
+                    secondaryDishId: pair.pairedDishId._id,
+                    discountPercentage: 10
+                }
+            });
+        }
+
+        // Add suggestion for cart threshold if underserved popular dish found
+        if (underservedPopularDish) {
+            suggestions.push({
+                id: 'cart_1',
+                type: 'CART_THRESHOLD',
+                title: 'Boost Order Value',
+                description: `${underservedPopularDish.name} is one of your top sellers. Recommend it as a cart upsell for orders above ₹500 to boost ticket size.`,
                 icon: '🍰',
-            },
-        ];
+                prefillData: {
+                    ruleType: 'CART_THRESHOLD',
+                    ruleName: `Premium Add-on: ${underservedPopularDish.name}`,
+                    secondaryDishId: underservedPopularDish._id,
+                    cartMinValue: 500,
+                    discountPercentage: 5
+                }
+            });
+        }
+
+        // Fallback or fill to 3 suggestions
+        if (suggestions.length < 3 && popularDishes.length >= 2) {
+            const d1 = popularDishes[0];
+            const d2 = popularDishes[1];
+            if (!suggestions.some(s => s.id === 'cart_1')) {
+                suggestions.push({
+                    id: 'fallback_1',
+                    type: 'FREQUENT_PAIR',
+                    title: 'Smart Recommendation',
+                    description: `Pair your best seller ${d1.name} with ${d2.name} to see if they sell better together.`,
+                    icon: '💡',
+                    prefillData: {
+                        ruleType: 'FREQUENT_PAIR',
+                        ruleName: `${d1.name} Duo`,
+                        mainDishId: d1._id,
+                        secondaryDishId: d2._id
+                    }
+                });
+            }
+        }
 
         return res.status(200).json({
             success: true,
-            data: suggestions,
+            data: suggestions.slice(0, 3),
         });
     } catch (error) {
         console.error('Error in getSuggestions:', error);

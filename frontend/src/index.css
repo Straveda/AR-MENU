@@ -257,4 +257,9 @@
   .animate-fade-in {
     animation: fade-in 0.4s ease-out forwards;
   }
+
+  /* Dynamic Viewport Height Fix (accounts for mobile browser address bar) */
+  .min-h-dvh {
+    min-height: 100dvh;
+  }
 }

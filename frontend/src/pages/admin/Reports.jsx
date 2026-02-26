@@ -171,13 +171,13 @@ export default function Reports() {
 
             {/* Summary Cards */}
             {summary && (
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     <SummaryCard
                         label="Daily Sales"
                         value={`₹${summary.dailySales?.totalSales?.toFixed(2) || 0}`}
                         subtext={`${summary.dailySales?.totalOrders || 0} orders today`}
                         accent="blue"
-                        icon="📊"
+                        icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>}
                         action={() => handleExport('daily-sales')}
                         actionLabel="Download"
                     />
@@ -186,27 +186,27 @@ export default function Reports() {
                         value={`₹${summary.gstSummary?.totalGST?.toFixed(2) || 0}`}
                         subtext={`CGST: ₹${summary.gstSummary?.cgst?.toFixed(2) || 0} | SGST: ₹${summary.gstSummary?.sgst?.toFixed(2) || 0}`}
                         accent="emerald"
-                        icon="🧾"
+                        icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01m-.01 4h.01" /></svg>}
                         action={() => handleExport('monthly-gst')}
-                        actionLabel="Download GST"
+                        actionLabel="GST"
                     />
                     <SummaryCard
-                        label="Aggregator Mismatch"
+                        label="Aggregators"
                         value={`${summary.aggregatorMismatch?.pendingCount || 0} pending`}
                         subtext={`Difference: ₹${summary.aggregatorMismatch?.totalDifference?.toFixed(2) || 0}`}
                         accent="rose"
-                        icon="⚠️"
+                        icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>}
                         action={() => setActiveTab('aggregator')}
-                        actionLabel="View Details"
+                        actionLabel="Details"
                     />
                     <SummaryCard
-                        label="Payment Reconciliation"
+                        label="Payment Recon"
                         value={`${summary.paymentReconciliation?.pendingCount || 0} pending`}
                         subtext={`Difference: ₹${summary.paymentReconciliation?.totalDifference?.toFixed(2) || 0}`}
-                        accent="indigo"
-                        icon="💳"
+                        accent="violet"
+                        icon={<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg>}
                         action={() => setActiveTab('reconciliation')}
-                        actionLabel="View Details"
+                        actionLabel="Details"
                     />
                 </div>
             )}
@@ -530,34 +530,36 @@ export default function Reports() {
 
 function SummaryCard({ label, value, subtext, accent, icon, action, actionLabel }) {
     const bgs = {
-        blue: "bg-blue-50 text-blue-600",
-        rose: "bg-rose-50 text-rose-600",
-        emerald: "bg-emerald-50 text-emerald-600",
-        amber: "bg-amber-50 text-amber-600",
-        violet: "bg-violet-50 text-violet-600",
-        indigo: "bg-indigo-50 text-indigo-600",
-        slate: "bg-slate-50 text-slate-600"
+        blue: "bg-blue-100 text-blue-600",
+        rose: "bg-rose-100 text-rose-600",
+        emerald: "bg-emerald-100 text-emerald-600",
+        amber: "bg-amber-100 text-amber-600",
+        violet: "bg-violet-100 text-violet-600",
+        indigo: "bg-indigo-100 text-indigo-600",
+        slate: "bg-slate-100 text-slate-600"
     };
 
     return (
-        <div className="bg-white py-4 px-5 rounded-xl border border-slate-200 shadow-sm relative overflow-hidden group hover:border-slate-300 transition-all hover:shadow-md">
-            <div className="flex items-start justify-between mb-4">
-                <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-xl ${bgs[accent]}`}>
-                    {icon}
-                </div>
+        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm group hover:border-slate-300 transition-all h-full">
+            <div className="flex justify-between items-start mb-2">
+                <p className="text-slate-500 text-[10px] font-black uppercase tracking-widest truncate pr-2">{label}</p>
                 {action && (
                     <button
                         onClick={action}
-                        className="text-xs font-semibold text-slate-400 hover:text-slate-700 bg-slate-50 hover:bg-slate-100 px-3 py-1.5 rounded-lg transition-colors"
+                        className="text-[9px] font-black uppercase tracking-widest text-slate-400 hover:text-indigo-600 bg-slate-50 hover:bg-slate-100 px-2 py-1 rounded-lg border border-slate-100 transition-all active:scale-95 flex-shrink-0"
                     >
                         {actionLabel}
                     </button>
                 )}
             </div>
-            <div>
-                <p className="text-slate-500 text-[10px] font-black uppercase tracking-widest mb-1">{label}</p>
-                <h3 className="text-2xl font-black text-slate-900 tracking-tight leading-none mb-1">{value}</h3>
-                <p className="text-xs text-slate-500 font-medium">{subtext}</p>
+            <div className="flex items-center justify-between gap-4">
+                <div className="flex-1 min-w-0">
+                    <h3 className="text-2xl font-black text-slate-900 tracking-tight leading-none mb-1.5 truncate">{value}</h3>
+                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tight truncate">{subtext}</p>
+                </div>
+                <div className={`w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0 ${bgs[accent]}`}>
+                    {icon}
+                </div>
             </div>
         </div>
     );
