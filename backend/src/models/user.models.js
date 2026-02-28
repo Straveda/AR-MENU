@@ -33,7 +33,7 @@ const userSchema = new mongoose.Schema(
 
     department: {
       type: String,
-      enum: ['KDS', 'Finance', 'Operations'],
+      enum: ['KDS', 'Cashier', 'Waiter'],
       default: null,
     },
 

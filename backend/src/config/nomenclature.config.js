@@ -8,8 +8,8 @@ export const NOMENCLATURE = {
 
   DEPARTMENTS: {
     KDS: 'Kitchen Display',
-    Finance: 'Finance',
-    Operations: 'Operations',
+    Cashier: 'Cashier',
+    Waiter: 'Waiter',
   },
 
   LABELS: {
@@ -30,8 +30,8 @@ export const SYSTEM_ROLE_KEYS = {
 
 export const DEPARTMENT_KEYS = {
   KDS: 'KDS',
-  FINANCE: 'Finance',
-  OPERATIONS: 'Operations',
+  CASHIER: 'Cashier',
+  WAITER: 'Waiter',
 };
 
-export const VALID_DEPARTMENTS = ['KDS', 'Finance', 'Operations'];
+export const VALID_DEPARTMENTS = ['KDS', 'Cashier', 'Waiter'];

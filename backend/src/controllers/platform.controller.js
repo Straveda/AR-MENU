@@ -974,11 +974,11 @@ const createStaffUser = async (req, res) => {
       });
     }
 
-    const validDepartments = ['KDS', 'Finance', 'Operations'];
+    const validDepartments = ['KDS', 'Cashier', 'Waiter'];
     if (!validDepartments.includes(department)) {
       return res.status(400).json({
         success: false,
-        message: 'Invalid department. Must be one of: KDS, Finance, Operations',
+        message: 'Invalid department. Must be one of: KDS, Cashier, Waiter',
       });
     }
 
