@@ -1421,23 +1421,23 @@ export default function DishDetails() {
     }
   };
 
-  const handleAddRecommendationToOrder = (recDish, discountedPrice = null) => {
+  const handleAddRecommendationToOrder = (recData) => {
     if (suspended) {
       showError("Ordering is temporarily unavailable.");
       return;
     }
 
-    // If a discounted price is provided, create a modified dish object with that price
-    const dishToAdd = discountedPrice !== null && discountedPrice !== recDish.price
-      ? { ...recDish, price: discountedPrice }
-      : recDish;
+    const isSmartRec = !!recData.recommendedDish;
+    const dish = isSmartRec ? recData.recommendedDish : recData;
 
-    addItem(dishToAdd, 1, {
-      upsellRuleId: recDish.ruleId,
+    addItem(dish, 1, {
+      upsellRuleId: isSmartRec ? recData.ruleId : null,
       source: 'UPSELL',
-      originalPrice: recDish.price
+      originalPrice: dish.price,
+      mainDishId: isSmartRec ? recData.mainDishId : null,
+      discountPercentage: isSmartRec ? recData.discountPercentage : 0
     });
-    showSuccess(`Added 1 x ${recDish.name} to order!`);
+    showSuccess(`Added 1 x ${dish.name} to order!`);
   };
 
   const getTagColor = (tag) => {
@@ -1796,7 +1796,7 @@ export default function DishDetails() {
                                 )}
                               </div>
                               <button
-                                onClick={() => handleAddRecommendationToOrder(dish, finalPrice)}
+                                onClick={() => handleAddRecommendationToOrder(recDish)}
                                 className="p-1.5 rounded-lg transition-all shadow-sm active:scale-95 border"
                                 style={{ background: 'var(--menu-accent)', color: 'var(--menu-primary)', borderColor: 'var(--menu-accent)' }}
                                 title="Add to Order"

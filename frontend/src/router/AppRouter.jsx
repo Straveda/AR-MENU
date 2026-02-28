@@ -18,6 +18,8 @@ import EditDish from '../pages/admin/EditDish.jsx';
 import StaffManagement from '../pages/admin/StaffManagement.jsx';
 import Inventory from '../pages/admin/Inventory.jsx';
 import KDS from '../pages/admin/KDS.jsx';
+import CashierDashboard from '../pages/staff/CashierDashboard.jsx';
+import WaiterDashboard from '../pages/staff/WaiterDashboard.jsx';
 import ComingSoon from '../pages/staff/ComingSoon.jsx';
 
 import Menu from '../pages/customer/Menu.jsx';
@@ -25,6 +27,7 @@ import DishDetails from '../pages/customer/DishDetails.jsx';
 import ARViewer from '../pages/customer/ARviewer.jsx';
 import TrackOrderV2 from '../pages/customer/TrackOrder.jsx';
 import OrderCart from '../pages/customer/OrderCart.jsx';
+import MyOrders from '../pages/customer/MyOrders.jsx';
 
 import PlatformLayout from '../pages/platform/PlatformLayout.jsx';
 import PlatformDashboard from '../pages/platform/PlatformDashboard.jsx';
@@ -99,6 +102,8 @@ const AppRouter = () => {
                                         { }
                                         <Route element={<RoleGuard allowedRoles={['KDS', 'RESTAURANT_ADMIN']} />}>
                                             <Route path="/staff/kds" element={<KDS />} />
+                                            <Route path="/staff/cashier" element={<CashierDashboard />} />
+                                            <Route path="/staff/waiter" element={<WaiterDashboard />} />
                                             <Route path="/staff/coming-soon" element={<ComingSoon />} />
                                             { }
                                             <Route path="/kds" element={<Navigate to="/staff/kds" replace />} />
@@ -111,6 +116,7 @@ const AppRouter = () => {
                                         <Route path="/r/:slug/dish/:id" element={<DishDetails />} />
                                         <Route path="/r/:slug/ar/:id" element={<ARViewer />} />
                                         <Route path="/r/:slug/track-order" element={<TrackOrderV2 />} />
+                                        <Route path="/r/:slug/my-orders" element={<MyOrders />} />
                                         <Route path="/r/:slug/cart" element={<OrderCart />} />
 
                                         { }

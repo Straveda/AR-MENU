@@ -4,12 +4,14 @@ import { resolveRestaurant } from '../middlewares/resolveRestaurant.middleware.j
 import { requireRole } from '../middlewares/requireRole.middleware.js';
 import { checkSubscription } from '../middlewares/checkSubscription.middleware.js';
 
-import { createOrder, trackOrder } from '../controllers/order.controller.js';
+import { createOrder, trackOrder, getPopularDishes } from '../controllers/order.controller.js';
 
 const orderRoute = express.Router();
 
 orderRoute.post('/r/:restaurantSlug/create', resolveRestaurant, checkSubscription, createOrder);
 
 orderRoute.get('/r/:restaurantSlug/track/:orderCode', resolveRestaurant, trackOrder);
+
+orderRoute.get('/r/:restaurantSlug/popular-dishes', resolveRestaurant, getPopularDishes);
 
 export default orderRoute;

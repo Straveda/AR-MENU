@@ -539,11 +539,13 @@ import { useSocket } from "../../context/SocketProvider";
 import { useTenant } from "../../context/TenantProvider";
 import { useNavigate } from "react-router-dom";
 import { useMenuTheme } from "../../hooks/useMenuTheme";
+import { useOrder } from "../../context/OrderContext";
 
 export default function TrackOrderV2() {
     const { socket, connect, disconnect, joinRoom, leaveRoom } = useSocket();
     const { slug } = useTenant();
     const navigate = useNavigate();
+    const { updateOrderStatusInHistory } = useOrder();
     useMenuTheme(slug);
 
     const [orderCode, setOrderCode] = useState("");
@@ -610,32 +612,41 @@ export default function TrackOrderV2() {
 
         const roomName = `ORDER_ROOM_${orderData.restaurantId}_${orderData.orderCode}`;
 
-        joinRoom(roomName);
-        setIsLive(true);
-
         const handleUpdate = (updatedOrder) => {
-            console.log("Realtime Update Received:", updatedOrder);
-
             if (updatedOrder.orderCode === orderData.orderCode) {
                 setOrderData(prev => ({ ...prev, ...updatedOrder }));
+                // Keep My Orders page in sync
+                if (updatedOrder.orderStatus) {
+                    updateOrderStatusInHistory(updatedOrder.orderCode, slug, updatedOrder.orderStatus);
+                }
             }
         };
 
-        socket.on("order_status_updated", handleUpdate);
-
-        socket.on("disconnect", () => setIsLive(false));
-        socket.on("connect", () => {
+        // Join the room only once the socket is connected (fixes race condition)
+        const handleConnect = () => {
             joinRoom(roomName);
             setIsLive(true);
-        });
+        };
+
+        const handleDisconnect = () => setIsLive(false);
+
+        socket.on("connect", handleConnect);
+        socket.on("disconnect", handleDisconnect);
+        socket.on("order_status_updated", handleUpdate);
+
+        // If socket is already connected when this effect runs, join immediately
+        if (socket.connected) {
+            joinRoom(roomName);
+            setIsLive(true);
+        }
 
         return () => {
+            socket.off("connect", handleConnect);
+            socket.off("disconnect", handleDisconnect);
             socket.off("order_status_updated", handleUpdate);
-            socket.off("disconnect");
-            socket.off("connect");
             leaveRoom(roomName);
         };
-    }, [orderData?.restaurantId, orderData?.orderCode, connect, joinRoom, leaveRoom, socket]);
+    }, [orderData?.restaurantId, orderData?.orderCode, connect, joinRoom, leaveRoom, socket, slug, updateOrderStatusInHistory]);
 
     useEffect(() => {
         if (!orderData) return;
@@ -838,6 +849,15 @@ export default function TrackOrderV2() {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M10 19l-7-7 7-7m-7 7h18" />
                         </svg>
                         Back to Menu
+                    </button>
+                    <button
+                        onClick={() => navigate(`/r/${slug}/my-orders`)}
+                        className="px-6 py-3 bg-white border border-slate-100 rounded-2xl text-sm font-black text-slate-600 hover:text-amber-600 hover:border-amber-200 transition-all shadow-sm active:scale-95 flex items-center gap-2"
+                    >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                        </svg>
+                        My Orders
                     </button>
                 </div>
             </div>

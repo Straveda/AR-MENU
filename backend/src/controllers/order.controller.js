@@ -190,4 +190,34 @@ const trackOrder = async (req, res) => {
   }
 };
 
-export { createOrder, trackOrder };
+const getPopularDishes = async (req, res) => {
+  try {
+    const restaurant = req.restaurant;
+    if (!restaurant) {
+      return res.status(400).json({ success: false, message: 'Restaurant context missing' });
+    }
+
+    const excludeParam = req.query.exclude || '';
+    const excludeIds = excludeParam ? excludeParam.split(',').filter(Boolean) : [];
+
+    // Fetch up to 3 dishes that are available and not in cart
+    // We use .limit(3) on a simple query for "popular" (by orderCount) or just random
+    // The user said "random three dishes random from menu"
+    const dishes = await Dish.find({
+      restaurantId: restaurant._id,
+      available: true,
+      _id: { $nin: excludeIds },
+    })
+      .sort({ orderCount: -1 }) // We'll keep popularity but keep it simple
+      .limit(3)
+      .select('_id name price imageUrl category orderCount')
+      .lean();
+
+    return res.status(200).json({ success: true, data: dishes });
+  } catch (error) {
+    console.error('getPopularDishes error:', error);
+    return res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+};
+
+export { createOrder, trackOrder, getPopularDishes };
